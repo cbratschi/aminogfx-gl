@@ -274,8 +274,8 @@ private:
     FILE *file = NULL;
 
     //demuxer
-    VideoDemuxer *demuxer = NULL;
-    AVPacket packet;
+    VideoDemuxer *demuxer = nullptr;
+    AVPacket *packet = nullptr;
     bool hasPacket = false;
     bool eof = false;
     bool failed = false;

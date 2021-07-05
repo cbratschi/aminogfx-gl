@@ -987,21 +987,22 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
     }
 
     //read frame
-    AVPacket packet;
+    AVPacket *packet = av_packet_alloc();
     READ_FRAME_RESULT res;
 
-    av_init_packet(&packet);
-    packet.data = NULL;
-    packet.size = 0;
+    assert(packet);
+
+    packet->data = NULL;
+    packet->size = 0;
 
     while (true) {
-        res = readFrame(&packet);
+        res = readFrame(packet);
 
         if (res == READ_OK) {
             //decode video frame
             int frameFinished;
 
-            avcodec_decode_video2(codecCtx, frame, &frameFinished, &packet);
+            avcodec_decode_video2(codecCtx, frame, &frameFinished, packet);
 
             //did we get a video frame?
             if (frameFinished) {
@@ -1014,7 +1015,7 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
                 //timing
                 double pts;
 
-                if (packet.dts != (int64_t)AV_NOPTS_VALUE) {
+                if (packet->dts != (int64_t)AV_NOPTS_VALUE) {
 #ifdef MAC
                     pts = av_frame_get_best_effort_timestamp(frame) * av_q2d(stream->time_base);
 #else
@@ -1058,12 +1059,13 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
             }
 
             //next frame
-            freeFrame(&packet);
+            freeFrame(packet);
             continue;
         }
 
 done:
-        freeFrame(&packet);
+        freeFrame(packet);
+        av_packet_free(&packet);
         break;
     }
 
@@ -1277,8 +1279,11 @@ VideoFileStream::~VideoFileStream() {
     }
 
     if (hasPacket) {
-        demuxer->freeFrame(&packet);
+        demuxer->freeFrame(packet);
         hasPacket = false;
+
+        av_packet_free(&packet);
+        packet = nullptr;
     }
 
     if (demuxer) {
@@ -1334,9 +1339,14 @@ bool VideoFileStream::init() {
         }
 
         //init packet
-        av_init_packet(&packet);
-        packet.data = NULL;
-        packet.size = 0;
+        assert(!packet);
+
+        packet = av_packet_alloc();
+
+        assert(packet);
+
+        packet->data = NULL;
+        packet->size = 0;
 
         if (DEBUG_VIDEOS) {
             printf("-> video stream\n");
@@ -1360,7 +1370,7 @@ bool VideoFileStream::rewind() {
     } else if (demuxer) {
         //stream
         if (hasPacket) {
-            demuxer->freeFrame(&packet);
+            demuxer->freeFrame(packet);
             hasPacket = false;
         }
 
@@ -1425,20 +1435,20 @@ unsigned int VideoFileStream::read(unsigned char *dest, unsigned int length, omx
         unsigned int offset = 0;
 
         if (hasPacket) {
-            unsigned int dataLeft = packet.size - packetOffset;
+            unsigned int dataLeft = packet->size - packetOffset;
             unsigned int dataLen = std::min(dataLeft, length);
 
             if (DEBUG_VIDEO_STREAM) {
                 printf("-> filling read buffer (prev packet): %i of %i\n", dataLen, length);
             }
 
-            memcpy(dest, packet.data + packetOffset, dataLen);
+            memcpy(dest, packet->data + packetOffset, dataLen);
             offset += dataLen;
 
             //check packet
             if (dataLeft == dataLen) {
                 //all consumed
-                demuxer->freeFrame(&packet);
+                demuxer->freeFrame(packet);
                 hasPacket = false;
                 packetOffset = 0;
             } else {
@@ -1462,18 +1472,18 @@ unsigned int VideoFileStream::read(unsigned char *dest, unsigned int length, omx
         }
 
         //read new packet
-        READ_FRAME_RESULT res = demuxer->readFrame(&packet);
+        READ_FRAME_RESULT res = demuxer->readFrame(packet);
 
         if (res == READ_END_OF_VIDEO) {
             eof = true;
-            demuxer->freeFrame(&packet);
+            demuxer->freeFrame(packet);
 
             return offset;
         }
 
         if (res != READ_OK) {
             failed = true;
-            demuxer->freeFrame(&packet);
+            demuxer->freeFrame(packet);
 
             return offset;
         }
@@ -1482,25 +1492,25 @@ unsigned int VideoFileStream::read(unsigned char *dest, unsigned int length, omx
         hasPacket = true;
 
         unsigned int dataLeft = length - offset;
-        unsigned int dataLen = std::min(dataLeft, (unsigned int)packet.size);
+        unsigned int dataLen = std::min(dataLeft, (unsigned int)packet->size);
 
         if (DEBUG_VIDEO_STREAM) {
             printf("-> filling read buffer (new packet): %i of %i\n", dataLen, dataLeft);
         }
 
-        memcpy(dest + offset, packet.data, dataLen);
+        memcpy(dest + offset, packet->data, dataLen);
         offset += dataLen;
 
         //timing
-        omxData.timeStamp = demuxer->getFramePts(&packet) * 1000000;
+        omxData.timeStamp = demuxer->getFramePts(packet) * 1000000;
 
         //check state
-        if (dataLen < (unsigned int)packet.size) {
+        if (dataLen < (unsigned int)packet->size) {
             //data left
             packetOffset = dataLen;
         } else {
             //all consumed
-            demuxer->freeFrame(&packet);
+            demuxer->freeFrame(packet);
             hasPacket = false;
             omxData.flags |= 0x10; //OMX_BUFFERFLAG_ENDOFFRAME
         }

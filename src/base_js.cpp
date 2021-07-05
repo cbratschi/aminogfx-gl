@@ -1047,9 +1047,9 @@ void* AminoJSObject::FloatArrayProperty::getAsyncData(v8::Local<v8::Value> &valu
     if (value->IsFloat32Array()) {
         //Float32Array
         v8::Local<v8::Float32Array> arr = v8::Local<v8::Float32Array>::Cast(value);
-        v8::ArrayBuffer::Contents contents = arr->Buffer()->GetContents();
-        float *data = (float *)contents.Data();
-        std::size_t count = contents.ByteLength() / sizeof(float);
+        std::shared_ptr<v8::BackingStore> contents = arr->Buffer()->GetBackingStore();
+        float *data = (float *)contents->Data();
+        std::size_t count = contents->ByteLength() / sizeof(float);
 
         //debug
         //printf("is Float32Array (size: %i)\n", (int)count);
@@ -1277,9 +1277,9 @@ void* AminoJSObject::UShortArrayProperty::getAsyncData(v8::Local<v8::Value> &val
     if (value->IsUint16Array()) {
         //Uint16Array
         v8::Local<v8::Uint16Array> arr = v8::Local<v8::Uint16Array>::Cast(value);
-        v8::ArrayBuffer::Contents contents = arr->Buffer()->GetContents();
-        ushort *data = (ushort *)contents.Data();
-        std::size_t count = contents.ByteLength() / sizeof(ushort);
+        std::shared_ptr<v8::BackingStore> contents = arr->Buffer()->GetBackingStore();
+        ushort *data = (ushort *)contents->Data();
+        std::size_t count = contents->ByteLength() / sizeof(ushort);
 
         //debug
         //printf("is Float32Array (size: %i)\n", (int)count);
