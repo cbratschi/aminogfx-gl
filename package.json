@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "async": "^3.2.0",
-    "nan": "^2.14.1",
+    "nan": "^2.14.2",
     "node-pre-gyp": "0.15.x",
     "onecolor": "^3.1.0",
     "request": "^2.88.2"
@@ -41,7 +41,7 @@
   },
   "homepage": "https://github.com/joshmarinacci/aminogfx-gl",
   "devDependencies": {
-    "eslint": "^7.6.0",
+    "eslint": "^7.30.0",
     "feedparser": "^2.2.10"
   }
 }
