@@ -1588,49 +1588,115 @@ void AminoGfxRPi::handleEvent(input_event ev) {
             }
 
             switch (ev.code) {
-                case KEY_0:
-                    keycode = 48;
-                    break;
+                // from https://www.glfw.org/docs/latest/group__keys.html
 
-                case KEY_Q:
-                    keycode = 81;
-                    break;
-
-                case KEY_W:
-                    keycode = 87;
-                    break;
-
-                case KEY_E:
-                    keycode = 69;
-                    break;
-
-                case KEY_R:
-                    keycode = 82;
-                    break;
-
-                case KEY_T:
-                    keycode = 84;
-                    break;
-
-                case KEY_Y:
-                    keycode = 89;
-                    break;
-
-                case KEY_U:
-                    keycode = 85;
-                    break;
-
-                case KEY_I:
-                    keycode = 73;
-                    break;
-
-                case KEY_O:
-                    keycode = 79;
-                    break;
-
-                case KEY_P:
-                    keycode = 80;
-                    break;
+                case KEY_0: keycode = 48; break;
+                case KEY_1: keycode = 49; break;
+                case KEY_2: keycode = 50; break;
+                case KEY_3: keycode = 51; break;
+                case KEY_4: keycode = 52; break;
+                case KEY_5: keycode = 53; break;
+                case KEY_6: keycode = 54; break;
+                case KEY_7: keycode = 55; break;
+                case KEY_8: keycode = 56; break;
+                case KEY_9: keycode = 57; break;
+                case KEY_SEMICOLON: keycode = 59 /* ; */; break;
+                case KEY_EQUAL: keycode = 61 /* = */; break;
+                case KEY_A: keycode = 65; break;
+                case KEY_B: keycode = 66; break;
+                case KEY_C: keycode = 67; break;
+                case KEY_D: keycode = 68; break;
+                case KEY_E: keycode = 69; break;
+                case KEY_F: keycode = 70; break;
+                case KEY_G: keycode = 71; break;
+                case KEY_H: keycode = 72; break;
+                case KEY_I: keycode = 73; break;
+                case KEY_J: keycode = 74; break;
+                case KEY_K: keycode = 75; break;
+                case KEY_L: keycode = 76; break;
+                case KEY_M: keycode = 77; break;
+                case KEY_N: keycode = 78; break;
+                case KEY_O: keycode = 79; break;
+                case KEY_P: keycode = 80; break;
+                case KEY_Q: keycode = 81; break;
+                case KEY_R: keycode = 82; break;
+                case KEY_S: keycode = 83; break;
+                case KEY_T: keycode = 84; break;
+                case KEY_U: keycode = 85; break;
+                case KEY_V: keycode = 86; break;
+                case KEY_W: keycode = 87; break;
+                case KEY_X: keycode = 88; break;
+                case KEY_Y: keycode = 89; break;
+                case KEY_Z: keycode = 90; break;
+                case KEY_SPACE: keycode = 32; break;
+                case KEY_APOSTROPHE: keycode = 39 /* ' */; break;
+                case KEY_COMMA: keycode = 44 /* , */; break;
+                case KEY_MINUS: keycode = 45 /* - */; break;
+                case KEY_DOT: keycode = 46 /* . */; break;
+                case KEY_SLASH: keycode = 47 /* / */; break;
+                case KEY_LEFTBRACE: keycode = 91 /* [ */; break;
+                case KEY_BACKSLASH: keycode = 92 /* \ */; break;
+                case KEY_RIGHTBRACE: keycode = 93 /* ] */; break;
+                case KEY_GRAVE: keycode = 96 /* ` */; break;
+                case KEY_ESC: keycode = 256; break;
+                case KEY_ENTER: keycode = 257; break;
+                case KEY_TAB: keycode = 258; break;
+                case KEY_BACKSPACE: keycode = 259; break;
+                case KEY_INSERT: keycode = 260; break;
+                case KEY_DELETE: keycode = 261; break;
+                case KEY_RIGHT: keycode = 262; break;
+                case KEY_LEFT: keycode = 263; break;
+                case KEY_DOWN: keycode = 264; break;
+                case KEY_UP: keycode = 265; break;
+                case KEY_PAGEUP: keycode = 266; break;
+                case KEY_PAGEDOWN: keycode = 267; break;
+                case KEY_HOME: keycode = 268; break;
+                case KEY_END: keycode = 269; break;
+                case KEY_CAPSLOCK: keycode = 280; break;
+                case KEY_SCROLLLOCK: keycode = 281; break;
+                case KEY_NUMLOCK: keycode = 282; break;
+                case KEY_PAUSE: keycode = 284; break;
+                case KEY_F1: keycode = 290; break;
+                case KEY_F2: keycode = 291; break;
+                case KEY_F3: keycode = 292; break;
+                case KEY_F4: keycode = 293; break;
+                case KEY_F5: keycode = 294; break;
+                case KEY_F6: keycode = 295; break;
+                case KEY_F7: keycode = 296; break;
+                case KEY_F8: keycode = 297; break;
+                case KEY_F9: keycode = 298; break;
+                case KEY_F10: keycode = 299; break;
+                case KEY_F11: keycode = 300; break;
+                case KEY_F12: keycode = 301; break;
+                case KEY_F13: keycode = 302; break;
+                case KEY_F14: keycode = 303; break;
+                case KEY_F15: keycode = 304; break;
+                case KEY_F16: keycode = 305; break;
+                case KEY_F17: keycode = 306; break;
+                case KEY_F18: keycode = 307; break;
+                case KEY_F19: keycode = 308; break;
+                case KEY_F20: keycode = 309; break;
+                case KEY_F21: keycode = 310; break;
+                case KEY_F22: keycode = 311; break;
+                case KEY_F23: keycode = 312; break;
+                case KEY_F24: keycode = 313; break;
+                case KEY_KP0: keycode = 320; break;
+                case KEY_KP1: keycode = 321; break;
+                case KEY_KP2: keycode = 322; break;
+                case KEY_KP3: keycode = 323; break;
+                case KEY_KP4: keycode = 324; break;
+                case KEY_KP5: keycode = 325; break;
+                case KEY_KP6: keycode = 326; break;
+                case KEY_KP7: keycode = 327; break;
+                case KEY_KP8: keycode = 328; break;
+                case KEY_KP9: keycode = 329; break;
+                case KEY_KPDOT: keycode = 330; break;
+                case KEY_LEFTSHIFT: keycode = 340; break;
+                case KEY_LEFTCTRL: keycode = 341; break;
+                case KEY_LEFTALT: keycode = 342; break;
+                case KEY_RIGHTSHIFT: keycode = 344; break;
+                case KEY_RIGHTCTRL: keycode = 345; break;
+                case KEY_RIGHTALT: keycode = 346; break;
             }
 
             Nan::Set(event_obj, Nan::New("keycode").ToLocalChecked(), Nan::New(keycode));
