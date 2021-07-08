@@ -12,7 +12,7 @@ AminoGfx implementation for OpenGL 2 / OpenGL ES 2. Node.js based animation fram
 In order to build the native components a couple of libraries and tools are needed.
 
 * Node.js 4.x to 16.x
- * There is a bug in Node.js v6.9.1 (see https://github.com/nodejs/node/issues/9288; fixed in Node.js > 6.10).
+  * There is a bug in Node.js v6.9.1 (see <https://github.com/nodejs/node/issues/9288>; fixed in Node.js > 6.10).
 * Freetype 2.7
 * libpng
 * libjpeg
@@ -25,13 +25,13 @@ In order to build the native components a couple of libraries and tools are need
 
 MacPorts setup:
 
-```
+```bash
 sudo port install pkgconfig glfw freetype ffmpeg +quartz
 ```
 
 Homebrew setup:
 
-```
+```bash
 brew install pkg-config
 brew tap homebrew/versions
 brew install glfw3
@@ -52,14 +52,14 @@ brew install freetype
 
 Setup:
 
-```
+```bash
 sudo rpi-update
 sudo apt-get install libegl1-mesa-dev libdrm-dev libgbm-dev libfreetype6-dev libjpeg-dev libavformat-dev libswscale-dev libavcodec-dev
 ```
 
 ## Installation
 
-```
+```bash
 npm install
 ```
 
@@ -67,19 +67,19 @@ npm install
 
 During development you'll want to rebuild the source constantly:
 
-```
+```bash
 npm install --build-from-source
 ```
 
 Or use:
 
-```
+```bash
 ./rebuild.sh
 ```
 
 ## Demo
 
-```
+```bash
 node demos/circle.js
 ```
 
