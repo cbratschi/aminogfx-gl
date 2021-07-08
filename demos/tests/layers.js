@@ -47,6 +47,11 @@ if (process.argv.length === 2) {
  *    - 40: 15 fps (36.9 MP)
  *
  *    => limit at 12 fullscreen layers (ca. 11 MP)
+ *
+ *  4) MacBook Pro M1
+ *
+ *    - 2000: 60 fps (460.8 MP)
+ *    - 3000: 52 fps (691.2 MP)
  */
 
 const layers = process.argv[2];
