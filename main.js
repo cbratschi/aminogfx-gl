@@ -352,6 +352,9 @@ function setPosition(x, y, z) {
 AminoGfx.prototype.setSize = setSize;
 
 function setSize(w, h) {
+    //debug
+    //console.log('setSize()');
+
     this.w(w).h(h);
 }
 
@@ -1060,6 +1063,9 @@ ImageView.prototype.init = function () {
     const self = this;
 
     function applySize(texture, mode, position) {
+        //debug
+        //console.log('applySize() ' + mode);
+
         switch (mode) {
             case 'resize':
                 if (texture) {
@@ -1173,6 +1179,9 @@ ImageView.prototype.init = function () {
  * Set texture.
  */
 function setImage(img, obj) {
+    //debug
+    //console.log('setImage()');
+
     if (obj.image) {
         obj.image(img);
     } else {
@@ -1195,6 +1204,9 @@ function loadTexture(obj, img) {
 
             return;
         }
+
+        //debug
+        //console.log('Texture ready.');
 
         //use texture
         setImage(texture, obj);
@@ -1266,7 +1278,7 @@ function setSrc(src, prop, obj) {
         }
 
         //debug
-        //console.log('image buffer: w=' + ibuf.w + ' h=' + ibuf.h + ' bpp=' + ibuf.bpp + ' len=' + ibuf.buffer.length);
+        //console.log('image buffer: w=' + img.w + ' h=' + img.h + ' bpp=' + img.bpp + ' len=' + img.buffer.length);
 
         //load texture
         loadTexture(obj, img);
