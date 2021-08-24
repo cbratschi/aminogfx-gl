@@ -105,7 +105,8 @@
 		                    ],
                             'variables': {
                                 'rpi_model': '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)"',
-                                'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | grep -c "Pi 4")'
+                                # cbxx TODO verify: fails on Raspian stretch
+                                'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | { grep -c "Pi 4" || true; })'
                             },
                             'actions': [{
                                 # output RPi model
