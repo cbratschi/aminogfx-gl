@@ -85,22 +85,26 @@ void AminoGfxRPi::setup() {
         bcm_host_init();
 
 #ifdef EGL_GBM
-        if (DEBUG_GLES) {
-            printf("-> initializing OpenGL driver\n");
-        }
+        if (!driDevice) {
+            if (DEBUG_GLES) {
+                printf("-> initializing OpenGL driver\n");
+            }
 
-        //TODO how to use the dual display output?
+            //TODO how to use the dual display output?
 
-        //access OpenGL driver (available if OpenGL driver is loaded)
-        //Note: Pi0-3 use /dev/dri/card0
-        std::string devicePath = "/dev/dri/card1";
+            //access OpenGL driver (available if OpenGL driver is loaded)
+            //Note: Pi0-3 use /dev/dri/card0
+            std::string devicePath = "/dev/dri/card1";
 
-        driDevice = open(devicePath.c_str(), O_RDWR | O_CLOEXEC);
+            driDevice = open(devicePath.c_str(), O_RDWR | O_CLOEXEC);
 
-        assert(driDevice > 0);
+            assert(driDevice > 0);
 
-        if (DEBUG_GLES) {
-            printf("-> DRI device ready: %s\n", devicePath.c_str());
+            if (DEBUG_GLES) {
+                printf("-> DRI device ready: %s\n", devicePath.c_str());
+            }
+        } else {
+            printf("using existing driDevice\n");
         }
 #endif
         //Note: tvservice and others are already initialized by bcm_host_init() call!
@@ -122,36 +126,41 @@ void AminoGfxRPi::setup() {
         //show info screen (Note: seems not to work!)
         //vc_tv_show_info(1);
 
-        //handle preferred resolution
-        if (!createParams.IsEmpty()) {
-            v8::Local<v8::Object> obj = Nan::New(createParams);
+        glESInitialized = true;
+    } else {
+        printf("glES already initialized, skipping\n");
+    }
 
-            //resolution
-            Nan::MaybeLocal<v8::Value> resolutionMaybe = Nan::Get(obj, Nan::New<v8::String>("resolution").ToLocalChecked());
+    //handle preferred resolution
+    if (!createParams.IsEmpty()) {
+        v8::Local<v8::Object> obj = Nan::New(createParams);
 
-            if (!resolutionMaybe.IsEmpty()) {
-                v8::Local<v8::Value> resolutionValue = resolutionMaybe.ToLocalChecked();
+        //resolution
+        Nan::MaybeLocal<v8::Value> resolutionMaybe = Nan::Get(obj, Nan::New<v8::String>("resolution").ToLocalChecked());
 
-                if (resolutionValue->IsString()) {
-                    prefRes = AminoJSObject::toString(resolutionValue);
+        if (!resolutionMaybe.IsEmpty()) {
+            v8::Local<v8::Value> resolutionValue = resolutionMaybe.ToLocalChecked();
+
+            if (resolutionValue->IsString()) {
+                prefRes = AminoJSObject::toString(resolutionValue);
 
 #ifdef EGL_DISPMANX
-                    //change resolution
-                    if (prefRes == "720p@24") {
-                        forceHdmiMode(HDMI_CEA_720p24);
-                    } else if (prefRes == "720p@25") {
-                        forceHdmiMode(HDMI_CEA_720p25);
-                    } else if (prefRes == "720p@30") {
-                        forceHdmiMode(HDMI_CEA_720p30);
-                    } else if (prefRes == "720p@50") {
-                        forceHdmiMode(HDMI_CEA_720p50);
-                    } else if (prefRes == "720p@60") {
-                        forceHdmiMode(HDMI_CEA_720p60);
-                    } else if (prefRes == "1080p@24") {
-                        forceHdmiMode(HDMI_CEA_1080p24);
-                    } else if (prefRes == "1080p@25") {
-                        forceHdmiMode(HDMI_CEA_1080p25);
-                    } else if (prefRes == "1080p@30") {
+                //change resolution
+                if (prefRes == "720p@24") {
+                    forceHdmiMode(HDMI_CEA_720p24);
+                } else if (prefRes == "720p@25") {
+                    forceHdmiMode(HDMI_CEA_720p25);
+                } else if (prefRes == "720p@30") {
+                    forceHdmiMode(HDMI_CEA_720p30);
+                } else if (prefRes == "720p@50") {
+                    forceHdmiMode(HDMI_CEA_720p50);
+                } else if (prefRes == "720p@60") {
+                    forceHdmiMode(HDMI_CEA_720p60);
+                } else if (prefRes == "1080p@24") {
+                    forceHdmiMode(HDMI_CEA_1080p24);
+                } else if (prefRes == "1080p@25") {
+                    forceHdmiMode(HDMI_CEA_1080p25);
+                } else if (prefRes == "1080p@30") {
                         forceHdmiMode(HDMI_CEA_1080p30);
                     } else if (prefRes == "1080p@50") {
                         forceHdmiMode(HDMI_CEA_1080p50);
@@ -174,10 +183,9 @@ void AminoGfxRPi::setup() {
                     prefDisp = AminoJSObject::toString(displayValue);
                 }
             }
+        } else {
+            printf("no createParams\n");
         }
-
-        glESInitialized = true;
-    }
 
     //instance
     addInstance();
@@ -199,7 +207,11 @@ void AminoGfxRPi::initEGL() {
 
 #ifdef EGL_GBM
     //create GBM device (Note: fails if not enough rights e.g. no root access)
-    displayType = gbm_create_device(driDevice);
+    if (!displayType) {
+        displayType = gbm_create_device(driDevice);
+    } else if (DEBUG_GLES) {
+        printf("using existing displayType\n");
+    }
 
     if (!displayType) {
         printf("Could not create the GBM device! Please check your permissions (e.g. run with root privileges).\n");
@@ -212,23 +224,30 @@ void AminoGfxRPi::initEGL() {
     }
 #endif
 
+    EGLBoolean res;
     //get an EGL display connection
-    display = eglGetDisplay(displayType);
+    if (display == EGL_NO_DISPLAY) {
+        display = eglGetDisplay(displayType);
 
-    assert(display != EGL_NO_DISPLAY);
+        assert(display != EGL_NO_DISPLAY);
 
-    if (DEBUG_GLES) {
-        printf("-> got EGL display\n");
+        if (DEBUG_GLES) {
+            printf("-> got EGL display\n");
+        }
+
+        //initialize the EGL display connection
+        res = eglInitialize(display, NULL, NULL);
+
+        assert(res != EGL_FALSE);
+
+        if (DEBUG_GLES) {
+            printf("-> EGL initialized\n");
+        }
+    } else if (DEBUG_GLES) {
+        printf("using existing EGL display\n");
     }
 
-    //initialize the EGL display connection
-    EGLBoolean res = eglInitialize(display, NULL, NULL);
 
-    assert(res != EGL_FALSE);
-
-    if (DEBUG_GLES) {
-        printf("-> EGL initialized\n");
-    }
 
     //get an appropriate EGL frame buffer configuration
     static const EGLint attribute_list[] = {
@@ -398,6 +417,7 @@ void AminoGfxRPi::initEGL() {
         drmModeConnector *connector2 = drmModeGetConnector(driDevice, resources->connectors[i]);
 
         if (!connector2) {
+            printf("warning: failed to get connector #%d, skipping\n", i);
             continue;
         }
 
@@ -413,12 +433,14 @@ void AminoGfxRPi::initEGL() {
 
                 if (DEBUG_GLES) {
                     //debug
-                    //printf("-> checking display %s %s\n", name.c_str(), prefDisp.c_str());
+                    printf("-> checking display %s %s\n", name.c_str(), prefDisp.c_str());
 
                     if (match) {
-                        printf("-> using display %s\n", prefDisp.c_str());
+                        printf("-> using matched display %s\n", prefDisp.c_str());
                     }
                 }
+            } else if (DEBUG_GLES) {
+                printf("no prefDisp, using %s\n", name.c_str());
             }
 
             if (match) {
@@ -426,6 +448,8 @@ void AminoGfxRPi::initEGL() {
                 connector = connector2;
                 break;
             }
+        } else if (DEBUG_GLES) {
+            printf("warning: connector #%d invalid, skipping\n", i);
         }
 
         drmModeFreeConnector(connector2);
@@ -1914,7 +1938,11 @@ void AminoGfxRPi::destroyEGLImageHandler(AsyncValueUpdate *update, int state) {
 
 //static initializers
 bool AminoGfxRPi::glESInitialized = false;
-
+NativeDisplayType AminoGfxRPi::displayType = 0;
+EGLDisplay AminoGfxRPi::display = EGL_NO_DISPLAY;
+#ifdef EGL_GBM
+int AminoGfxRPi::driDevice = 0;
+#endif
 #ifdef EGL_DISPMANX
 sem_t AminoGfxRPi::resSem;
 bool AminoGfxRPi::resSemValid = false;

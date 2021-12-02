@@ -50,8 +50,8 @@ private:
     static bool glESInitialized;
 
     //OpenGL ES
-    NativeDisplayType displayType = EGL_DEFAULT_DISPLAY;
-    EGLDisplay display = EGL_NO_DISPLAY;
+    static NativeDisplayType displayType;
+    static EGLDisplay display;
     EGLContext context = EGL_NO_CONTEXT;
     EGLSurface surface = EGL_NO_SURFACE;
     EGLConfig config;
@@ -60,7 +60,7 @@ private:
 
 #ifdef EGL_GBM
     //DRM/GBM
-    int driDevice = 0;
+    static int driDevice;
     uint32_t connector_id = 0;
     drmModeModeInfo mode_info;
     gbm_surface *gbmSurface = NULL;
