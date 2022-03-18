@@ -1237,7 +1237,8 @@ void AminoGfxRPi::initInput() {
                             //touchscreen
                             printf("abs events\n");
 
-                            initTouch(fd);
+                            //cbxx FIXME not working
+                            //initTouch(fd);
                             break;
 
                         case EV_MSC:
@@ -1272,6 +1273,7 @@ void AminoGfxRPi::initInput() {
                 }
             }
 
+            //add device
             fds.push_back(fd);
         }
 
@@ -1279,6 +1281,7 @@ void AminoGfxRPi::initInput() {
     }
 }
 
+//FIXME only getting garbage (see https://github.com/mwilliams03/Pi-Touchscreen-basic/blob/master/touch.c)
 void AminoGfxRPi::initTouch(int fd) {
     //get details
     int abs[6] = { 0 };
@@ -1309,7 +1312,7 @@ void AminoGfxRPi::initTouch(int fd) {
 
         for (int j = 0; j < 5; j++) {
             if (j < 3 || abs[j]) {
-                printf("     %s %6d\n", absval[j].c_str(), abs[j]);
+                printf("       %s %6d\n", absval[j].c_str(), abs[j]);
 
                 if (i == 0) {
                     if (absval[j] == "Min  ")  {
@@ -1576,7 +1579,7 @@ void AminoGfxRPi::processInputs() {
 
     for (unsigned int i = 0; i < fds.size(); i++) {
         int fd = fds[i];
-        int rd = read(fd, ev, size*64);
+        int rd = read(fd, ev, size * 64);
 
         if (rd == -1) {
             continue;
@@ -1586,6 +1589,9 @@ void AminoGfxRPi::processInputs() {
             printf("Read too little!!!  %d\n", rd);
             continue;
         }
+
+        //debug cbxx
+        printf("Read %d bytes from %d.\n", rd, fd);
 
         for (int i = 0; i < (int)(rd / size); i++) {
             if (DEBUG_INPUT) {
@@ -1603,7 +1609,7 @@ void AminoGfxRPi::processInputs() {
 
 //cbxx TODO TODO touchscreen
 void AminoGfxRPi::handleEvent(input_event ev) {
-    //relative event. probably mouse
+    //relative event: probably mouse
     if (ev.type == EV_REL) {
         if (ev.code == 0) {
             //x axis
@@ -1641,10 +1647,13 @@ void AminoGfxRPi::handleEvent(input_event ev) {
         return;
     }
 
+    //keyboard
     if (ev.type == EV_KEY) {
         if (DEBUG_GLES || DEBUG_INPUT) {
             printf("Key or button pressed code = %d, state = %d\n", ev.code, ev.value);
         }
+
+        //cbxx TODO touch
 
         if (ev.code == BTN_LEFT) {
             //TODO GLFW_MOUSE_BUTTON_CALLBACK_FUNCTION(ev.code, ev.value);
@@ -1812,6 +1821,8 @@ void AminoGfxRPi::dump_event(struct input_event *event) {
             if (event ->code == KEY_B) {
                 printf("  B key\n");
             }
+
+            //cbxx TODO show touch
             break;
 
         case EV_REL:
@@ -1876,6 +1887,10 @@ void AminoGfxRPi::dump_event(struct input_event *event) {
 
         case EV_MAX:
             printf("EV_MAX  max value\n");
+            break;
+
+        default:
+            printf("unknown\n");
             break;
     }
 
