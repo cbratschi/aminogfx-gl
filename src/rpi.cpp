@@ -1703,7 +1703,7 @@ void AminoGfxRPi::handleEvent(input_event ev) {
             touch_start = start;
 
             if (DEBUG_TOUCH) {
-                printf("-> touch %s\n", (touch_start ? "start":"finish").c_str());
+                printf("-> touch %s\n", touch_start ? "start":"finish");
             }
         }
 
