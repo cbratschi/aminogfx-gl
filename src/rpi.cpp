@@ -1283,6 +1283,7 @@ void AminoGfxRPi::initTouch(int fd) {
     //get details
     int abs[6] = { 0 };
     unsigned long bit[NBITS(KEY_MAX)];
+    char *absval[6] = { "Value", "Min  ", "Max  ", "Fuzz ", "Flat ", "Resolution "};
 
     ioctl(fd, EVIOCGBIT(EV_ABS, KEY_MAX), bit]);
 

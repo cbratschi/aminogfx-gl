@@ -25,6 +25,9 @@
 #include <semaphore.h>
 #include <linux/input.h>
 
+//helpers
+#define NBITS(x) ((((x)-1)/BITS_PER_LONG)+1)
+
 class AminoGfxRPiFactory : public AminoJSObjectFactory {
 public:
     AminoGfxRPiFactory(Nan::FunctionCallback callback);
