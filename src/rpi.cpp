@@ -1204,7 +1204,8 @@ void AminoGfxRPi::initInput() {
 
             ioctl(fd, EVIOCGID, &device_info);
 
-            u_int8_t evtype_b[(EV_MAX+7)/8];
+            //iterate event types
+            u_int8_t evtype_b[(EV_MAX + 7) / 8];
 
             memset(evtype_b, 0, sizeof evtype_b);
 
@@ -1235,6 +1236,8 @@ void AminoGfxRPi::initInput() {
                         case EV_ABS:
                             //touchscreen
                             printf("abs events\n");
+
+                            initTouch()
                             break;
 
                         case EV_MSC:
@@ -1273,6 +1276,50 @@ void AminoGfxRPi::initInput() {
         }
 
         closedir(dir);
+    }
+}
+
+void AminoGfxRPi::initTouch(int fd) {
+    //get details
+    int abs[6] = { 0 };
+    unsigned long bit[NBITS(KEY_MAX)];
+
+    ioctl(fd, EVIOCGBIT(EV_ABS, KEY_MAX), bit]);
+
+    for (int i = 0; i < KEY_MAX; i++) {
+        if (!test_bit(i, bit)) {
+            continue;
+        }
+
+        printf("    Event code %d\n", i);
+
+        ioctl(fd, EVIOCGABS(i), abs);
+
+        for (int j = 0; j < 5; j++) {
+            if (j < 3 || abs[j]) {
+                printf("     %s %6d\n", absval[j], abs[j]);
+
+                if (i == 0) {
+                    if (absval[j] == "Min  ")  {
+                        touch_x_min = abs[j];
+                    }
+
+                    if (absval[j] == "Max  ") {
+                        touch_x_max = abs[j];
+                    }
+                }
+
+                if (i == 1) {
+                    if (absval[j] == "Min  ") {
+                        touch_y_min = abs[j];
+                    }
+
+                    if (absval[j] == "Max  ") {
+                        touch_y_max = abs[j];
+                    }
+                }
+            }
+        }
     }
 }
 

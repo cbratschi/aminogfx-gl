@@ -82,9 +82,14 @@ private:
 #endif
 
     //input
+    //cbxx TODO touch
     std::vector<int> fds;
     int mouse_x = 0;
     int mouse_y = 0;
+    int touch_x_min = 0;
+    int touch_x_max = 0;
+    int touch_y_min = 0;
+    int touch_y_max = 0;
 
     static NAN_METHOD(New);
 
@@ -123,6 +128,7 @@ private:
 
     bool startsWith(const char *pre, const char *str);
     void initInput();
+    void initTouch();
 
     void start() override;
     bool bindContext() override;
