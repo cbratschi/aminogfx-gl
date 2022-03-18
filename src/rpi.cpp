@@ -1193,13 +1193,13 @@ void AminoGfxRPi::initInput() {
             char name[256] = "Unknown";
 
             ioctl(fd, EVIOCGNAME(sizeof name), name);
-
             printf("Reading from: %s (%s)\n", str, name);
 
+            //get device location
             ioctl(fd, EVIOCGPHYS(sizeof name), name);
-
             printf("Location %s (%s)\n", str, name);
 
+            //get device info
             struct input_id device_info;
 
             ioctl(fd, EVIOCGID, &device_info);
@@ -1209,13 +1209,14 @@ void AminoGfxRPi::initInput() {
             memset(evtype_b, 0, sizeof evtype_b);
 
             if (ioctl(fd, EVIOCGBIT(0, EV_MAX), evtype_b) < 0) {
-                printf("error reading device info\n");
+                printf("Error reading device info.\n");
                 continue;
             }
 
             for (int i = 0; i < EV_MAX; i++) {
                 if (test_bit(i, evtype_b)) {
-                    printf("event type 0x%02x ", i);
+                    //see https://www.kernel.org/doc/Documentation/input/event-codes.txt
+                    printf("Event type 0x%02x ", i);
 
                     switch (i) {
                         case EV_SYN:
@@ -1223,6 +1224,7 @@ void AminoGfxRPi::initInput() {
                             break;
 
                         case EV_KEY:
+                            //keyboard, buttons, ...
                             printf("key events\n");
                             break;
 
@@ -1231,10 +1233,12 @@ void AminoGfxRPi::initInput() {
                             break;
 
                         case EV_ABS:
+                            //touchscreen
                             printf("abs events\n");
                             break;
 
                         case EV_MSC:
+                            //other input data
                             printf("msc events\n");
                             break;
 
@@ -1256,6 +1260,10 @@ void AminoGfxRPi::initInput() {
 
                         case EV_FF:
                             printf("ff events\n");
+                            break;
+
+                        default:
+                            printf("unknown\n");
                             break;
                     }
                 }
@@ -1503,6 +1511,7 @@ void AminoGfxRPi::processInputs() {
         printf("processInputs()\n");
     }
 
+    //poll all input devices
     int size = sizeof(struct input_event);
     struct input_event ev[64];
 
@@ -1515,11 +1524,15 @@ void AminoGfxRPi::processInputs() {
         }
 
         if (rd < size) {
-            printf("read too little!!!  %d\n", rd);
+            printf("Read too little!!!  %d\n", rd);
+            continue;
         }
 
         for (int i = 0; i < (int)(rd / size); i++) {
-            //dump_event(&(ev[i]));
+            if (DEBUG_INPUT) {
+                dump_event(&(ev[i]));
+            }
+
             handleEvent(ev[i]);
         }
     }
@@ -1529,7 +1542,7 @@ void AminoGfxRPi::processInputs() {
     }
 }
 
-//cbxx TODO verify
+//cbxx TODO TODO touchscreen
 void AminoGfxRPi::handleEvent(input_event ev) {
     //relative event. probably mouse
     if (ev.type == EV_REL) {
@@ -1723,6 +1736,7 @@ void AminoGfxRPi::handleEvent(input_event ev) {
     }
 }
 
+//cbxx check events
 void AminoGfxRPi::dump_event(struct input_event *event) {
     switch(event->type) {
         case EV_SYN:
