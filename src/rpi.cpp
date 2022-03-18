@@ -1296,14 +1296,15 @@ void AminoGfxRPi::initTouch(int fd) {
         return;
     }
 
+    //cbxx TODO simplify
     //get x values
-    assert(test_bit(0, bit));
+    assert(test_bit(ABS_X, bit));
 
     memset(abs, 0, sizeof abs);
-    assert(ioctl(fd, EVIOCGABS(0), abs) >= 0);
+    assert(ioctl(fd, EVIOCGABS(ABS_X), abs) >= 0);
 
     if (DEBUG_TOUCH) {
-        printf("    Event code %d\n", 0);
+        printf("    Event code %d\n", ABS_X);
     }
 
     for (int i = 0; i < 6; i++) {
@@ -1698,8 +1699,9 @@ void AminoGfxRPi::handleEvent(input_event ev) {
 
     if (ev.type == EV_ABS) {
         //codes seen with WaveShare device: 0, 1, 53, 54, 57
+        //see https://elixir.bootlin.com/linux/v4.6/source/include/uapi/linux/input-event-codes.h#L682
         switch (ev.code) {
-            case 0:
+            case ABS_X: //0
                 //x value
                 if (ev.value > 0) {
                     if (DEBUG_TOUCH) {
@@ -1711,7 +1713,7 @@ void AminoGfxRPi::handleEvent(input_event ev) {
                 }
                 break;
 
-            case 1:
+            case ABS_Y: //1
                 //y value
                 if (ev.value > 0) {
                     if (DEBUG_TOUCH) {
@@ -1723,9 +1725,35 @@ void AminoGfxRPi::handleEvent(input_event ev) {
                 }
                 break;
 
-            case 24:
+            case ABS_PRESSURE: //24
                 //pressure value
                 break;
+
+            //multitouch
+            //cbxx TODO multitouch
+            case ABS_MT_POSITION_X: //53
+                if (DEBUG_TOUCH) {
+                    printf("-> multitouch x: %d\n", ev.value);
+                }
+                break;
+
+            case ABS_MT_POSITION_Y: //54
+                if (DEBUG_TOUCH) {
+                    printf("-> multitouch y: %d\n", ev.value);
+                }
+                break;
+
+            case ABS_MT_TRACKING_ID: //57
+                if (DEBUG_TOUCH) {
+                    printf("-> multitouch ID: %d\n", ev.value);
+                }
+                break;
+
+            default:
+                if (DEBUG_TOUCH) {
+                    printf("-> touch y: %d\n", ev.value);
+                }
+
         }
     }
 
