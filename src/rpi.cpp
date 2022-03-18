@@ -1283,9 +1283,9 @@ void AminoGfxRPi::initTouch(int fd) {
     //get details
     int abs[6] = { 0 };
     unsigned long bit[NBITS(KEY_MAX)];
-    const char* const absval[6] = { "Value", "Min  ", "Max  ", "Fuzz ", "Flat ", "Resolution "};
+    std::string absval[6] = { "Value", "Min  ", "Max  ", "Fuzz ", "Flat ", "Resolution "};
 
-    ioctl(fd, EVIOCGBIT(EV_ABS, KEY_MAX), bit]);
+    ioctl(fd, EVIOCGBIT(EV_ABS, KEY_MAX), bit);
 
     for (int i = 0; i < KEY_MAX; i++) {
         if (!test_bit(i, bit)) {
@@ -1298,7 +1298,7 @@ void AminoGfxRPi::initTouch(int fd) {
 
         for (int j = 0; j < 5; j++) {
             if (j < 3 || abs[j]) {
-                printf("     %s %6d\n", absval[j], abs[j]);
+                printf("     %s %6d\n", absval[j].c_str(), abs[j]);
 
                 if (i == 0) {
                     if (absval[j] == "Min  ")  {
