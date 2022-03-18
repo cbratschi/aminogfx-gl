@@ -90,10 +90,12 @@ private:
     std::vector<int> fds;
     int mouse_x = 0;
     int mouse_y = 0;
+    //touch grid
     int touch_x_min = 0;
     int touch_x_max = 0;
     int touch_y_min = 0;
     int touch_y_max = 0;
+    //touch values
     int touch_x = 0;
     int touch_y = 0;
     bool touch_start = false;

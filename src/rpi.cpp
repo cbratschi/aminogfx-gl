@@ -1296,9 +1296,35 @@ void AminoGfxRPi::initTouch(int fd) {
         return;
     }
 
-    //cbxx TODO simplify
-    //for (int i = 0; i < KEY_MAX; i++) {
-    for (int i = 0; i < 2; i++) {
+    //get x values
+    assert(test_bit(0, bit));
+
+    memset(abs, 0, sizeof abs);
+    assert(ioctl(fd, EVIOCGABS(0), abs) >= 0);
+
+    if (DEBUG_TOUCH) {
+        printf("    Event code %d\n", 0);
+    }
+
+    for (int i = 0; i < 6; i++) {
+        if (DEBUG_TOUCH) {
+            printf("       %s %6d\n", absval[i].c_str(), abs[i]);
+        }
+
+        if (absval[i] == "Min  ")  {
+            touch_x_min = abs[i];
+        }
+
+        if (absval[i] == "Max  ") {
+            touch_x_max = abs[i];
+        }
+    }
+
+    //get y values
+    //cbxx TODO y values
+
+    /*
+    for (int i = 0; i < KEY_MAX; i++) {
         if (!test_bit(i, bit)) {
             continue;
         }
@@ -1339,6 +1365,7 @@ void AminoGfxRPi::initTouch(int fd) {
             }
         }
     }
+    */
 }
 
 void AminoGfxRPi::start() {
