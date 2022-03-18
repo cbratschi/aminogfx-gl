@@ -1165,13 +1165,12 @@ void AminoGfxRPi::initInput() {
     if (dir) {
         while ((file = readdir(dir)) != NULL) {
             if (!startsWith("event", file->d_name)) {
-                //debug cbxx
-                printf("Ignored %s\n", file->d_name);
+                //debug
+                //printf("Ignored %s\n", file->d_name);
 
                 continue;
             }
 
-            //cbxx TODO verify
             if (DEBUG_INPUT) {
                 printf("File = %s\n", file->d_name);
                 printf("Initializing the device.\n");
@@ -1297,7 +1296,9 @@ void AminoGfxRPi::initTouch(int fd) {
         return;
     }
 
-    for (int i = 0; i < KEY_MAX; i++) {
+    //cbxx TODO simplify
+    //for (int i = 0; i < KEY_MAX; i++) {
+    for (int i = 0; i < 2; i++) {
         if (!test_bit(i, bit)) {
             continue;
         }
@@ -1592,8 +1593,8 @@ void AminoGfxRPi::processInputs() {
             continue;
         }
 
-        //debug cbxx
-        printf("Read %d bytes from %d.\n", rd, fd);
+        //debug
+        //printf("Read %d bytes from %d.\n", rd, fd);
 
         for (int i = 0; i < (int)(rd / size); i++) {
             if (DEBUG_INPUT_EVENTS) {
@@ -1601,6 +1602,17 @@ void AminoGfxRPi::processInputs() {
             }
 
             handleEvent(ev[i]);
+        }
+
+        //send touch update
+        if (touch_modified) {
+            touch_modified = false;
+
+            if (DEBUG_TOUCH) {
+                printf("=> touch event: %d %d %s\n", touch_x, touch_y, touch_start ? "touch":"finished");
+            }
+
+            //cbxx TODO send event
         }
     }
 
@@ -1668,6 +1680,7 @@ void AminoGfxRPi::handleEvent(input_event ev) {
                     }
 
                     touch_x = ev.value;
+                    touch_modified = true;
                 }
                 break;
 
@@ -1679,6 +1692,7 @@ void AminoGfxRPi::handleEvent(input_event ev) {
                     }
 
                     touch_y = ev.value;
+                    touch_modified = true;
                 }
                 break;
 
@@ -1701,10 +1715,13 @@ void AminoGfxRPi::handleEvent(input_event ev) {
             bool start = ev.value == 1;
 
             touch_start = start;
+            touch_modified = true;
 
             if (DEBUG_TOUCH) {
                 printf("-> touch %s\n", touch_start ? "start":"finish");
             }
+
+            return;
         }
 
         //normal keys

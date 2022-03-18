@@ -97,6 +97,7 @@ private:
     int touch_x = 0;
     int touch_y = 0;
     bool touch_start = false;
+    bool touch_modified = false;
 
     static NAN_METHOD(New);
 
