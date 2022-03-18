@@ -1285,7 +1285,12 @@ void AminoGfxRPi::initTouch(int fd) {
     unsigned long bit[NBITS(KEY_MAX)];
     std::string absval[6] = { "Value", "Min  ", "Max  ", "Fuzz ", "Flat ", "Resolution "};
 
-    ioctl(fd, EVIOCGBIT(EV_ABS, KEY_MAX), bit);
+    memset(bit, 0, sizeof bit);
+
+    if (ioctl(fd, EVIOCGBIT(EV_ABS, KEY_MAX), bit) < 0) {
+        printf("Error reading touch info.\n");
+        return;
+    }
 
     for (int i = 0; i < KEY_MAX; i++) {
         if (!test_bit(i, bit)) {
@@ -1294,7 +1299,13 @@ void AminoGfxRPi::initTouch(int fd) {
 
         printf("    Event code %d\n", i);
 
-        ioctl(fd, EVIOCGABS(i), abs);
+        //get data
+        memset(abs, 0, sizeof abs);
+
+        if (ioctl(fd, EVIOCGABS(i), abs) < 0) {
+            printf("Error reading touch data.\n");
+            continue;
+        }
 
         for (int j = 0; j < 5; j++) {
             if (j < 3 || abs[j]) {
