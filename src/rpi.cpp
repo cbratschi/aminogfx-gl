@@ -1697,12 +1697,13 @@ void AminoGfxRPi::handleEvent(input_event ev) {
         //cbxx TODO touch
         //touch events
         if (ev.code == BTN_TOUCH) { //330
+            //check start/finish
             bool start = ev.value == 1;
 
-            touch_start = true;
+            touch_start = start;
 
             if (DEBUG_TOUCH) {
-                printf("-> touch %s\n", touch_start ? "start".c_str():"finish".c_str());
+                printf("-> touch %s\n", (touch_start ? "start":"finish").c_str());
             }
         }
 
@@ -1857,7 +1858,7 @@ void AminoGfxRPi::handleEvent(input_event ev) {
 }
 
 //cbxx check events
-void AminoGfxRPi::dump_event(struct input_event *event) {
+void AminoGfxRPi::dumpEvent(struct input_event *event) {
     switch(event->type) {
         case EV_SYN:
             printf("EV_SYN  event separator\n");
