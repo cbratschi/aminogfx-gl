@@ -128,7 +128,7 @@ private:
 
     bool startsWith(const char *pre, const char *str);
     void initInput();
-    void initTouch();
+    void initTouch(int fd);
 
     void start() override;
     bool bindContext() override;

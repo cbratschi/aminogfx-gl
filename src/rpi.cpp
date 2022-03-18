@@ -1237,7 +1237,7 @@ void AminoGfxRPi::initInput() {
                             //touchscreen
                             printf("abs events\n");
 
-                            initTouch()
+                            initTouch(fd);
                             break;
 
                         case EV_MSC:
@@ -1812,6 +1812,7 @@ void AminoGfxRPi::dump_event(struct input_event *event) {
 
         case EV_MSC:
             printf("EV_MSC  misc\n");
+
             if (event->code == MSC_SERIAL) {
                 printf("  serial\n");
             }
