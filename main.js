@@ -1377,7 +1377,7 @@ PixelView.prototype.initDone = function () {
         const len = w * h * 4;
 
         if (!self.buf || self.buf.length != len) {
-            self.buf = new Buffer(len);
+            self.buf = Buffer.alloc(len);
         }
 
         const c1 = [0, 0, 0];
