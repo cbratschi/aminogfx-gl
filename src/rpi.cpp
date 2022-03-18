@@ -16,6 +16,8 @@
 #define DEBUG_GLES false
 #define DEBUG_RENDER false
 #define DEBUG_INPUT true
+#define DEBUG_INPUT_EVENTS false
+#define DEBUG_TOUCH true
 #define DEBUG_HDMI false
 
 #define USE_DRM_PAGEFLIP false
@@ -1238,7 +1240,7 @@ void AminoGfxRPi::initInput() {
                             printf("abs events\n");
 
                             //cbxx FIXME not working
-                            //initTouch(fd);
+                            initTouch(fd);
                             break;
 
                         case EV_MSC:
@@ -1594,8 +1596,8 @@ void AminoGfxRPi::processInputs() {
         printf("Read %d bytes from %d.\n", rd, fd);
 
         for (int i = 0; i < (int)(rd / size); i++) {
-            if (DEBUG_INPUT) {
-                dump_event(&(ev[i]));
+            if (DEBUG_INPUT_EVENTS) {
+                dumpEvent(&(ev[i]));
             }
 
             handleEvent(ev[i]);
@@ -1647,6 +1649,45 @@ void AminoGfxRPi::handleEvent(input_event ev) {
         return;
     }
 
+    //cbxx TODO touch
+    //touch events
+    if (ev.type == EV_SYN) {
+        if (DEBUG_TOUCH) {
+            printf("-> new event\n");
+        }
+    }
+
+    if (ev.type == EV_ABS) {
+        //codes seen with WaveShare device: 0, 1, 53, 54, 57
+        switch (ev.code) {
+            case 0:
+                //x value
+                if (ev.value > 0) {
+                    if (DEBUG_TOUCH) {
+                        printf("-> touch x: %d\n", ev.value);
+                    }
+
+                    touch_x = ev.value;
+                }
+                break;
+
+            case 1:
+                //y value
+                if (ev.value > 0) {
+                    if (DEBUG_TOUCH) {
+                        printf("-> touch y: %d\n", ev.value);
+                    }
+
+                    touch_y = ev.value;
+                }
+                break;
+
+            case 24:
+                //pressure value
+                break;
+        }
+    }
+
     //keyboard
     if (ev.type == EV_KEY) {
         if (DEBUG_GLES || DEBUG_INPUT) {
@@ -1654,7 +1695,18 @@ void AminoGfxRPi::handleEvent(input_event ev) {
         }
 
         //cbxx TODO touch
+        //touch events
+        if (ev.code == BTN_TOUCH) { //330
+            bool start = ev.value == 1;
 
+            touch_start = true;
+
+            if (DEBUG_TOUCH) {
+                printf("-> touch %s\n", touch_start ? "start".c_str():"finish".c_str());
+            }
+        }
+
+        //normal keys
         if (ev.code == BTN_LEFT) {
             //TODO GLFW_MOUSE_BUTTON_CALLBACK_FUNCTION(ev.code, ev.value);
             return;

@@ -94,6 +94,9 @@ private:
     int touch_x_max = 0;
     int touch_y_min = 0;
     int touch_y_max = 0;
+    int touch_x = 0;
+    int touch_y = 0;
+    bool touch_start = false;
 
     static NAN_METHOD(New);
 
@@ -141,7 +144,7 @@ private:
 
     void processInputs();
     void handleEvent(input_event ev);
-    void dump_event(struct input_event *event);
+    void dumpEvent(struct input_event *event);
 
     void updateWindowSize() override;
     void updateWindowPosition() override;
