@@ -15,7 +15,7 @@
 //debug cbxx
 #define DEBUG_GLES false
 #define DEBUG_RENDER false
-#define DEBUG_INPUT false
+#define DEBUG_INPUT true
 #define DEBUG_HDMI false
 
 #define USE_DRM_PAGEFLIP false
@@ -1151,9 +1151,10 @@ const char* INPUT_DIR = "/dev/input";
 
 void AminoGfxRPi::initInput() {
     if ((getuid()) != 0) {
-        printf("you are not root. this might not work\n");
+        printf("You are not root. This might not work\n");
     }
 
+    //check files in input folder
     DIR *dir;
     struct dirent *file;
 
@@ -1162,14 +1163,19 @@ void AminoGfxRPi::initInput() {
     if (dir) {
         while ((file = readdir(dir)) != NULL) {
             if (!startsWith("event", file->d_name)) {
+                //debug cbxx
+                printf("Ignored %s\n", file->d_name);
+
                 continue;
             }
 
+            //cbxx TODO verify
             if (DEBUG_INPUT) {
-                printf("file = %s\n", file->d_name);
-                printf("initing a device\n");
+                printf("File = %s\n", file->d_name);
+                printf("Initializing the device.\n");
             }
 
+            //open device
             char str[256];
 
             strcpy(str, INPUT_DIR);
@@ -1177,11 +1183,13 @@ void AminoGfxRPi::initInput() {
             strcat(str, file->d_name);
 
             int fd = -1;
+
             if ((fd = open(str, O_RDONLY | O_NONBLOCK)) == -1) {
-                printf("this is not a valid device %s\n", str);
+                printf("This is not a valid device %s\n", str);
                 continue;
             }
 
+            //get device name
             char name[256] = "Unknown";
 
             ioctl(fd, EVIOCGNAME(sizeof name), name);
@@ -1521,6 +1529,7 @@ void AminoGfxRPi::processInputs() {
     }
 }
 
+//cbxx TODO verify
 void AminoGfxRPi::handleEvent(input_event ev) {
     //relative event. probably mouse
     if (ev.type == EV_REL) {
@@ -1562,7 +1571,7 @@ void AminoGfxRPi::handleEvent(input_event ev) {
 
     if (ev.type == EV_KEY) {
         if (DEBUG_GLES || DEBUG_INPUT) {
-            printf("key or button pressed code = %d, state = %d\n", ev.code, ev.value);
+            printf("Key or button pressed code = %d, state = %d\n", ev.code, ev.value);
         }
 
         if (ev.code == BTN_LEFT) {
