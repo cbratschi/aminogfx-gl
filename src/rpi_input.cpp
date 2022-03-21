@@ -170,7 +170,7 @@ bool AminoInputRPi::initTouch() {
 
 void AminoInputRPi::process() {
     //read events
-    int size = sizeof struct input_event;
+    int size = sizeof(struct input_event);
     struct input_event ev[64];
 
     int rd = read(fd, ev, size * 64);
