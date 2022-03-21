@@ -1,4 +1,5 @@
 #include "rpi_input.h"
+#include "rpi.h"
 
 #include <stdio.h>
 
@@ -16,8 +17,8 @@ AminoInputRPi::~AminoInputRPi() {
 
 bool AminoInputRPi::init() {
     // 1) open device
-    if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) == -1) {
-        printf("This is not a valid device %s\n", filename);
+    if ((fd = open(filename.c_str(), O_RDONLY | O_NONBLOCK)) == -1) {
+        printf("This is not a valid device %s\n", filename.c_str());
         return false;
     }
 
@@ -27,7 +28,7 @@ bool AminoInputRPi::init() {
     ioctl(fd, EVIOCGNAME(sizeof name), name);
     this->name = name;
 
-    printf("Reading from: %s (%s)\n", filename, name);
+    printf("Reading from: %s (%s)\n", filename.c_str(), name);
 
     // 3) get physical name
     char phys[256] = "Unknown";
@@ -35,7 +36,7 @@ bool AminoInputRPi::init() {
     ioctl(fd, EVIOCGPHYS(sizeof phys), phys);
     this->phys = phys;
 
-    printf("Location %s (%s)\n", filename, phys);
+    printf("Location %s (%s)\n", filename.c_str(), phys);
 
     //get device info (see https://elixir.bootlin.com/linux/v4.2/source/include/uapi/linux/input.h#L41)
     /*
@@ -114,7 +115,7 @@ bool AminoInputRPi::init() {
 
     //init touch devices
     if (test_bit(EV_ABS, evtype_b)) {
-        if (!initTouch(fd)) {
+        if (!initTouch()) {
             return false;
         }
     }
@@ -130,7 +131,7 @@ bool AminoInputRPi::initTouch() {
 
     if (ioctl(fd, EVIOCGBIT(EV_ABS, KEY_MAX), abskey_b) < 0) {
         printf("Error reading touch info.\n");
-        return;
+        return false;
     }
 
     //get values
@@ -139,7 +140,7 @@ bool AminoInputRPi::initTouch() {
     // 1) get x grid
     assert(test_bit(ABS_X, abskey_b));
 
-    memset(abs_feat, 0, sizeof abs_feat);
+    memset(&abs_feat, 0, sizeof abs_feat);
     assert(ioctl(fd, EVIOCGABS(ABS_X), abs_feat) >= 0);
 
     touchGrid.x_min = abs_feat.minimum;
@@ -148,7 +149,7 @@ bool AminoInputRPi::initTouch() {
     // 2) get y grid
     assert(test_bit(ABS_Y, abskey_b));
 
-    memset(abs_feat, 0, sizeof abs_feat);
+    memset(&abs_feat, 0, sizeof abs_feat);
     assert(ioctl(fd, EVIOCGABS(ABS_Y), abs_feat) >= 0);
 
     touchGrid.y_min = abs_feat.minimum;
@@ -156,7 +157,7 @@ bool AminoInputRPi::initTouch() {
 
     // 3) init buffers
     for (int i = 0; i < MAX_TOUCH_SLOTS; i++) {
-        touchSlots.push_back(new AminoInputTouchSlot(i))
+        touchSlots.push_back(new AminoInputTouchSlot(i));
     }
 
     if (DEBUG_TOUCH) {
@@ -167,7 +168,7 @@ bool AminoInputRPi::initTouch() {
     return true;
 }
 
-AminoInputRPi::process() {
+void AminoInputRPi::process() {
     //read events
     int size = sizeof struct input_event;
     struct input_event ev[64];
@@ -281,8 +282,8 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
                 }
 
                 if (hasValidTouchSlot()) {
-                    touchSlots[currentTouchSlot].x = ev.value;
-                    touchSlots[currentTouchSlot].ready = false;
+                    touchSlots[currentTouchSlot]->x = ev.value;
+                    touchSlots[currentTouchSlot]->ready = false;
                     touchModified = true;
                 }
             }
@@ -298,8 +299,8 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
                 }
 
                 if (hasValidTouchSlot()) {
-                    touchSlots[currentTouchSlot].y = ev.value;
-                    touchSlots[currentTouchSlot].ready = false;
+                    touchSlots[currentTouchSlot]->y = ev.value;
+                    touchSlots[currentTouchSlot]->ready = false;
                     touchModified = true;
                 }
             }
@@ -314,8 +315,8 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
                 //end current slot
                 if (hasValidTouchSlot()) {
                     //mark as invalid
-                    touchSlots[currentTouchSlot].id = -1;
-                    touchSlots[currentTouchSlot].ready = false;
+                    touchSlots[currentTouchSlot]->id = -1;
+                    touchSlots[currentTouchSlot]->ready = false;
                     touchModified = true;
                 }
 
@@ -324,7 +325,7 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
             } else {
                 //previous slot done
                 if (hasValidTouchSlot()) {
-                    touchSlots[currentTouchSlot].ready = true;
+                    touchSlots[currentTouchSlot]->ready = true;
 
                     //Note: does not change modified state
                 }
@@ -340,7 +341,7 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
             }
 
             if (hasValidTouchSlot()) {
-                touchSlots[currentTouchSlot].id = ev.value;
+                touchSlots[currentTouchSlot]->id = ev.value;
                 touchModified = true;
             }
             break;
@@ -377,7 +378,7 @@ void AminoInputRPi::fireTouchEvent() {
     v8::Local<v8::Object> event_obj = Nan::New<v8::Object>();
 
     Nan::Set(event_obj, Nan::New("type").ToLocalChecked(), Nan::New("touch").ToLocalChecked());
-    Nan::Set(event_obj, Nan::New("pressed").ToLocalChecked(), Nan::New<v8::Boolean>(touchPressed));
+    Nan::Set(event_obj, Nan::New("pressed").ToLocalChecked(), Nan::New<v8::Boolean>(touchStarted));
 
     //count touchpoints
     int touchPoints = 0;
@@ -420,7 +421,7 @@ void AminoInputRPi::fireTouchEvent() {
 void AminoInputRPi::handleMscEvent(input_event ev) {
     if (ev.code == MSC_TIMESTAMP) {
         if (hasValidTouchSlot()) {
-                touchSlots[currentTouchSlot].timestamp = ev.value;
+                touchSlots[currentTouchSlot]->timestamp = ev.value;
             }
         }
     }
@@ -698,4 +699,12 @@ void AminoInputRPi::dumpEvent(struct input_event *event) {
     }
 
     printf("type = %d code = %d value = %d\n",event->type,event->code,event->value);
+}
+
+//
+// AminoInputTouchSlot
+//
+
+AminoInputTouchSlot::AminoInputTouchSlot(int slot) : slot(slot) {
+    //no code
 }

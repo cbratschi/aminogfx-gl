@@ -32,26 +32,26 @@ typedef struct {
 class AminoInputRPi {
 public:
     AminoInputRPi(AminoGfxRPi *amino, std::string filename);
-    ~AminoInputRPi();
+    virtual ~AminoInputRPi();
 
-    bool init() override;
-    void process() override;
+    virtual bool init();
+    virtual void process();
 
 private:
-    bool initTouch() override;
+    virtual bool initTouch();
 
-    void handleEvent(input_event ev) override;
-    void dumpEvent(struct input_event *event) override;
+    virtual void handleEvent(input_event ev);
+    virtual void dumpEvent(struct input_event *event);
 
-    void handleRelEvent(input_event ev) override;
-    void handleAbsEvent(input_event ev) override;
-    void handleSynEvent(input_event ev) override;
-    void handleMscEvent(input_event ev) override;
-    void handleKeyEvent(input_event ev) override;
+    virtual void handleRelEvent(input_event ev);
+    virtual void handleAbsEvent(input_event ev);
+    virtual void handleSynEvent(input_event ev);
+    virtual void handleMscEvent(input_event ev);
+    virtual void handleKeyEvent(input_event ev);
 
     bool hasValidTouchSlot();
 
-    void fireTouchEvent() override;
+    virtual void fireTouchEvent();
 
     //amino
     AminoGfxRPi *amino;
@@ -80,7 +80,7 @@ private:
  */
 class AminoInputTouchSlot {
 public:
-    AminoInputTouchSlot(int slot) : slot(slot);
+    AminoInputTouchSlot(int slot);
 
     int slot;
     int id = -1;

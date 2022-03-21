@@ -1174,8 +1174,8 @@ void AminoGfxRPi::initInput() {
             }
 
             //create device
-            std::string filename = INPUT_DIR + "/" + file->d_name;
-            AminoInputRPi *inputDevice = new AminoInputRPi(filename);
+            std::string filename = std::string(INPUT_DIR) + "/" + std::string(file->d_name);
+            AminoInputRPi *inputDevice = new AminoInputRPi(this, filename);
 
             if (!inputDevice->init()) {
                 delete inputDevice;
