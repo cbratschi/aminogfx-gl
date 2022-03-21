@@ -170,13 +170,14 @@ bool AminoInputRPi::initTouch() {
 
 void AminoInputRPi::process() {
     //read events
-    int size = sizeof struct input_event;
+    int size = sizeof input_event;
     struct input_event ev[64];
 
     int rd = read(fd, ev, size * 64);
 
     if (rd == -1) {
-        continue;
+        printf("Input read failed!  %s\n", filename.c_str());
+        return;
     }
 
     int items = rd / size;
@@ -359,7 +360,7 @@ bool AminoInputRPi::hasValidTouchSlot() {
 }
 
 void AminoInputRPi::handleSynEvent(input_event ev) {
-    if (ev.code === SYN_REPORT) {
+    if (ev.code == SYN_REPORT) {
         if (DEBUG_TOUCH) {
             printf("-> report event\n");
         }
@@ -391,8 +392,8 @@ void AminoInputRPi::fireTouchEvent() {
             if (slot->id && slot->ready) {
                 //data
                 v8::Local<v8::Object> touchpoint_obj = Nan::New<v8::Object>();
-                int x = slot->x * amino->windowW / (touchGrid.x_max - touchGrid.x_min);
-                int y = slot->y * amino->windowW / (touchGrid.y_max - touchGrid.y_min);
+                int x = slot->x * amino->screenW / (touchGrid.x_max - touchGrid.x_min);
+                int y = slot->y * amino->screenH / (touchGrid.y_max - touchGrid.y_min);
 
                 Nan::Set(touchpoint_obj, Nan::New("id").ToLocalChecked(), Nan::New(slot->id));
                 Nan::Set(touchpoint_obj, Nan::New("x").ToLocalChecked(), Nan::New(x));
@@ -421,8 +422,7 @@ void AminoInputRPi::fireTouchEvent() {
 void AminoInputRPi::handleMscEvent(input_event ev) {
     if (ev.code == MSC_TIMESTAMP) {
         if (hasValidTouchSlot()) {
-                touchSlots[currentTouchSlot]->timestamp = ev.value;
-            }
+            touchSlots[currentTouchSlot]->timestamp = ev.value;
         }
     }
 }
