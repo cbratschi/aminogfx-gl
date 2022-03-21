@@ -173,7 +173,8 @@ void AminoInputRPi::process() {
     int size = sizeof(struct input_event);
     struct input_event ev[64];
 
-    int rd = read(fd, ev, size * 64);
+    //cbxx TODO verify
+    int rd = read(fd, &ev, size * 64);
 
     if (rd == -1) {
         //no data available
@@ -196,6 +197,7 @@ void AminoInputRPi::process() {
             dumpEvent(&(ev[i]));
         }
 
+        //cbxx check data
         handleEvent(ev[i]);
     }
 
@@ -209,6 +211,8 @@ void AminoInputRPi::process() {
 }
 
 void AminoInputRPi::handleEvent(input_event ev) {
+    //cbxx TODO log code and value
+
     switch (ev.code) {
         case EV_REL:
             //mouse events
@@ -443,6 +447,7 @@ void AminoInputRPi::handleKeyEvent(input_event ev) {
         printf("Key or button pressed code = %d, state = %d\n", ev.code, ev.value);
     }
 
+    //cbxx different code
     //touch events
     if (ev.code == BTN_TOUCH) { //330
         if (DEBUG_TOUCH) {
