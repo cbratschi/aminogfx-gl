@@ -15,8 +15,14 @@ const IE = require('./inputevents');
  */
 function makePoint(x, y) {
     return {
-        x: x,
-        y: y,
+        x,
+        y,
+
+        /**
+         * Subtract a point or negate coordinates.
+         *
+         * @returns
+         */
         minus: function () {
             if (arguments.length == 1) {
                 const pt = arguments[0];
@@ -30,12 +36,43 @@ function makePoint(x, y) {
                 return makePoint(this.x - xy[0], this.y - xy[1]);
             }
         },
+
+        /**
+         * Divide by x and y value.
+         *
+         * @param {*} x
+         * @param {*} y
+         * @returns
+         */
         divide: function (x, y) {
             return makePoint(this.x / x, this.y / y);
         },
+
+        /**
+         * Multiply by x and y factor.
+         *
+         * @param {*} x
+         * @param {*} y
+         * @returns
+         */
         multiply: function (x, y) {
             return makePoint(this.x * x, this.y * y);
-        }
+        },
+
+        /**
+         * Calc the distance to a point.
+         *
+         * @param {*} pt
+         * @returns
+         */
+        distanceTo(pt) {
+            const xDist = this.x - pt.x;
+            const yDist = this.y - pt.y;
+
+            return Math.sqrt(xDist * xDist + yDist * yDist);
+        },
+
+        //cbxx TODO calc angle
     };
 }
 
