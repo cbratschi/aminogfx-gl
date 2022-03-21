@@ -162,8 +162,8 @@ bool AminoInputRPi::initTouch() {
     }
 
     if (DEBUG_TOUCH) {
-        printf("Touch grid horz: %d ... %d\n", touchGrid.x_min, touchGrid.x_max);
-        printf("Touch grid vert: %d ... %d\n", touchGrid.y_min, touchGrid.y_max);
+        printf("Touch grid horz: %d .. %d\n", touchGrid.x_min, touchGrid.x_max);
+        printf("Touch grid vert: %d .. %d\n", touchGrid.y_min, touchGrid.y_max);
     }
 
     return true;
@@ -177,13 +177,14 @@ void AminoInputRPi::process() {
     int rd = read(fd, ev, size * 64);
 
     if (rd == -1) {
-        printf("Input read failed!  %s\n", filename.c_str());
+        //no data available
         return;
     }
 
     int items = rd / size;
 
     if (items == 0) {
+        //less than one buffer
         printf("Read too little!!!  %d\n", rd);
         return;
     }
