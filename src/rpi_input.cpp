@@ -140,8 +140,9 @@ bool AminoInputRPi::initTouch() {
     // 1) get x grid
     assert(test_bit(ABS_X, abskey_b));
 
+    //cbxx FIXME crash
     memset(&abs_feat, 0, sizeof abs_feat);
-    assert(ioctl(fd, EVIOCGABS(ABS_X), abs_feat) >= 0);
+    assert(ioctl(fd, EVIOCGABS(ABS_X), &abs_feat) >= 0);
 
     touchGrid.x_min = abs_feat.minimum;
     touchGrid.x_max = abs_feat.maximum;
@@ -150,7 +151,7 @@ bool AminoInputRPi::initTouch() {
     assert(test_bit(ABS_Y, abskey_b));
 
     memset(&abs_feat, 0, sizeof abs_feat);
-    assert(ioctl(fd, EVIOCGABS(ABS_Y), abs_feat) >= 0);
+    assert(ioctl(fd, EVIOCGABS(ABS_Y), &abs_feat) >= 0);
 
     touchGrid.y_min = abs_feat.minimum;
     touchGrid.y_max = abs_feat.maximum;
