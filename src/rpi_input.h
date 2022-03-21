@@ -1,6 +1,8 @@
 #ifndef _AMINO_INPUT_RPI_H
 #define _AMINO_INPUT_RPI_H
 
+#include "base.h"
+
 #include <linux/input.h>
 
 //debug cbxx
@@ -14,6 +16,14 @@
 #define test_bit(bit, array) (array[bit / 8] & (1 << (bit % 8)))
 
 class AminoGfxRPi;
+class AminoInputTouchSlot;
+
+typedef struct {
+    int x_min;
+    int x_max;
+    int y_min;
+    int y_max;
+} touch_grid_t;
 
 /**
  * @brief Amino Input Handler.
@@ -78,13 +88,6 @@ public:
     int y = 0;
     int timestamp = 0;
     bool ready = false;
-}
-
-typedef struct {
-    int x_min;
-    int x_max;
-    int y_min;
-    int y_max;
-} touch_grid_t;
+};
 
 #endif

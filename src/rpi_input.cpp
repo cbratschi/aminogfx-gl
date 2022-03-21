@@ -1,5 +1,7 @@
 #include "rpi_input.h"
 
+#include <stdio.h>
+
 //
 // AminoInputRPi
 //
