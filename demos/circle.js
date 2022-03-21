@@ -26,8 +26,27 @@ gfx.start(function (err) {
     rect.acceptsMouseEvents = true;
     rect.acceptsKeyboardEvents = true;
 
-    this.on('key.press', rect, function (e) {
-        console.log('key was pressed', e.keycode, e.printable, e.char);
+    //cbxx TODO auto convert touch to mouse events
+    this.on('key.press', rect, event => {
+        console.log('key was pressed', event.keycode, event.printable, event.char);
+    });
+
+    this.on('drag', rect, event => {
+        //move rectangle
+        const delta = event.delta;
+
+        rect.x(rect.x() + delta.x);
+        rect.y(rect.y() + delta.y);
+    });
+
+    this.on('press', rect, _event => {
+        //set red
+        rect.fill('#ff0000');
+    });
+
+    this.on('release', rect, _event => {
+        //set blue
+        rect.fill('#0000ff');
     });
 
     this.on('click', rect, function () {

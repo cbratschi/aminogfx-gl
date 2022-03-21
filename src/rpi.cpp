@@ -1,8 +1,6 @@
 #include "rpi.h"
 
 #include <dirent.h>
-//cbxx TODO verify
-//#include <stdio.h>
 
 #include <execinfo.h>
 #include <unistd.h>

@@ -140,7 +140,6 @@ bool AminoInputRPi::initTouch() {
     // 1) get x grid
     assert(test_bit(ABS_X, abskey_b));
 
-    //cbxx FIXME crash
     memset(&abs_feat, 0, sizeof abs_feat);
     assert(ioctl(fd, EVIOCGABS(ABS_X), &abs_feat) >= 0);
 

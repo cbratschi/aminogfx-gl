@@ -194,6 +194,9 @@ const handlers = {
         console.dir(evt);
         console.dir(obj);
 
+        //emulate mouse (single touch point)
+        //cbxx TODO
+
         //cbxx TODO modes: mouse, multitouch
     },
     //keyboard
@@ -335,6 +338,7 @@ AminoEvents.prototype.sendPressEvent = function (e) {
 
     const pt = this.gfx.globalToLocal(this.statusObjects.pointer.pt, node);
 
+    //cbxx docu
     this.fireEventAtTarget(node, {
         type: 'press',
         button: e.button,
@@ -353,6 +357,7 @@ AminoEvents.prototype.sendReleaseEvent = function (e) {
     //release
     const pt = this.gfx.globalToLocal(this.statusObjects.pointer.pt, node);
 
+    //cbxx docu
     this.fireEventAtTarget(node, {
         type: 'release',
         button: e.button,
@@ -379,14 +384,15 @@ AminoEvents.prototype.sendDragEvent = function (e) {
         return;
     }
 
-    const localpt = this.gfx.globalToLocal(s.pt, node);
-    const localprev = this.gfx.globalToLocal(s.prevPt, node);
+    const localPt = this.gfx.globalToLocal(s.pt, node);
+    const localPrev = this.gfx.globalToLocal(s.prevPt, node);
 
+    //cbxx docu
     this.fireEventAtTarget(node, {
         type: 'drag',
         button: e.button,
-        point: localpt,
-        delta: localpt.minus(localprev),
+        point: localPt,
+        delta: localPt.minus(localPrev),
         target: node
     });
 };
