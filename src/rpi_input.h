@@ -72,6 +72,7 @@ private:
     int currentTouchSlot = 0;
     bool touchStarted = false;
     bool touchModified = false;
+    Nan::Persistent<v8::Object> touchEvent;
 };
 
 /**

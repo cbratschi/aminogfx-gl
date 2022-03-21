@@ -197,6 +197,14 @@ void AminoInputRPi::process() {
 
         handleEvent(ev[i]);
     }
+
+    //send touch event
+    if (!touchEvent.IsEmpty()) {
+        v8::Local<v8::Object> event_obj = Nan::New(touchEvent);
+
+        amino->fireEvent(event_obj);
+        touchEvent.Reset();
+    }
 }
 
 void AminoInputRPi::handleEvent(input_event ev) {
@@ -414,9 +422,11 @@ void AminoInputRPi::fireTouchEvent() {
     Nan::Set(event_obj, Nan::New("points").ToLocalChecked(), arr);
     Nan::Set(event_obj, Nan::New("count").ToLocalChecked(), Nan::New(touchPoints));
 
-    //cbxx TODO only sent once per input cycle
+    //store (only send once)
+    touchEvent.Reset(event_obj);
 
-    amino->fireEvent(event_obj);
+    //send now
+    //amino->fireEvent(event_obj);
 }
 
 void AminoInputRPi::handleMscEvent(input_event ev) {
