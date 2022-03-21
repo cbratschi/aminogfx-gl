@@ -23,11 +23,9 @@
 #endif
 
 #include <semaphore.h>
-#include <linux/input.h>
 
-//helpers
-#define BITS_PER_LONG (sizeof(long) * 8)
-#define NBITS(x) ((((x)-1)/BITS_PER_LONG)+1)
+//input
+#include "rpi_input.h"
 
 class AminoGfxRPiFactory : public AminoJSObjectFactory {
 public:
@@ -86,20 +84,7 @@ private:
 #endif
 
     //input
-    //cbxx TODO touch
-    std::vector<int> fds;
-    int mouse_x = 0;
-    int mouse_y = 0;
-    //touch grid
-    int touch_x_min = 0;
-    int touch_x_max = 0;
-    int touch_y_min = 0;
-    int touch_y_max = 0;
-    //touch values
-    int touch_x = 0;
-    int touch_y = 0;
-    bool touch_start = false;
-    bool touch_modified = false;
+    std::vector<AminoInputRPi *> inputDevices;
 
     static NAN_METHOD(New);
 
@@ -146,8 +131,6 @@ private:
     void handleSystemEvents() override;
 
     void processInputs();
-    void handleEvent(input_event ev);
-    void dumpEvent(struct input_event *event);
 
     void updateWindowSize() override;
     void updateWindowPosition() override;
@@ -159,6 +142,9 @@ private:
     AminoVideoPlayer *createVideoPlayer(AminoTexture *texture, AminoVideo *video) override;
 
     void destroyEGLImageHandler(AsyncValueUpdate *update, int state);
+
+    //access rights
+    friend class AminoInputRPi;
 };
 
 #endif

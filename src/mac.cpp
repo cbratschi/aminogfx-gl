@@ -262,6 +262,7 @@ private:
         glfwSwapInterval(swapInterval);
 
         //set bindings
+        //Note: no touch support (see https://github.com/glfw/glfw/issues/42)
         glfwSetKeyCallback(window, handleKeyEvents);
         glfwSetCursorPosCallback(window, handleMouseMoveEvents);
         glfwSetMouseButtonCallback(window, handleMouseClickEvents);
@@ -417,7 +418,7 @@ private:
      * Note: called on main thread.
      */
     void handleWindowSizeChanged(int newWidth, int newHeight) {
-    	//check size
+        //check size
         if (propW->value == newWidth && propH->value == newHeight) {
             return;
         }

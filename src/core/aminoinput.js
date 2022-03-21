@@ -6,7 +6,7 @@
  * of the inputevents module
  */
 
-const DEBUG = false;
+const DEBUG = true; //cbxx
 
 const IE = require('./inputevents');
 
@@ -96,6 +96,7 @@ exports.createEventHandler = function (gfx) {
 };
 
 const handlers = {
+    //mouse
     'mouse.position': function (obj, evt) {
         const s = obj.statusObjects.pointer;
 
@@ -125,6 +126,7 @@ const handlers = {
                     console.log('-> pressed');
                 }
 
+                //cbxx TODO use
                 obj.setupPointerFocus(pts.pt);
                 obj.sendPressEvent(evt);
                 return;
@@ -148,6 +150,16 @@ const handlers = {
         obj.setupScrollFocus(pts.pt);
         obj.sendScrollEvent(evt);
     },
+    //touch
+    touch: (obj, evt) => {
+        //debug cbxx
+        console.log('Handle touch event:');
+        console.dir(evt);
+        console.dir(obj);
+
+        //cbxx TODO modes: mouse, multitouch
+    },
+    //keyboard
     'key.press': function (obj, evt) {
         obj.statusObjects.keyboard.state[evt.keycode] = true;
 
@@ -159,6 +171,7 @@ const handlers = {
         obj.statusObjects.keyboard.state[evt.keycode] = false;
         obj.sendKeyboardReleaseEvent(IE.fromAminoKeyboardEvent(evt, obj.statusObjects.keyboard.state));
     },
+    //window
     'window.size': function (obj, evt) {
         obj.fireEventAtTarget(null, evt);
     },

@@ -1087,7 +1087,7 @@ public:
      */
     void update(double currentTime) {
         //check active
-    	if (!started || ended) {
+        if (!started || ended) {
             return;
         }
 

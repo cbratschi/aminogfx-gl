@@ -84,25 +84,26 @@
 
                 # Raspberry Pi
                 [ 'OS == "linux"', {
-					"conditions" : [
-	                    [ "target_arch == 'arm'", {
-		                    "sources": [
+                    "conditions" : [
+                        [ "target_arch == 'arm'", {
+                            "sources": [
                                 # OMX
                                 "src/ilclient/ilclient.c",
                                 "src/ilclient/ilcore.c",
                                 # base
-		                        "src/rpi.cpp",
+                                "src/rpi.cpp",
+                                "src/rpi_input.cpp",
                                 "src/rpi_video.cpp"
-		                    ],
-		                    "libraries": [
-		                        '<!@(pkg-config --libs freetype2)',
+                            ],
+                            "libraries": [
+                                '<!@(pkg-config --libs freetype2)',
                                 '-ljpeg',
                                 '-lpng',
                                 '-lavcodec',
                                 '-lavformat',
                                 '-lavutil',
                                 '-lswscale'
-		                    ],
+                            ],
                             'variables': {
                                 'rpi_model': '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)"',
                                 'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | { grep -c "Pi 4" || true; })'
@@ -126,7 +127,7 @@
                                     ],
                                     'libraries': [
                                         "-lGL",
-		                                "-lEGL",
+                                        "-lEGL",
                                         '<!@(pkg-config --libs libdrm)',
                                         '-lgbm'
                                     ],
@@ -178,20 +179,20 @@
                                     ]
                                 }],
                             ],
-		                    "defines": [
-		                        "RPI"
-		                    ],
-		                    "include_dirs": [
+                            "defines": [
+                                "RPI"
+                            ],
+                            "include_dirs": [
                                 # VideoCore
-		                        "/opt/vc/include/",
+                                "/opt/vc/include/",
                                 "/opt/vc/include/IL/",
-		                        "/opt/vc/include/interface/vcos/pthreads",
-		                        "/opt/vc/include/interface/vmcs_host/linux",
+                                "/opt/vc/include/interface/vcos/pthreads",
+                                "/opt/vc/include/interface/vmcs_host/linux",
                                 "/opt/vc/include/interface/vchiq/",
                                 # Freetype
                                 "/usr/include/freetype2",
-		                        '<!@(pkg-config --cflags freetype2)'
-		                    ],
+                                '<!@(pkg-config --cflags freetype2)'
+                            ],
                             "cflags": [
                                 # VideoCore
                                 "-DHAVE_LIBOPENMAX=2",
@@ -212,8 +213,8 @@
                                 # NAN weak reference warning (remove later)
                                 "-Wno-class-memaccess"
                             ]
-		                }]
-		            ]
+                        }]
+                    ]
                 }]
             ]
         },
