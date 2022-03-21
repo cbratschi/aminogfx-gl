@@ -170,7 +170,7 @@ bool AminoInputRPi::initTouch() {
 
 void AminoInputRPi::process() {
     //read events
-    int size = sizeof input_event;
+    int size = sizeof struct input_event;
     struct input_event ev[64];
 
     int rd = read(fd, ev, size * 64);
@@ -435,7 +435,7 @@ void AminoInputRPi::handleKeyEvent(input_event ev) {
     //touch events
     if (ev.code == BTN_TOUCH) { //330
         if (DEBUG_TOUCH) {
-            printf("-> touch %s\n", touch_start ? "start":"finish");
+            printf("-> touch %s\n", ev.value == 1 ? "start":"finish");
         }
 
         //check start
