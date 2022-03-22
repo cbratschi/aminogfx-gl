@@ -78,6 +78,10 @@ private:
     //display
     std::string prefDisp = "";
 
+    //touch
+    bool touchInvertX = false;
+    bool touchInvertY = false;
+
 #ifdef EGL_DISPMANX
     static sem_t resSem;
     static bool resSemValid;
@@ -89,6 +93,7 @@ private:
     static NAN_METHOD(New);
 
     void setup() override;
+    void setupTouch(v8::Local<v8::Object> &touch) override;
     void initEGL();
 
     static TV_DISPLAY_STATE_T* getDisplayState();

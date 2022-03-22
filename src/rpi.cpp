@@ -171,6 +171,20 @@ void AminoGfxRPi::setup() {
                     prefDisp = AminoJSObject::toString(displayValue);
                 }
             }
+
+            //touch
+            Nan::MaybeLocal<v8::Value> touchMaybe = Nan::Get(obj, Nan::New<v8::String>("touch").ToLocalChecked());
+
+            if (!touchMaybe.IsEmpty()) {
+                //get properties
+                v8::Local<v8::Value> touchLocal = touchMaybe.ToLocalChecked();
+
+                if (!touchLocal->IsObject()) {
+                    v8::Local<v8::Object> touchObj = touchLocal.As<v8::Object>();
+
+                    setupTouch(touchObj);
+                }
+            }
         }
 
         glESInitialized = true;
@@ -184,6 +198,30 @@ void AminoGfxRPi::setup() {
 
     //base class
     AminoGfx::setup();
+}
+
+void AminoGfxRPi::setupTouch(v8::Local<v8::Object> &touch) {
+    //invertX
+    Nan::MaybeLocal<v8::Value> invertXMaybe = Nan::Get(touch, Nan::New<v8::String>("invertX").ToLocalChecked());
+
+    if (!invertXMaybe.IsEmpty()) {
+        v8::Local<v8::Value> invertXValue = invertXMaybe.ToLocalChecked();
+
+        if (invertXValue->IsBoolean()) {
+            touchInvertX = Nan::To<v8::Boolean>(invertXValue).ToLocalChecked()->Value();
+        }
+    }
+
+    //invertY
+    Nan::MaybeLocal<v8::Value> invertYMaybe = Nan::Get(touch, Nan::New<v8::String>("invertY").ToLocalChecked());
+
+    if (!invertYMaybe.IsEmpty()) {
+        v8::Local<v8::Value> invertYValue = invertYMaybe.ToLocalChecked();
+
+        if (invertYValue->IsBoolean()) {
+            touchInvertY = Nan::To<v8::Boolean>(invertYValue).ToLocalChecked()->Value();
+        }
+    }
 }
 
 /**

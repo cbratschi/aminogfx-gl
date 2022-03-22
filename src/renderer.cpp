@@ -79,14 +79,14 @@ void AminoRenderer::setup() {
     glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
     //color shader
-	colorShader = new ColorShader();
+    colorShader = new ColorShader();
 
     bool res = colorShader->create();
 
     assert(res);
 
     //texture shader
-	textureShader = new TextureShader();
+    textureShader = new TextureShader();
     res = textureShader->create();
 
     assert(res);

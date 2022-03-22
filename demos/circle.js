@@ -3,7 +3,13 @@
 const path = require('path');
 const amino = require('../main.js');
 
-const gfx = new amino.AminoGfx();
+const gfx = new amino.AminoGfx({
+    touch: {
+        //Waveshare 11.9inch HDMI LCD (normal touch mode)
+        invertX: true,
+        invertY: true
+    }
+});
 
 gfx.start(function (err) {
     if (err) {

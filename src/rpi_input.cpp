@@ -449,6 +449,17 @@ void AminoInputRPi::fireTouchEvent() {
                 int x = slot->x * amino->screenW / (touchGrid.x_max - touchGrid.x_min);
                 int y = slot->y * amino->screenH / (touchGrid.y_max - touchGrid.y_min);
 
+                //invert x
+                if (amino->touchInvertX) {
+                    x = amino->screenW - x;
+                }
+
+                //invert y
+                if (amino->touchInvertY) {
+                    y = amino->screenH - y;
+                }
+
+                //set properties
                 Nan::Set(touchpoint_obj, Nan::New("id").ToLocalChecked(), Nan::New(slot->id));
                 Nan::Set(touchpoint_obj, Nan::New("x").ToLocalChecked(), Nan::New(x));
                 Nan::Set(touchpoint_obj, Nan::New("y").ToLocalChecked(), Nan::New(y));
