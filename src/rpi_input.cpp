@@ -299,7 +299,7 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
                     printf("-> single touch x%d: %d\n", 0, ev.value);
                 }
 
-                touchSlots[0]-> = ev.value;
+                touchSlots[0]->x = ev.value;
             }
             break;
 
