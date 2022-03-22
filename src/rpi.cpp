@@ -183,7 +183,11 @@ void AminoGfxRPi::setup() {
                 v8::Local<v8::Value> touchLocal = touchMaybe.ToLocalChecked();
 
                 if (!touchLocal->IsObject()) {
-                    v8::Local<v8::Object> touchObj = touchLocal.As<v8::Object>();
+                    //debug cbxx
+                    printf("-> is Object\n");
+
+                    v8::Local<v8::Object> touchObj = Nan::To<v8::Object>(touchLocal).ToLocalChecked();
+                    //v8::Local<v8::Object> touchObj = touchLocal.As<v8::Object>();
 
                     setupTouch(touchObj);
                 }
