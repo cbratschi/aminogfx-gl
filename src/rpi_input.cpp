@@ -294,6 +294,26 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
     switch (ev.code) {
         case ABS_X: //0
             //slot 0 fallback
+            if (ev.value > 0) {
+                if (DEBUG_TOUCH) {
+                    printf("-> single touch x%d: %d\n", 0, ev.value);
+                }
+
+                touchSlots[0]-> = ev.value;
+            }
+            break;
+
+        case ABS_Y: //1
+            //slot 0 fallback
+            if (ev.value > 0) {
+                if (DEBUG_TOUCH) {
+                    printf("-> single touch y%d: %d\n", 0, ev.value);
+                }
+
+                touchSlots[0]->y = ev.value;
+            }
+            break;
+
         case ABS_MT_POSITION_X: //53
             //x value
             if (ev.value > 0) {
@@ -309,8 +329,6 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
             }
             break;
 
-        case ABS_Y: //1
-            //slot 0 fallback
         case ABS_MT_POSITION_Y: //54
             //y value
             if (ev.value > 0) {
@@ -331,6 +349,10 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
             break;
 
         case ABS_MT_SLOT:
+            if (DEBUG_TOUCH) {
+                printf("-> change slot: %d\n", ev.value);
+            }
+
             if (ev.value == -1) {
                 //end current slot
                 if (hasValidTouchSlot()) {
@@ -352,6 +374,12 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
 
                 //switch to different slot
                 currentTouchSlot = ev.value;
+
+                if (hasValidTouchSlot()) {
+                    //reset data
+                    touchSlots[currentTouchSlot]->id = -1;
+                    touchSlots[currentTouchSlot]->ready = false;
+                }
             }
             break;
 
