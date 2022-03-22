@@ -11,7 +11,7 @@
 
 #define gettid() syscall(SYS_gettid)
 
-//debug cbxx
+//debug
 #define DEBUG_GLES false
 #define DEBUG_RENDER false
 #define DEBUG_HDMI false
@@ -187,9 +187,7 @@ void AminoGfxRPi::setup() {
                 //printf("-> %s\n", *str);
 
                 if (touchLocal->IsObject()) {
-                    //cbxx cleanup
                     v8::Local<v8::Object> touchObj = Nan::To<v8::Object>(touchLocal).ToLocalChecked();
-                    //v8::Local<v8::Object> touchObj = touchLocal.As<v8::Object>();
 
                     setupTouch(touchObj);
                 }
@@ -232,8 +230,8 @@ void AminoGfxRPi::setupTouch(v8::Local<v8::Object> &touch) {
         }
     }
 
-    //debug cbxx
-    printf("-> invertX=%d invertY=%d\n", touchInvertX, touchInvertY);
+    //debug
+    //printf("-> invertX=%d invertY=%d\n", touchInvertX, touchInvertY);
 }
 
 /**
