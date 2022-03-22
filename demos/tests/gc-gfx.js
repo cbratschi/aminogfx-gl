@@ -65,7 +65,7 @@ setInterval(() => {
         cycle++;
         //console.log('done GC');
 
-        if (!done && instanceCount == 0) {
+        if (!done && instanceCount === 0) {
             done = true;
             console.log('-> all AminoGfx instances freed (in ' + cycle + ' GC steps)');
         }

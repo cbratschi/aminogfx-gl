@@ -24,13 +24,13 @@ function makePoint(x, y) {
          * @returns
          */
         minus: function () {
-            if (arguments.length == 1) {
+            if (arguments.length === 1) {
                 const pt = arguments[0];
 
                 return makePoint(this.x - pt.x, this.y - pt.y);
             }
 
-            if (arguments.length == 2) {
+            if (arguments.length === 2) {
                 const xy = arguments;
 
                 return makePoint(this.x - xy[0], this.y - xy[1]);
@@ -142,12 +142,12 @@ const handlers = {
 
         const target = obj.focusObjects.pointer.target;
 
-        if (target != null && obj.statusObjects.pointer.state == 1) {
+        if (target != null && obj.statusObjects.pointer.state === 1) {
             obj.sendDragEvent(evt);
         }
     },
     'mouse.button': function (obj, evt) {
-        if (evt.button == 0) {
+        if (evt.button === 0) {
             //left mouse button
             if (DEBUG) {
                 console.log('left mousebutton event');
@@ -156,7 +156,7 @@ const handlers = {
             obj.statusObjects.pointer.state = evt.state;
 
             //pressed
-            if (evt.state == 1) {
+            if (evt.state === 1) {
                 const pts = obj.statusObjects.pointer;
 
                 if (DEBUG) {
@@ -170,7 +170,7 @@ const handlers = {
             }
 
             //released
-            if (evt.state == 0) {
+            if (evt.state === 0) {
                 if (DEBUG) {
                     console.log('-> released');
                 }
@@ -332,13 +332,12 @@ AminoEvents.prototype.stopPointerFocus = function () {
 AminoEvents.prototype.sendPressEvent = function (e) {
     const node = this.focusObjects.pointer.target;
 
-    if (node == null) {
+    if (!node) {
         return;
     }
 
     const pt = this.gfx.globalToLocal(this.statusObjects.pointer.pt, node);
 
-    //cbxx docu
     this.fireEventAtTarget(node, {
         type: 'press',
         button: e.button,
@@ -350,14 +349,13 @@ AminoEvents.prototype.sendPressEvent = function (e) {
 AminoEvents.prototype.sendReleaseEvent = function (e) {
     const node = this.focusObjects.pointer.target;
 
-    if (node == null) {
+    if (!node) {
         return;
     }
 
     //release
     const pt = this.gfx.globalToLocal(this.statusObjects.pointer.pt, node);
 
-    //cbxx docu
     this.fireEventAtTarget(node, {
         type: 'release',
         button: e.button,
@@ -380,14 +378,13 @@ AminoEvents.prototype.sendDragEvent = function (e) {
     const node = this.focusObjects.pointer.target;
     const s = this.statusObjects.pointer;
 
-    if (node == null) {
+    if (!node) {
         return;
     }
 
     const localPt = this.gfx.globalToLocal(s.pt, node);
     const localPrev = this.gfx.globalToLocal(s.prevPt, node);
 
-    //cbxx docu
     this.fireEventAtTarget(node, {
         type: 'drag',
         button: e.button,
@@ -414,13 +411,13 @@ AminoEvents.prototype.setupScrollFocus = function (pt) {
 AminoEvents.prototype.sendScrollEvent = function (e) {
     const target = this.focusObjects.scroll.target;
 
-    if (target == null) {
+    if (!target) {
         return;
     }
 
     this.fireEventAtTarget(target, {
         type: 'scroll',
-        target: target,
+        target,
         position: e.position,
     });
 };
@@ -460,7 +457,7 @@ AminoEvents.prototype.fireEventAtTarget = function (target, event) {
 
     if (funcs) {
         funcs.forEach(function (l) {
-            if (l.target == target) {
+            if (l.target === target) {
                 l.func(event);
             }
         });

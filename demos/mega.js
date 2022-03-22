@@ -5,218 +5,218 @@ const amino = require('../main.js');
 
 //register font
 amino.fonts.registerFont({
-	name: 'Oswald',
-	path: path.join(__dirname, '/oswald/'),
-	weights: {
-		200: {
-			normal: 'Oswald-Light.ttf'
-		},
-		400: {
-			normal: 'Oswald-Regular.ttf'
-		},
-		800: {
-			normal: 'Oswald-Bold.ttf'
-		}
-	}
+    name: 'Oswald',
+    path: path.join(__dirname, '/oswald/'),
+    weights: {
+        200: {
+            normal: 'Oswald-Light.ttf'
+        },
+        400: {
+            normal: 'Oswald-Regular.ttf'
+        },
+        800: {
+            normal: 'Oswald-Bold.ttf'
+        }
+    }
 });
 
 exports.go = function () {
-	const gfx = new amino.AminoGfx();
+    const gfx = new amino.AminoGfx();
 
-	gfx.start(function (err) {
-		if (err) {
-			console.log('Start failed: ' + err.message);
-			return;
-		}
+    gfx.start(function (err) {
+        if (err) {
+            console.log('Start failed: ' + err.message);
+            return;
+        }
 
-		//output width
-		console.log('width = ', this.w());
+        //output width
+        console.log('width = ', this.w());
 
-		//root
-		const root = this.createGroup();
+        //root
+        const root = this.createGroup();
 
-		function simpleTests() {
-			//add rect
-			const rect1 = gfx.createRect().w(100).h(50).fill('#ff00ff');
+        function simpleTests() {
+            //add rect
+            const rect1 = gfx.createRect().w(100).h(50).fill('#ff00ff');
 
-			root.add(rect1);
+            root.add(rect1);
 
-			//loop animate the rect position
+            //loop animate the rect position
 
-			//loop animate the opacity of the rect
+            //loop animate the opacity of the rect
 
-			//plain text
-			const text1 = gfx.createText().text('some green text')
-				.fontSize(20)
-				.fill('#00ff00').x(20).y(20);
+            //plain text
+            const text1 = gfx.createText().text('some green text')
+                .fontSize(20)
+                .fill('#00ff00').x(20).y(20);
 
-			root.add(text1);
+            root.add(text1);
 
-			//text with custom font
-			const text2 = gfx.createText().text('a custom font')
-				.fontSize(30)
-				.fontName('Oswald')
-				.x(20).y(120);
+            //text with custom font
+            const text2 = gfx.createText().text('a custom font')
+                .fontSize(30)
+                .fontName('Oswald')
+                .x(20).y(120);
 
-			root.add(text2);
-		}
+            root.add(text2);
+        }
 
-		simpleTests();
+        simpleTests();
 
-		/**
-		 * press drag release a rect
-		 * click a rect
-		 * press drag under an overlay
-		 */
-		function pressDragReleaseTest() {
-			const g = gfx.createGroup();
+        /**
+         * press drag release a rect
+         * click a rect
+         * press drag under an overlay
+         */
+        function pressDragReleaseTest() {
+            const g = gfx.createGroup();
 
-			//text
-			const t = gfx.createText().text('press to turn blue, then drag').x(20).y(20).fontSize(20);
+            //text
+            const t = gfx.createText().text('press to turn blue, then drag').x(20).y(20).fontSize(20);
 
             g.add(t);
 
-			//green rect
-			const r = gfx.createRect().w(50).h(50).fill('#00ff00').x(50).y(50);
+            //green rect
+            const r = gfx.createRect().w(50).h(50).fill('#00ff00').x(50).y(50);
 
-			r.acceptsMouseEvents = true;
+            r.acceptsMouseEvents = true;
 
-			gfx.on('press', r, function () {
-				//turn blue
-				r.fill('#0000ff');
-			});
+            gfx.on('press', r, function () {
+                //turn blue
+                r.fill('#0000ff');
+            });
 
-			gfx.on('drag', r, function (e) {
-				//move
-				r.x(r.x() + e.delta.x);
-				r.y(r.y() + e.delta.y);
-			});
+            gfx.on('drag', r, function (e) {
+                //move
+                r.x(r.x() + e.delta.x);
+                r.y(r.y() + e.delta.y);
+            });
 
-			gfx.on('release', r, function () {
-				//reset color
-				r.fill('#00ff00');
-			});
+            gfx.on('release', r, function () {
+                //reset color
+                r.fill('#00ff00');
+            });
 
-			g.add(r);
+            g.add(r);
 
-			//overlay rect
-			const overlay = gfx.createRect().w(100).h(100).fill('#cccccc').x(20).y(100);
+            //overlay rect
+            const overlay = gfx.createRect().w(100).h(100).fill('#cccccc').x(20).y(100);
 
-			overlay.opacity(0.6);
-			overlay.acceptsMouseEvents = true;
-			g.add(overlay);
+            overlay.opacity(0.6);
+            overlay.acceptsMouseEvents = true;
+            g.add(overlay);
 
-			//text
-			const tt = gfx.createText().text('mouse blocking overlay').x(20).y(100).fontSize(20);
+            //text
+            const tt = gfx.createText().text('mouse blocking overlay').x(20).y(100).fontSize(20);
 
-			g.add(tt);
-			g.x(250).y(20);
+            g.add(tt);
+            g.x(250).y(20);
 
-			root.add(g);
-		}
+            root.add(g);
+        }
 
-		pressDragReleaseTest();
+        pressDragReleaseTest();
 
-		/**
-		 * Animated images.
-		 */
-		function imageSwappingTests() {
-			//image 1
-			const iv = gfx.createImageView();
-			let im1 = null;
+        /**
+         * Animated images.
+         */
+        function imageSwappingTests() {
+            //image 1
+            const iv = gfx.createImageView();
+            let im1 = null;
 
-			iv.image.watch(function () {
-				if (im1) {
-					return;
-				}
+            iv.image.watch(function () {
+                if (im1) {
+                    return;
+                }
 
-				im1 = iv.image();
+                im1 = iv.image();
 
-				//console.log('i1 loaded', im1);
-			});
+                //console.log('i1 loaded', im1);
+            });
 
-			iv.src(path.join(__dirname, '/images/tree.png'));
-			iv.sx(4).sy(4);
+            iv.src(path.join(__dirname, '/images/tree.png'));
+            iv.sx(4).sy(4);
 
-			//group (animation: rotation)
-			const g = gfx.createGroup();
+            //group (animation: rotation)
+            const g = gfx.createGroup();
 
-			g.add(iv);
+            g.add(iv);
             g.rz.anim().from(0).to(360 * 4).dur(10000).loop(-1).start();
-			g.x(20).y(300);
-			root.add(g);
+            g.x(20).y(300);
+            root.add(g);
 
-			//image 2
-			const iv2 = gfx.createImageView();
-			let im2 = null;
+            //image 2
+            const iv2 = gfx.createImageView();
+            let im2 = null;
 
-			iv2.image.watch(function () {
-				if (im2) {
-					return;
-				}
+            iv2.image.watch(function () {
+                if (im2) {
+                    return;
+                }
 
-				im2 = iv2.image();
+                im2 = iv2.image();
 
-				//console.log('i2 loaded', im2);
-			});
+                //console.log('i2 loaded', im2);
+            });
 
-			iv2.src(path.join(__dirname, '/images/bridge.png'));
+            iv2.src(path.join(__dirname, '/images/bridge.png'));
 
-			//console.log("image = ", iv2.image(), iv.image());
+            //console.log("image = ", iv2.image(), iv.image());
 
-			//image change timer
-			setInterval(function () {
-				if (!im1 || !im2) {
-					return;
-				}
+            //image change timer
+            setInterval(function () {
+                if (!im1 || !im2) {
+                    return;
+                }
 
-				//swap image view 1 image
-				if (iv.image() == im1) {
-					iv.image(im2);
-				} else {
-					iv.image(im1);
-				}
-			}, 500);
-		}
+                //swap image view 1 image
+                if (iv.image() === im1) {
+                    iv.image(im2);
+                } else {
+                    iv.image(im1);
+                }
+            }, 500);
+        }
 
-		imageSwappingTests();
+        imageSwappingTests();
 
-		/**
-		 * Reversed animation.
-		 */
-		function imageAnimTests() {
-			//create image view
+        /**
+         * Reversed animation.
+         */
+        function imageAnimTests() {
+            //create image view
             const i1 = gfx.createImageView().src(path.join(__dirname, '/images/tree.png'));
 
-			//animate x position
-			i1.x.anim().from(0).to(100).dur(1000).loop(-1).autoreverse(true).start();
+            //animate x position
+            i1.x.anim().from(0).to(100).dur(1000).loop(-1).autoreverse(true).start();
 
-			//animate opacity
-			i1.opacity.anim().from(0).to(1.0).dur(1000).loop(-1).autoreverse(true).start();
+            //animate opacity
+            i1.opacity.anim().from(0).to(1.0).dur(1000).loop(-1).autoreverse(true).start();
 
-			//group
-			const g = gfx.createGroup().x(20).y(500).add(i1);
+            //group
+            const g = gfx.createGroup().x(20).y(500).add(i1);
 
-			root.add(g);
-		}
+            root.add(g);
+        }
 
-		imageAnimTests();
+        imageAnimTests();
 
-		//done
-		this.setRoot(root);
+        //done
+        this.setRoot(root);
 
-		//stage background & opacity
-		setTimeout(function () {
-			gfx.fill('#ff0000');
-		}, 2000);
+        //stage background & opacity
+        setTimeout(function () {
+            gfx.fill('#ff0000');
+        }, 2000);
 
-		//use transparent background after 4 seconds
-		setTimeout(function () {
-			//set transparent background
+        //use transparent background after 4 seconds
+        setTimeout(function () {
+            //set transparent background
             gfx.opacity(0.1);
-		}, 4000);
+        }, 4000);
 
-	});
+    });
 };
 
 exports.go();

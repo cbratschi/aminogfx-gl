@@ -21,7 +21,7 @@ function createChild() {
         if (m.command === 'ready') {
             readyCount++;
 
-            if (readyCount == 2) {
+            if (readyCount === 2) {
                 start();
             }
         }

@@ -64,7 +64,7 @@ function checkMemory() {
         console.log(JSON.stringify(stats));
 
         //more details
-        if (step % 5 == 0) {
+        if (step % 5 === 0) {
             if (lastGC) {
                 console.log('Last GC: ' + (Date.now() - lastGC) + ' ms');
             }

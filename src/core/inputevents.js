@@ -98,7 +98,7 @@ exports.fromBrowserKeyboardEvent = function (evt) {
 
     let shift = false;
 
-    shift = (evt.shift == 1);
+    shift = evt.shift === 1;
 
     const key = browsercodes_to_keys[evt.keycode];
 

@@ -376,7 +376,7 @@ AminoGfx.prototype.getStats = function () {
  */
 AminoGfx.prototype.find = function (id) {
     function findNodeById(id, node) {
-        if (node.id && node.id == id) {
+        if (node.id && node.id === id) {
             return node;
         }
 
@@ -723,7 +723,7 @@ Group.prototype.insertAt = function (item, pos) {
 Group.prototype.insertBefore = function (item, sibling) {
     const pos = this.children.indexOf(sibling);
 
-    if (pos == -1) {
+    if (pos === -1) {
         //add at end
         this.add(item);
 
@@ -739,7 +739,7 @@ Group.prototype.insertBefore = function (item, sibling) {
 Group.prototype.insertAfter = function (item, sibling) {
     const pos = this.children.indexOf(sibling);
 
-    if (pos == -1) {
+    if (pos === -1) {
         //add at end
         this.add(item);
 
@@ -831,19 +831,19 @@ Group.prototype.destroy = function () {
 Group.prototype.find = function (pattern) {
     const results = new FindResults();
 
-    if (pattern.indexOf('#') == 0) {
+    if (pattern.indexOf('#') === 0) {
         //id
         const id = pattern.substring(1);
 
         results.children = treeSearch(this, false, function (child) {
-            return (child.id().toLowerCase() == id);
+            return (child.id().toLowerCase() === id);
         });
     } else {
         //look for class name (e.g. AminoRect)
         pattern = 'amino' + pattern.toLowerCase();
 
         results.children = treeSearch(this, false, function (child) {
-            return child.constructor.name.toLowerCase() == pattern;
+            return child.constructor.name.toLowerCase() === pattern;
         });
     }
 
@@ -1389,7 +1389,7 @@ PixelView.prototype.initDone = function () {
                 const i = (x + y * w) * 4;
                 let c;
 
-                if (x % 3 == 0) {
+                if (x % 3 === 0) {
                     c = c1;
                 } else {
                     c = c2;
@@ -2489,11 +2489,11 @@ Anim.prototype.start = function (refTime) {
         }
 
         //validate
-        if (this._from == null) {
+        if (this._from === null) {
             throw new Error('missing from value');
         }
 
-        if (this._to == null) {
+        if (this._to === null) {
             throw new Error('missing to value');
         }
 
@@ -2574,7 +2574,7 @@ function makeProp(obj, name, val) {
     prop.unwatch = function (fun) {
         const n = this.listeners.indexOf(fun);
 
-        if (n == -1) {
+        if (n === -1) {
             throw new Error('function was not registered');
         }
 

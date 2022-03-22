@@ -53,7 +53,7 @@ gfx.start(function (err) {
         for (let i = 0; i < root.children.length; i++) {
             const child = root.children[i];
 
-            if (child.id() == id) {
+            if (child.id() === id) {
                 return child;
             }
         }
