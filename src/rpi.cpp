@@ -176,6 +176,9 @@ void AminoGfxRPi::setup() {
             Nan::MaybeLocal<v8::Value> touchMaybe = Nan::Get(obj, Nan::New<v8::String>("touch").ToLocalChecked());
 
             if (!touchMaybe.IsEmpty()) {
+                //debug cbxx
+                printf("-> has touch properties\n");
+
                 //get properties
                 v8::Local<v8::Value> touchLocal = touchMaybe.ToLocalChecked();
 
@@ -222,6 +225,9 @@ void AminoGfxRPi::setupTouch(v8::Local<v8::Object> &touch) {
             touchInvertY = Nan::To<v8::Boolean>(invertYValue).ToLocalChecked()->Value();
         }
     }
+
+    //debug cbxx
+    printf("-> invertX=%d invertY=%d\n", touchInvertX, touchInvertY);
 }
 
 /**
