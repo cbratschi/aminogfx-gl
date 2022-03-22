@@ -215,7 +215,7 @@ void AminoInputRPi::process() {
 }
 
 void AminoInputRPi::handleEvent(input_event ev) {
-    switch (ev.code) {
+    switch (ev.type) {
         case EV_REL: //2
             //mouse events
             handleRelEvent(ev);
