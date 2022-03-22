@@ -213,8 +213,8 @@ void AminoInputRPi::process() {
 }
 
 void AminoInputRPi::handleEvent(input_event ev) {
-    //debug cbxx
-    printf("-> handle event: %d %d %d\n", ev.type, ev.code, ev.value);
+    //debug
+    //printf("-> handle event: %d %d %d\n", ev.type, ev.code, ev.value);
 
     switch (ev.type) {
         case EV_REL: //2
@@ -286,8 +286,8 @@ void AminoInputRPi::handleRelEvent(input_event ev) {
 }
 
 void AminoInputRPi::handleAbsEvent(input_event ev) {
-    //debug cbxx
-    printf("-> EV_ABS event: %d %d\n", ev.code, ev.value);
+    //debug
+    //printf("-> EV_ABS event: %d %d\n", ev.code, ev.value);
 
     //see https://elixir.bootlin.com/linux/v4.6/source/include/uapi/linux/input-event-codes.h#L682
     //Note: only supporting protocol B touch devices (otherwise mtdev has to be used to convert the events)
@@ -384,6 +384,11 @@ void AminoInputRPi::handleSynEvent(input_event ev) {
             printf("-> report event\n");
         }
 
+        //reset ready state if data is available
+        if (touchModified && hasValidTouchSlot()) {
+            touchSlots[currentTouchSlot]->ready = true;
+        }
+
         //end of touch event
         fireTouchEvent();
     }
@@ -393,6 +398,8 @@ void AminoInputRPi::fireTouchEvent() {
     if (!touchModified) {
         return;
     }
+
+    touchModified = false;
 
     //create object
     v8::Local<v8::Object> event_obj = Nan::New<v8::Object>();
@@ -465,7 +472,7 @@ void AminoInputRPi::handleKeyEvent(input_event ev) {
         if (ev.value == 1) {
             touchStarted = true;
 
-            //Note: not yet marked as modified
+            //Note: got slot 0 data before this event (in modified state)
             return;
         }
 
