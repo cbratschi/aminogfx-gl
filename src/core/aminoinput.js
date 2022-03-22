@@ -192,7 +192,7 @@ const handlers = {
         //debug cbxx
         console.log('Handle touch event:');
         console.dir(evt);
-        console.dir(obj);
+        //console.dir(obj); //AminoEvents instance
 
         //emulate mouse (single touch point)
         //cbxx TODO

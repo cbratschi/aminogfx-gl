@@ -173,7 +173,6 @@ void AminoInputRPi::process() {
     int size = sizeof(struct input_event);
     struct input_event ev[64];
 
-    //cbxx FIXME getting garbage
     int rd = read(fd, ev, size * 64);
 
     if (rd == -1) {
@@ -190,18 +189,17 @@ void AminoInputRPi::process() {
         return;
     }
 
-    //debug cbxx
-    printf("Read %d bytes and %d events from %d.\n", rd, items, fd);
+    //debug
+    //printf("Read %d bytes and %d events from %d.\n", rd, items, fd);
 
     for (int i = 0; i < items; i++) {
         if (DEBUG_INPUT_EVENTS) {
             dumpEvent(&(ev[i]));
         }
 
-        //debug cbxx
-        printf("Handling event %d %d.\n", ev[i].code, ev[i].value);
+        //debug
+        //printf("Handling event %d %d %d.\n", ev[i].type, ev[i].code, ev[i].value);
 
-        //cbxx check data
         handleEvent(ev[i]);
     }
 
@@ -215,6 +213,9 @@ void AminoInputRPi::process() {
 }
 
 void AminoInputRPi::handleEvent(input_event ev) {
+    //debug cbxx
+    printf("-> handle event: %d %d %d\n", ev.type, ev.code, ev.value);
+
     switch (ev.type) {
         case EV_REL: //2
             //mouse events
@@ -285,6 +286,9 @@ void AminoInputRPi::handleRelEvent(input_event ev) {
 }
 
 void AminoInputRPi::handleAbsEvent(input_event ev) {
+    //debug cbxx
+    printf("-> EV_ABS event: %d %d\n", ev.code, ev.value);
+
     //see https://elixir.bootlin.com/linux/v4.6/source/include/uapi/linux/input-event-codes.h#L682
     //Note: only supporting protocol B touch devices (otherwise mtdev has to be used to convert the events)
     switch (ev.code) {
@@ -404,6 +408,7 @@ void AminoInputRPi::fireTouchEvent() {
         for (int i = 0; i < MAX_TOUCH_SLOTS; i++) {
             AminoInputTouchSlot *slot = touchSlots[i];
 
+            //cbxx FIXME data missing
             if (slot->id && slot->ready) {
                 //data
                 v8::Local<v8::Object> touchpoint_obj = Nan::New<v8::Object>();
