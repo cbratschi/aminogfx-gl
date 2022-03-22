@@ -289,6 +289,7 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
     //debug
     //printf("-> EV_ABS event: %d %d\n", ev.code, ev.value);
 
+    //cbxx TODO verify
     //see https://elixir.bootlin.com/linux/v4.6/source/include/uapi/linux/input-event-codes.h#L682
     //Note: only supporting protocol B touch devices (otherwise mtdev has to be used to convert the events)
     switch (ev.code) {
@@ -376,8 +377,7 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
                 currentTouchSlot = ev.value;
 
                 if (hasValidTouchSlot()) {
-                    //reset data
-                    touchSlots[currentTouchSlot]->id = -1;
+                    //modify existing or new slot (keep id and vales)
                     touchSlots[currentTouchSlot]->ready = false;
                 }
             }
@@ -443,8 +443,7 @@ void AminoInputRPi::fireTouchEvent() {
         for (int i = 0; i < MAX_TOUCH_SLOTS; i++) {
             AminoInputTouchSlot *slot = touchSlots[i];
 
-            //cbxx FIXME data missing
-            if (slot->id && slot->ready) {
+            if (slot->id > 0 && slot->ready) {
                 //data
                 v8::Local<v8::Object> touchpoint_obj = Nan::New<v8::Object>();
                 int x = slot->x * amino->screenW / (touchGrid.x_max - touchGrid.x_min);
@@ -460,7 +459,7 @@ void AminoInputRPi::fireTouchEvent() {
                 touchPoints++;
 
                 if (DEBUG_TOUCH) {
-                    printf("=> touch event: x=%d y=%d id=%d timestamp=%d\n", x, y, slot->id, slot->timestamp);
+                    printf("=> touch event: x=%d y=%d (%d/%d) id=%d timestamp=%d\n", slot->x, slot->y, x, y, slot->id, slot->timestamp);
                 }
             }
         }
@@ -489,7 +488,6 @@ void AminoInputRPi::handleKeyEvent(input_event ev) {
         printf("Key or button pressed code = %d, state = %d\n", ev.code, ev.value);
     }
 
-    //cbxx different code
     //touch events
     if (ev.code == BTN_TOUCH) { //330
         if (DEBUG_TOUCH) {
