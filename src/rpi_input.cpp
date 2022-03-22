@@ -190,13 +190,16 @@ void AminoInputRPi::process() {
         return;
     }
 
-    //debug
-    //printf("Read %d bytes from %d.\n", rd, fd);
+    //debug cbxx
+    printf("Read %d bytes and %d events from %d.\n", rd, items, fd);
 
     for (int i = 0; i < items; i++) {
         if (DEBUG_INPUT_EVENTS) {
             dumpEvent(&(ev[i]));
         }
+
+        //debug cbxx
+        printf("Handling event %d %d.\n", ev[i].code, ev[i].value);
 
         //cbxx check data
         handleEvent(ev[i]);
