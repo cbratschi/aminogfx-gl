@@ -28,7 +28,7 @@ bool AminoInputRPi::init() {
     ioctl(fd, EVIOCGNAME(sizeof name), name);
     this->name = name;
 
-    printf("Reading from: %s (%s)\n", filename.c_str(), name);
+    printf("Reading from: %s (%s) %d\n", filename.c_str(), name, fd);
 
     // 3) get physical name
     char phys[256] = "Unknown";
@@ -173,12 +173,12 @@ void AminoInputRPi::process() {
     int size = sizeof(struct input_event);
     struct input_event ev[64];
 
-    //cbxx TODO verify
+    //cbxx FIXME getting garbage
     int rd = read(fd, ev, size * 64);
 
     if (rd == -1) {
         //error
-        printf("Could not read from %s\n", filename.c_str());
+        //printf("Could not read from %s\n", filename.c_str());
         return;
     }
 
@@ -215,30 +215,28 @@ void AminoInputRPi::process() {
 }
 
 void AminoInputRPi::handleEvent(input_event ev) {
-    //cbxx TODO log code and value
-
     switch (ev.code) {
-        case EV_REL:
+        case EV_REL: //2
             //mouse events
             handleRelEvent(ev);
             break;
 
-        case EV_ABS:
+        case EV_ABS: //3
             //touch events
             handleAbsEvent(ev);
             break;
 
-        case EV_SYN:
+        case EV_SYN: //0
             //synchronization (touch)
             handleSynEvent(ev);
             break;
 
-        case EV_MSC:
+        case EV_MSC: //4
             //misc
             handleMscEvent(ev);
             break;
 
-        case EV_KEY:
+        case EV_KEY: //1
             //keyboard (button, touch state)
             handleKeyEvent(ev);
             break;
