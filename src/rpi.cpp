@@ -182,8 +182,11 @@ void AminoGfxRPi::setup() {
                 //get properties
                 v8::Local<v8::Value> touchLocal = touchMaybe.ToLocalChecked();
 
+                //debug cbxx
+                printf("-> %s\n", touchLocal->ToDetailString().c_str());
+
                 if (!touchLocal->IsObject()) {
-                    //debug cbxx
+                    //debug cbxx FIXME not executed!
                     printf("-> is Object\n");
 
                     v8::Local<v8::Object> touchObj = Nan::To<v8::Object>(touchLocal).ToLocalChecked();
