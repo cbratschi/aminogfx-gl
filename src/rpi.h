@@ -93,7 +93,7 @@ private:
     static NAN_METHOD(New);
 
     void setup() override;
-    void setupTouch(v8::Local<v8::Object> &touch) override;
+    void setupTouch(v8::Local<v8::Object> &touch);
     void initEGL();
 
     static TV_DISPLAY_STATE_T* getDisplayState();
