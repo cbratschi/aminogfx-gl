@@ -174,10 +174,11 @@ void AminoInputRPi::process() {
     struct input_event ev[64];
 
     //cbxx TODO verify
-    int rd = read(fd, &ev, size * 64);
+    int rd = read(fd, ev, size * 64);
 
     if (rd == -1) {
-        //no data available
+        //error
+        printf("Could not read from %s\n", filename.c_str());
         return;
     }
 
