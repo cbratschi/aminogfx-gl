@@ -519,7 +519,7 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
                 //send drag event
                 const pt = makePoint(item.x, item.y);
                 const localPt = this.gfx.globalToLocal(pt, target);
-                const localPrev = this.gfx.globalToLocal(item.pt, target);
+                const localPrev = this.gfx.globalToLocal(prevItem.pt, target);
 
                 item.pt = pt;
 
