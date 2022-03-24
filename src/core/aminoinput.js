@@ -476,6 +476,7 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
     //check end of touch (all)
     if (!evt.pressed) {
         //fire release
+        //cbxx FIXME does not work
         for (const item of lastTouchPoints) {
             const target = item.target;
 
@@ -510,6 +511,7 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
 
     //check touch points
     const touchMap = {};
+    const touchPoints = [];
     let pos = 0;
 
     for (const item of evt.points) {
@@ -518,6 +520,7 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
 
         //store
         touchMap[id] = item;
+        touchPoints.push(item);
 
         if (prevItem) {
             //touch point exists
@@ -609,6 +612,7 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
     }
 
     this.touchMap = touchMap;
+    this.touchPoints = touchPoints;
 };
 
 /**
