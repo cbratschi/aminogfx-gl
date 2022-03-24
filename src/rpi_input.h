@@ -5,10 +5,10 @@
 
 #include <linux/input.h>
 
-//debug cbxx
-#define DEBUG_INPUT true
+//debug
+#define DEBUG_INPUT false
 #define DEBUG_INPUT_EVENTS false
-#define DEBUG_TOUCH true
+#define DEBUG_TOUCH false
 
 #define MAX_TOUCH_SLOTS 5
 
