@@ -475,7 +475,17 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
 
     //check end of touch (all)
     if (!evt.pressed) {
-        //cbxx TODO release
+        //fire release
+        for (const item of lastTouchPoints) {
+            const target = item.target;
+
+            if (target) {
+                //fire release/click
+                const pt = makePoint(item.x, item.y);
+
+                this.fireTouchRelease(item, pt, target);
+            }
+        }
 
         //reset
         this.touchMap = {};
