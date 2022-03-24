@@ -119,6 +119,10 @@ function AminoEvents(gfx) {
             state: {}
         }
     };
+
+    //touch
+    this.touchMap = {};
+    this.touchPoints = [];
 }
 
 /**
@@ -163,7 +167,7 @@ const handlers = {
                     console.log('-> pressed');
                 }
 
-                //cbxx TODO use
+                //cbxx TODO focus
                 obj.setupPointerFocus(pts.pt);
                 obj.sendPressEvent(evt);
                 return;
@@ -192,12 +196,8 @@ const handlers = {
         //debug cbxx
         console.log('Handle touch event:');
         console.dir(evt);
-        //console.dir(obj); //AminoEvents instance
 
-        //emulate mouse (single touch point)
-        //cbxx TODO
-
-        //cbxx TODO modes: mouse, multitouch
+        obj.handleTouchEvent(evt);
     },
     //keyboard
     'key.press': function (obj, evt) {
@@ -275,7 +275,7 @@ AminoEvents.prototype.setupPointerFocus = function (pt) {
     }
 
     //get all nodes
-    const nodes = this.gfx.findNodesAtXY(pt, function (node) {
+    const nodes = this.gfx.findNodesAtXY(pt, node => {
         //filter opt-out
         if (node.children && node.acceptsMouseEvents === false) {
             return false;
@@ -285,8 +285,8 @@ AminoEvents.prototype.setupPointerFocus = function (pt) {
     });
 
     //get nodes accepting mouse events
-    const pressNodes = nodes.filter(function (n) {
-        return n.acceptsMouseEvents === true;
+    const pressNodes = nodes.filter(node => {
+        return node.acceptsMouseEvents === true;
     });
 
     if (pressNodes.length > 0) {
@@ -461,5 +461,212 @@ AminoEvents.prototype.fireEventAtTarget = function (target, event) {
                 l.func(event);
             }
         });
+    }
+};
+
+/**
+ * Handle touch events.
+ *
+ * @param {*} evt
+ */
+AminoEvents.prototype.handleTouchEvent = function (evt) {
+    const lastTouchMap = this.touchMap;
+    const lastTouchPoints = this.touchPoints;
+
+    //check end of touch (all)
+    if (!evt.pressed) {
+        //cbxx TODO release
+
+        //reset
+        this.touchMap = {};
+        this.lastTouchPoints = [];
+
+        //check touch
+        if (this.touchNode) {
+            //fire touch done
+            this.fireTouchEvent(evt, this.touchNode, 'done');
+            this.touchNode = null;
+        }
+
+        return;
+    }
+
+    //check touch
+    if (this.touchNode) {
+        //fire touch update
+        this.fireTouchEvent(evt, this.touchNode, 'update');
+        return;
+    }
+
+    //check touch points
+    const touchMap = {};
+    let pos = 0;
+
+    for (const item of evt.points) {
+        const id = item.id;
+        const prevItem = lastTouchMap[id];
+
+        //store
+        touchMap[id] = item;
+
+        if (prevItem) {
+            //touch point exists
+            const target = prevItem.target;
+
+            if (target) {
+                item.target = target;
+
+                //send drag event
+                const pt = makePoint(item.x, item.y);
+                const localPt = this.gfx.globalToLocal(pt, target);
+                const localPrev = this.gfx.globalToLocal(item.pt, target);
+
+                item.pt = pt;
+
+                this.fireEventAtTarget(target, {
+                    type: 'drag',
+                    touch: true,
+                    button: item.id,
+                    point: localPt,
+                    delta: localPt.minus(localPrev),
+                    target
+                });
+            }
+        } else {
+            //new touch point
+            const pt = makePoint(item.x, item.y);
+
+            item.pt = pt;
+
+            //find node
+            const target = this.getTouchNodeAtXY(pt);
+
+            item.target = target;
+
+            if (!target) {
+                continue;
+            }
+
+            //check touch
+            if (pos === 0 && target.acceptsTouchEvents) {
+                this.touchNode = target;
+
+                if (DEBUG) {
+                    console.log('-> touch start');
+                }
+
+                this.fireTouchEvent(evt, target, 'start');
+
+                break;
+            }
+
+            this.touchNode = null;
+
+            //emulate mouse events (button is the id of the touch point)
+
+            //debug cbxx
+            console.log('Found target:');
+            console.dir(target);
+
+            //fire press
+            const localPt = this.gfx.globalToLocal(pt, target);
+
+            this.fireEventAtTarget(target, {
+                type: 'press',
+                touch: true,
+                button: item.id,
+                point: localPt,
+                target
+            });
+        }
+
+        pos++;
+    }
+
+    //check prev touch points
+    for (const item of lastTouchPoints) {
+        //check released
+        if (!touchMap[item.id]) {
+            const target = item.target;
+
+            if (target) {
+                //fire release/click
+                const pt = makePoint(item.x, item.y);
+
+                this.fireTouchRelease(item, pt, target);
+            }
+        }
+    }
+
+    this.touchMap = touchMap;
+};
+
+/**
+ * Get a touch capabable node.
+ *
+ * @param {*} pt
+ * @returns
+ */
+AminoEvents.prototype.getTouchNodeAtXY = function (pt) {
+    const nodes = this.gfx.findNodesAtXY(pt, node => {
+        //filter opt-out
+        if (node.children && node.acceptsMouseEvents === false && node.acceptsTouchEvents === false) {
+            return false;
+        }
+
+        return true;
+    }).filter(node => {
+        return node.acceptsMouseEvents === true || node.acceptsTouchEvents === true;
+    });
+
+    if (nodes.length > 0) {
+        //node found
+        return nodes[0];
+    }
+
+    return null;
+};
+
+AminoEvents.prototype.fireTouchEvent = function (event, target, action) {
+    //map points
+    const points = event.points.map(item => this.gfx.globalToLocal(makePoint(item.x, item.y), target));
+
+    //fire touch start
+    this.fireEventAtTarget(target, {
+        type: 'touch',
+        action,
+        points,
+        target
+    });
+};
+
+AminoEvents.prototype.fireTouchRelease = function (item, pt, target) {
+    const localPt = this.gfx.globalToLocal(pt, target);
+
+    this.fireEventAtTarget(target, {
+        type: 'release',
+        touch: true,
+        button: item.id,
+        point: localPt,
+        target
+    });
+
+    if (DEBUG) {
+        console.log('-> touch release');
+    }
+
+    //click
+    if (target.contains(localPt)) {
+        this.fireEventAtTarget(target, {
+            type: 'click',
+            touch: true,
+            button: item.id,
+            point: localPt,
+            target
+        });
+
+        if (DEBUG) {
+            console.log('-> touch click');
+        }
     }
 };
