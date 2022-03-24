@@ -32,10 +32,12 @@ gfx.start(function (err) {
     rect.acceptsMouseEvents = true;
     rect.acceptsKeyboardEvents = true;
 
-    //cbxx TODO auto convert touch to mouse events
     this.on('key.press', rect, event => {
         console.log('key was pressed', event.keycode, event.printable, event.char);
     });
+
+    //cbxx TODO verify
+    let buttonPressed = -1;
 
     this.on('drag', rect, event => {
         //move rectangle
@@ -45,18 +47,41 @@ gfx.start(function (err) {
         rect.y(rect.y() + delta.y);
     });
 
-    this.on('press', rect, _event => {
+    this.on('press', rect, event => {
+        if (buttonPressed !== -1) {
+            return;
+        }
+
         //set red
         rect.fill('#ff0000');
+
+        buttonPressed = event.button;
+
+        //log
+        console.log('-> rect pressed');
     });
 
-    this.on('release', rect, _event => {
+    this.on('release', rect, event => {
+        if (buttonPressed !== event.button) {
+            return;
+        }
+
+        buttonPressed = -1;
+
         //set blue
         rect.fill('#0000ff');
+
+        //log
+        console.log('-> rect released');
     });
 
     this.on('click', rect, function () {
-        console.log('clicked on the rect');
+        if (buttonPressed !== event.button) {
+            return;
+        }
+
+        //log
+        console.log('-> rect clicked');
     });
 
     //circle (at 100/100)

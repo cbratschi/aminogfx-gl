@@ -476,7 +476,7 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
     //check end of touch (all)
     if (!evt.pressed) {
         //fire release
-        //cbxx FIXME does not work
+        //cbxx FIXME bug in next cycle
         for (const item of lastTouchPoints) {
             const target = item.target;
 
@@ -577,9 +577,9 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
 
             //emulate mouse events (button is the id of the touch point)
 
-            //debug cbxx
-            console.log('Found target:');
-            console.dir(target);
+            //debug
+            //console.log('Found target:');
+            //console.dir(target);
 
             //fire press
             const localPt = this.gfx.globalToLocal(pt, target);
