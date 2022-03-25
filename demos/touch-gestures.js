@@ -99,7 +99,7 @@ const DEBUG = true;
         }
 
         // 2) move
-        const centerPos = tp1.pt.add(tp2.pt).div(2, 2);
+        const centerPos = tp1.pt.add(tp2.pt).divide(2, 2);
         const diff = centerPos.distanceTo(lastCenterPos);
 
         lastCenterPos = centerPos;
