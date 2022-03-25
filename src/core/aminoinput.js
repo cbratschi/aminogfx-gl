@@ -6,7 +6,7 @@
  * of the inputevents module
  */
 
-const DEBUG = true; //cbxx
+const DEBUG = false;
 
 const IE = require('./inputevents');
 
@@ -54,6 +54,8 @@ function makePoint(x, y) {
 
                 return makePoint(this.x + xy[0], this.y + xy[1]);
             }
+
+            throw new Error('missing parameters');
         },
 
         /**
