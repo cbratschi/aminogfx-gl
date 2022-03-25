@@ -63,7 +63,7 @@ gfx.start(function (err) {
 
     this.on('release', rect, event => {
         //cbxx FIXME seeing crash
-        console.dir(event);
+        console.dir(Object.keys(event));
 
         if (buttonPressed !== event.button) {
             return;

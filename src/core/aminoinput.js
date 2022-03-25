@@ -465,8 +465,8 @@ AminoEvents.prototype.fireEventAtTarget = function (target, event) {
         for (const item of funcs) {
             if (item.target === target) {
                 //debug cbxx
+                console.log(event.actio);
                 console.dir(item.func);
-                console.dir(event);
 
                 item.func(event);
             }
