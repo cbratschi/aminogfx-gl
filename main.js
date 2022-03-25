@@ -439,6 +439,9 @@ function findNodesAtXY(root, pt, filter, tab) {
     let res = [];
 
     if (filter) {
+        //debug cbxx
+        console.log('-> using filter on root');
+
         if (!filter(root)) {
             //debug cbxx
             console.log('-> root skipped');
@@ -451,6 +454,9 @@ function findNodesAtXY(root, pt, filter, tab) {
     const childCount = root.children?.length;
 
     if (childCount) {
+        //debug cbxx
+        console.log('-> checking ' + childCount + ' children');
+
         for (let i = childCount - 1; i >= 0; i--) {
             const node = root.children[i];
             const found = findNodesAtXY(node, tpt, filter, tab + '  ');
