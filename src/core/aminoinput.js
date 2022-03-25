@@ -503,6 +503,19 @@ AminoEvents.prototype.fireEventAtTarget = function (target, event) {
  * @param {*} evt
  */
 AminoEvents.prototype.handleTouchEvent = function (evt) {
+    //check touch
+    if (this.touchNode) {
+        //fire touch update
+        this.fireTouchEvent(evt, this.touchNode, evt.pressed ? 'update':'done');
+
+        if (!evt.pressed) {
+            this.touchNode = null;
+        }
+
+        return;
+    }
+
+    //mouse emulation
     const lastTouchMap = this.touchMap;
     const lastTouchPoints = this.touchPoints;
 
@@ -524,20 +537,6 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
         this.touchMap = {};
         this.lastTouchPoints = [];
 
-        //check touch
-        if (this.touchNode) {
-            //fire touch done
-            this.fireTouchEvent(evt, this.touchNode, 'done');
-            this.touchNode = null;
-        }
-
-        return;
-    }
-
-    //check touch
-    if (this.touchNode) {
-        //fire touch update
-        this.fireTouchEvent(evt, this.touchNode, 'update');
         return;
     }
 
@@ -605,7 +604,7 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
 
                 this.fireTouchEvent(evt, target, 'start');
 
-                break;
+                return;
             }
 
             this.touchNode = null;
