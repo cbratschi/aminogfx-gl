@@ -91,6 +91,11 @@ const DEBUG = true;
         }
 
         // 3) rotate
+        const angle = tp1.pt.angleWith(tp2.pt);
+
+        if (DEBUG) {
+            console.log('angle: ' + angle / Math.PI * 180 + '°');
+        }
         //cbxx TODO
     });
 })();

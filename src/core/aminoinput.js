@@ -72,7 +72,34 @@ function makePoint(x, y) {
             return Math.sqrt(xDist * xDist + yDist * yDist);
         },
 
-        //cbxx TODO calc angle
+        /**
+         * Calc angle spanned by points.
+         *
+         * @param {*} pt
+         * @returns
+         */
+        angleWith(pt) {
+            const a = pt.y - this.y;
+            const b = pt.x - this.x;
+            let alpha = Math.atan(a / Math.abs(b));
+
+            //cbxx TODO verify angle
+            if (b < 0) {
+                //map quadrant
+                if (alpha > 0) {
+                    alpha = Math.PI - alpha;
+                } else {
+                    alpha = - Math.PI + alpha;
+                }
+            }
+
+            //normalize results
+            if (Number.isNaN(alpha)) {
+                return 0;
+            }
+
+            return alpha;
+        }
     };
 }
 
@@ -646,9 +673,23 @@ AminoEvents.prototype.getTouchNodeAtXY = function (pt) {
     return null;
 };
 
+/**
+ * Fire a touch event.
+ *
+ * @param {*} event
+ * @param {*} target
+ * @param {*} action
+ */
 AminoEvents.prototype.fireTouchEvent = function (event, target, action) {
     //map points
-    const points = event.points.map(item => this.gfx.globalToLocal(makePoint(item.x, item.y), target));
+    const points = [];
+
+    for (const item of event.points) {
+        points.push({
+            id: item.id,
+            pt: this.gfx.globalToLocal(makePoint(item.x, item.y), target)
+        });
+    }
 
     //fire touch start
     this.fireEventAtTarget(target, {
