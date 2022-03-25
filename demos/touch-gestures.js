@@ -213,7 +213,7 @@ function createMoonModel(model) {
     //texture (http://planetpixelemporium.com/earth.html)
     model.src(path.join(__dirname, 'tests/sphere/moonmap1k.jpg'));
     //model.src(path.join(__dirname, 'sphere/earthmap1k.jpg'));
-
+return;
     //animate
     model.rx.anim().from(0).to(360).dur(5000).loop(-1).start();
     model.ry.anim().from(0).to(360).dur(5000).loop(-1).start();
