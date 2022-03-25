@@ -74,7 +74,7 @@ const DEBUG = true;
 
             distanceStart = touch1.pt.distanceTo(touch2.pt);
             lastCenterPos = touch1.pt.add(touch2.pt).divide(2, 2);
-            angleStart = angleToDegrees(touch1.pt.angleWith(touch2.pt));
+            angleStart = touch1.pt.angleWith(touch2.pt);
 
             if (DEBUG) {
                 console.log('-> init two finger touch');
@@ -119,30 +119,18 @@ const DEBUG = true;
         }
 
         // 3) rotate
-        const angle = angleToDegrees(tp1.pt.angleWith(tp2.pt));
+        const angle = tp1.pt.angleWith(tp2.pt);
         const angleDiff = -(angle - angleStart);
 
         //FIXME interferes with animation and texture
         //model.rz(angleDiff);
 
         if (DEBUG) {
-            console.log('angle: ' + angle + ' (' + angleDiff + ')');
+            console.log('angle: ' + angleDiff);
+            //console.log('angle: ' + angle + ' (' + angleDiff + ')');
         }
     });
 })();
-
-/**
- * Convert radian too 0..360 degrees.
- *
- * @param {*} angle
- * @returns
- */
-function angleToDegrees(angle) {
-    //cbxx TODO move
-    //cbxx FIXME still getting negative values
-    //-PI .. + PI -> 0 .. 360
-    return (angle + Math.PI) / Math.PI * 180;
-}
 
 /**
  * Create moon model.

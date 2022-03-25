@@ -104,7 +104,6 @@ function makePoint(x, y) {
             const b = pt.x - this.x;
             let alpha = Math.atan(a / Math.abs(b));
 
-            //cbxx TODO verify angle
             if (b < 0) {
                 //map quadrant
                 if (alpha > 0) {
@@ -119,9 +118,8 @@ function makePoint(x, y) {
                 return 0;
             }
 
-            //cbxx TODO convert to 0..360 degrees
-
-            return alpha;
+            //-PI .. + PI -> 0 .. 360 degrees
+            return (alpha + Math.PI) / Math.PI * 180;
         }
     };
 }
