@@ -148,23 +148,38 @@ function parseRGBString(fill) {
  * Start renderer.
  */
 AminoGfx.prototype.start = function (done) {
-    //pass to native code
-    this._start(err => {
-        if (err) {
-            done.call(this, err);
-            return;
-        }
+    const promise = new Promise((resolve, reject) => {
+        //pass to native code
+        this._start(err => {
+            if (err) {
+                reject(err);
+                return;
+            }
 
-        //runtime info
-        this.runtime.aminogfx = packageInfo.version;
+            //runtime info
+            this.runtime.aminogfx = packageInfo.version;
 
+            //ready
+            resolve(this);
+
+            //check root
+            if (!this.root) {
+                throw new Error('Missing root!');
+            }
+        });
+    });
+
+    //promise version
+    if (arguments.length === 0) {
+        return promise;
+    }
+
+    //callback version
+    promise.then(() => {
         //ready (Note: this points to the instance)
+        done.call(this, null);
+    }).catch(err => {
         done.call(this, err);
-
-        //check root
-        if (!this.root) {
-            throw new Error('Missing root!');
-        }
     });
 };
 

@@ -1,25 +1,24 @@
 const amino = require('../main.js');
 
-const gfx = new amino.AminoGfx();
+//promise version (TODO change once toplevel async is supported)
+(async () => {
+    const gfx = new amino.AminoGfx();
 
-gfx.start(function (err) {
-    if (err) {
-        console.log('Start failed: ' + err.message);
-        return;
-    }
+    await gfx.start();
 
     //root
-    const root = this.createGroup();
+    const root = gfx.createGroup();
 
-    this.setRoot(root);
+    gfx.setRoot(root);
 
     //add image view
-    const iv = this.createImageView().opacity(1.0).w(200).h(200);
+    const iv = gfx.createImageView().opacity(1.0).w(200).h(200);
 
     iv.src('demos/slideshow/images/iTermScreenSnapz001.png');
     root.add(iv);
 
-    const rect = this.createRect().w(20).h(30).fill('#ff00ff');
+    //add rect
+    const rect = gfx.createRect().w(20).h(30).fill('#ff00ff');
 
     root.add(rect);
-});
+})();

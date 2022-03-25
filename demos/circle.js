@@ -36,6 +36,7 @@ gfx.start(function (err) {
         console.log('key was pressed', event.keycode, event.printable, event.char);
     });
 
+    //mouse (touch) handling
     //cbxx TODO verify
     let buttonPressed = -1;
     let lastButtonPressed = -1;
