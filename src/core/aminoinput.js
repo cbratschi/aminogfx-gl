@@ -658,6 +658,9 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
  */
 AminoEvents.prototype.getTouchNodeAtXY = function (pt) {
     const nodes = this.gfx.findNodesAtXY(pt, node => {
+        //debug cbxx
+        console.log('-> filter children');
+
         //filter opt-out
         if (node.children && node.acceptsMouseEvents === false && node.acceptsTouchEvents === false) {
             return false;
@@ -665,8 +668,14 @@ AminoEvents.prototype.getTouchNodeAtXY = function (pt) {
 
         return true;
     }).filter(node => {
+        //debug cbxx
+        console.log('-> filter node');
+
         return node.acceptsMouseEvents === true || node.acceptsTouchEvents === true;
     });
+
+    //debug cbxx
+    console.log('-> found ' + nodes.length);
 
     if (nodes.length > 0) {
         //node found
