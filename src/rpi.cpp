@@ -90,6 +90,7 @@ void AminoGfxRPi::setup() {
 
         //access OpenGL driver (available if OpenGL driver is loaded)
         //Note: Pi0-3 use /dev/dri/card0
+        //cbxx TODO check issue
         std::string devicePath = "/dev/dri/card1";
 
         driDevice = open(devicePath.c_str(), O_RDWR | O_CLOEXEC);
@@ -404,6 +405,36 @@ void AminoGfxRPi::initEGL() {
 #ifdef EGL_GBM
     //get display resolutions
     drmModeRes *resources = drmModeGetResources(driDevice);
+
+    if (resources == NULL) {
+        /*
+         * Sometimes getting this issue after rebooting a device.
+         *
+         *  - /dev/dri/card1 fails but HDMI should always be initialized
+         *  - workaround:
+         *    - https://github.com/alanbork/rpi-opengl-without-x/blob/master/triangle_rpi4.c#L149
+         *  - articles:
+         *    - https://forums.raspberrypi.com/viewtopic.php?t=291199
+         */
+        printf("Failed to get DRM resources.\n");
+
+        //cbxx trying card0
+        //open device
+        std::string devicePath = "/dev/dri/card0";
+
+        driDevice = open(devicePath.c_str(), O_RDWR | O_CLOEXEC);
+
+        assert(driDevice > 0);
+
+        //get resources
+        resources = drmModeGetResources(driDevice);
+
+        if (resources != NULL) {
+            printf("-> %s available.\n", devicePath.c_str());
+        }
+
+        //drmModeFreeResources(resources);
+    }
 
     assert(resources);
 
