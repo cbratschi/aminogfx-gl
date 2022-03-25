@@ -41,6 +41,9 @@ const DEBUG = true;
     let lastCenterPos;
 
     gfx.on('touch', root, event => {
+        //debug cbxx
+        console.dir(event);
+
         //check release
         if (!event.pressed) {
             //reset

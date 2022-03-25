@@ -220,9 +220,9 @@ const handlers = {
     },
     //touch
     touch: (obj, evt) => {
-        //debug cbxx
-        console.log('Handle touch event:');
-        console.dir(evt);
+        //debug
+        //console.log('Handle touch event:');
+        //console.dir(evt);
 
         obj.handleTouchEvent(evt);
     },
@@ -687,7 +687,9 @@ AminoEvents.prototype.fireTouchEvent = function (event, target, action) {
     for (const item of event.points) {
         points.push({
             id: item.id,
-            pt: this.gfx.globalToLocal(makePoint(item.x, item.y), target)
+            count: item.count,
+            pt: this.gfx.globalToLocal(makePoint(item.x, item.y), target),
+            time: item.time
         });
     }
 
@@ -696,10 +698,18 @@ AminoEvents.prototype.fireTouchEvent = function (event, target, action) {
         type: 'touch',
         action,
         points,
+        pressed: event.pressed,
         target
     });
 };
 
+/**
+ * Fire release or click events.
+ *
+ * @param {*} item
+ * @param {*} pt
+ * @param {*} target
+ */
 AminoEvents.prototype.fireTouchRelease = function (item, pt, target) {
     const localPt = this.gfx.globalToLocal(pt, target);
 
