@@ -46,10 +46,16 @@ const DEBUG = true;
         //console.dir(event);
 
         //check release
-        if (!event.pressed) {
+        if (event.count === 0) {
             //reset
             touch1 = null;
             touch2 = null;
+
+            if (DEBUG) {
+                console.log('-> reset');
+            }
+
+            return;
         }
 
         //check two touch points
@@ -100,6 +106,7 @@ const DEBUG = true;
         if (DEBUG) {
             console.log('angle: ' + angle / Math.PI * 180 + '°');
         }
+
         //cbxx TODO
     });
 })();
