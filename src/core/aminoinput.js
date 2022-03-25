@@ -110,7 +110,7 @@ function makePoint(x, y) {
                 if (alpha > 0) {
                     alpha = Math.PI - alpha;
                 } else {
-                    alpha = Math.PI + alpha;
+                    alpha = - Math.PI - alpha;
                 }
             }
 
