@@ -26,7 +26,9 @@ const DEBUG = true;
     const screenW = gfx.w();
     const screenH = gfx.h();
     const modelWH = Math.min(screenW, screenH) / 3;
-    const model = gfx.createModel().x(screenW / 2).y(screenH / 2).w(modelWH).h(modelWH);
+    const modelX = screenW / 2;
+    const modelY = screenH / 2;
+    const model = gfx.createModel().x(modelX).y(modelY).w(modelWH).h(modelWH);
 
     createMoonModel(model);
 
@@ -51,6 +53,7 @@ const DEBUG = true;
             //reset
             touch1 = null;
             touch2 = null;
+            model.sx(1).sy(1);
 
             if (DEBUG) {
                 console.log('-> reset');
@@ -118,7 +121,7 @@ const DEBUG = true;
         const angle = angleToDegrees(tp1.pt.angleWith(tp2.pt));
 
         if (DEBUG) {
-            console.log('angle: ' + angle / Math.PI * 180 + '°');
+            console.log('angle: ' + angle + '(' + (angle - angleStart) + ')');
         }
 
         //cbxx TODO
