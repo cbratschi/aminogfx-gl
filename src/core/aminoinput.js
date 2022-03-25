@@ -700,7 +700,7 @@ AminoEvents.prototype.fireTouchEvent = function (event, target, action) {
         points.push({
             id: item.id,
             pt: this.gfx.globalToLocal(makePoint(item.x, item.y), target),
-            time: item.time
+            timestamp: item.timestamp
         });
     }
 
@@ -711,6 +711,7 @@ AminoEvents.prototype.fireTouchEvent = function (event, target, action) {
         points,
         pressed: event.pressed,
         count: event.count,
+        time: event.time,
         target
     });
 };

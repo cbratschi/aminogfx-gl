@@ -70,6 +70,10 @@ const DEBUG = true;
             distanceStart = touch1.pt.distanceTo(touch2.pt);
             lastCenterPos = touch1.pt.add(touch2.pt).div(2, 2);
 
+            if (DEBUG) {
+                console.log('-> init two finger touch');
+            }
+
             return;
         }
 
@@ -77,6 +81,10 @@ const DEBUG = true;
         const [ tp1, tp2 ] = event.points;
 
         if (tp1.id !== touch1.id || tp2.id !== touch2.id) {
+            if (DEBUG) {
+                console.log('-> different touch IDs');
+            }
+
             return;
         }
 
