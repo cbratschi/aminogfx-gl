@@ -96,7 +96,7 @@ const DEBUG = true;
         const distance = tp1.pt.distanceTo(tp2.pt);
         const zoomFac = distance / distanceStart;
 
-        model.zx(zoomFac).zy(zoomFac);
+        model.sx(zoomFac).sy(zoomFac);
 
         if (DEBUG) {
             console.log('zoom: ' + zoomFac);
