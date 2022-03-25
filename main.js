@@ -417,6 +417,9 @@ AminoGfx.prototype.find = function (id) {
  * Find a node at a certain position with an optional filter callback.
  */
 AminoGfx.prototype.findNodesAtXY = function (pt, filter) {
+    //debug cbxx
+    console.log('findNodesAtXY()');
+
     return findNodesAtXY(this.root, pt, filter, '');
 };
 
@@ -437,13 +440,18 @@ function findNodesAtXY(root, pt, filter, tab) {
 
     if (filter) {
         if (!filter(root)) {
+            //debug cbxx
+            console.log('-> root skipped');
+
             return res;
         }
     }
 
     //check children
-    if (root.children && root.children.length) {
-        for (let i = root.children.length - 1; i >= 0; i--) {
+    const childCount = root.children?.length;
+
+    if (childCount) {
+        for (let i = childCount - 1; i >= 0; i--) {
             const node = root.children[i];
             const found = findNodesAtXY(node, tpt, filter, tab + '  ');
 
@@ -453,6 +461,9 @@ function findNodesAtXY(root, pt, filter, tab) {
 
     //check root
     if (root.contains && root.contains(tpt)) {
+        //debug cbxx
+        console.log('-> added root');
+
         res.push(root);
     }
 
