@@ -120,7 +120,7 @@ const DEBUG = true;
 
         // 3) rotate
         const angle = angleToDegrees(tp1.pt.angleWith(tp2.pt));
-        const angleDiff = angle - angleStart;
+        const angleDiff = -(angle - angleStart);
 
         model.rz(angleDiff);
 
