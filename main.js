@@ -465,8 +465,12 @@ function findNodesAtXY(root, pt, filter, tab) {
         }
     }
 
+    //debug cbxx
+    console.log('-> root ' + root.x() + ' ' + root.y() + ' ' + root.w() + ' ' + root.h());
+    console.log('-> point ' + tpt.x + ' ' + tpt.y);
+
     //check root
-    if (root.contains && root.contains(tpt)) {
+    if (root?.contains(tpt)) {
         //debug cbxx
         console.log('-> added root');
 
