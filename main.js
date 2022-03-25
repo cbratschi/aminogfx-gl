@@ -470,7 +470,7 @@ function findNodesAtXY(root, pt, filter, tab) {
     //console.log('-> point ' + tpt.x + ' ' + tpt.y);
 
     //check root
-    if (root?.contains(tpt)) {
+    if (root.contains?.(tpt)) {
         //debug
         //console.log('-> added root');
 
