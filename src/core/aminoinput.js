@@ -261,7 +261,7 @@ AminoEvents.prototype.on = function (name, target, listener) {
 
     //add
     this.listeners[name].push({
-        target: target,
+        target,
         func: listener
     });
 };
@@ -444,6 +444,12 @@ AminoEvents.prototype.sendKeyboardReleaseEvent = function (event) {
     this.fireEventAtTarget(event.target, event);
 };
 
+/**
+ * Fire an event.
+ *
+ * @param {*} target
+ * @param {*} event
+ */
 AminoEvents.prototype.fireEventAtTarget = function (target, event) {
     if (DEBUG) {
         console.log('firing an event at target:', event.type, target ? target.id():'');
@@ -456,11 +462,15 @@ AminoEvents.prototype.fireEventAtTarget = function (target, event) {
     const funcs = this.listeners[event.type];
 
     if (funcs) {
-        funcs.forEach(function (l) {
-            if (l.target === target) {
-                l.func(event);
+        for (const item of funcs) {
+            if (item.target === target) {
+                //debug cbxx
+                console.dir(item.func);
+                console.dir(event);
+
+                item.func(event);
             }
-        });
+        }
     }
 };
 
