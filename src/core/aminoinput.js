@@ -38,6 +38,25 @@ function makePoint(x, y) {
         },
 
         /**
+         * Add a point.
+         *
+         * @returns
+         */
+        add: function () {
+            if (arguments.length === 1) {
+                const pt = arguments[0];
+
+                return makePoint(this.x + pt.x, this.y + pt.y);
+            }
+
+            if (arguments.length === 2) {
+                const xy = arguments;
+
+                return makePoint(this.x + xy[0], this.y + xy[1]);
+            }
+        },
+
+        /**
          * Divide by x and y value.
          *
          * @param {*} x

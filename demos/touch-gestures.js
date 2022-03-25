@@ -68,7 +68,7 @@ const DEBUG = true;
             [ touch1, touch2 ] = event.points;
 
             distanceStart = touch1.pt.distanceTo(touch2.pt);
-            lastCenterPos = touch1.pt.add(touch2.pt).div(2, 2);
+            lastCenterPos = touch1.pt.add(touch2.pt).divide(2, 2);
 
             if (DEBUG) {
                 console.log('-> init two finger touch');
