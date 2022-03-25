@@ -38,6 +38,7 @@ gfx.start(function (err) {
 
     //cbxx TODO verify
     let buttonPressed = -1;
+    let lastButtonPressed = -1;
 
     this.on('drag', rect, event => {
         //move rectangle
@@ -62,13 +63,11 @@ gfx.start(function (err) {
     });
 
     this.on('release', rect, event => {
-        //cbxx FIXME seeing crash
-        console.dir(Object.keys(event));
-
         if (buttonPressed !== event.button) {
             return;
         }
 
+        lastButtonPressed = buttonPressed;
         buttonPressed = -1;
 
         //set blue
@@ -78,8 +77,8 @@ gfx.start(function (err) {
         console.log('-> rect released');
     });
 
-    this.on('click', rect, function () {
-        if (buttonPressed !== event.button) {
+    this.on('click', rect, event => {
+        if (lastButtonPressed !== event.button) {
             return;
         }
 

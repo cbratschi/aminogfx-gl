@@ -464,10 +464,6 @@ AminoEvents.prototype.fireEventAtTarget = function (target, event) {
     if (funcs) {
         for (const item of funcs) {
             if (item.target === target) {
-                //debug cbxx
-                console.log(event.actio);
-                console.dir(item.func);
-
                 item.func(event);
             }
         }
@@ -486,7 +482,6 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
     //check end of touch (all)
     if (!evt.pressed) {
         //fire release
-        //cbxx FIXME bug in next cycle
         for (const item of lastTouchPoints) {
             const target = item.target;
 
