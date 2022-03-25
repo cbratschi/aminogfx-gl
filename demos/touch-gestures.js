@@ -41,8 +41,8 @@ const DEBUG = true;
     let lastCenterPos;
 
     gfx.on('touch', root, event => {
-        //debug
-        //console.log('-> handling touch event:');
+        //debug cbxx
+        console.log('-> handling touch event:');
         //console.dir(event);
 
         //check release
@@ -59,7 +59,7 @@ const DEBUG = true;
         }
 
         //check two touch points
-        if (event.points !== 2) {
+        if (event.count !== 2) {
             return;
         }
 
