@@ -39,6 +39,7 @@ const DEBUG = true;
     let touch2 = null;
     let distanceStart;
     let lastCenterPos;
+    let angleStart;
 
     gfx.on('touch', root, event => {
         //debug cbxx
@@ -69,6 +70,7 @@ const DEBUG = true;
 
             distanceStart = touch1.pt.distanceTo(touch2.pt);
             lastCenterPos = touch1.pt.add(touch2.pt).divide(2, 2);
+            angleStart = angleToDegrees(touch1.pt.angleWith(touch2.pt));
 
             if (DEBUG) {
                 console.log('-> init two finger touch');
@@ -94,6 +96,8 @@ const DEBUG = true;
         const distance = tp1.pt.distanceTo(tp2.pt);
         const zoomFac = distance / distanceStart;
 
+        model.zx(zoomFac).zy(zoomFac);
+
         if (DEBUG) {
             console.log('zoom: ' + zoomFac);
         }
@@ -104,12 +108,14 @@ const DEBUG = true;
 
         lastCenterPos = centerPos;
 
+        model.x(model.x() + diff.x).y(model.y() + diff.y);
+
         if (DEBUG) {
             console.log('move ' + diff.x + '/' + diff.y);
         }
 
         // 3) rotate
-        const angle = tp1.pt.angleWith(tp2.pt);
+        const angle = angleToDegrees(tp1.pt.angleWith(tp2.pt));
 
         if (DEBUG) {
             console.log('angle: ' + angle / Math.PI * 180 + '°');
@@ -118,6 +124,18 @@ const DEBUG = true;
         //cbxx TODO
     });
 })();
+
+/**
+ * Convert radian too 0..360 degrees.
+ *
+ * @param {*} angle
+ * @returns
+ */
+function angleToDegrees(angle) {
+    //cbxx TODO move
+    //-PI .. + PI -> 0 .. 360
+    return (angle + Math.PI) / Math.PI * 180;
+}
 
 /**
  * Create moon model.
