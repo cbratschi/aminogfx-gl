@@ -42,6 +42,8 @@ const DEBUG = true;
 
     gfx.on('touch', root, event => {
         //debug cbxx
+        //cbxx FIXME not called
+        console.log('-> handling touch event:');
         console.dir(event);
 
         //check release

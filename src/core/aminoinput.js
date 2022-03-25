@@ -589,6 +589,9 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
             item.target = target;
 
             if (!target) {
+                //debug cbxx
+                console.log('-> no touch target found');
+
                 continue;
             }
 
