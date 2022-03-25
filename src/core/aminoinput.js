@@ -589,8 +589,8 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
             item.target = target;
 
             if (!target) {
-                //debug cbxx
-                console.log('-> no touch target found');
+                //debug
+                //console.log('-> no touch target found');
 
                 continue;
             }
@@ -658,8 +658,8 @@ AminoEvents.prototype.handleTouchEvent = function (evt) {
  */
 AminoEvents.prototype.getTouchNodeAtXY = function (pt) {
     const nodes = this.gfx.findNodesAtXY(pt, node => {
-        //debug cbxx
-        console.log('-> filter children');
+        //debug
+        //console.log('-> filter children');
 
         //filter opt-out
         if (node.children && node.acceptsMouseEvents === false && node.acceptsTouchEvents === false) {
@@ -668,14 +668,14 @@ AminoEvents.prototype.getTouchNodeAtXY = function (pt) {
 
         return true;
     }).filter(node => {
-        //debug cbxx
-        console.log('-> filter node');
+        //debug
+        //console.log('-> filter node');
 
         return node.acceptsMouseEvents === true || node.acceptsTouchEvents === true;
     });
 
-    //debug cbxx
-    console.log('-> found ' + nodes.length);
+    //debug
+    //console.log('-> found ' + nodes.length);
 
     if (nodes.length > 0) {
         //node found

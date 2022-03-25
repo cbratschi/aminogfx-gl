@@ -50,8 +50,6 @@ const amino = require('../main.js');
             createButton(xPos, yPos);
             yPos += buttonWH + space;
         }
-
-        //cbxx TODO
     }
 
     function createButton(x, y) {
@@ -59,8 +57,8 @@ const amino = require('../main.js');
         const colorPressed = '#ff0000';
         const rect = gfx.createRect().w(buttonWH).h(buttonWH).x(x).y(y).fill(color);
 
-        //debug cbxx
-        console.log('Button: ' + x + ' ' + y);
+        //debug
+        //console.log('Button: ' + x + ' ' + y);
 
         //mouse and touch events (supports multiple touch points)
         rect.acceptsMouseEvents = true;

@@ -417,8 +417,8 @@ AminoGfx.prototype.find = function (id) {
  * Find a node at a certain position with an optional filter callback.
  */
 AminoGfx.prototype.findNodesAtXY = function (pt, filter) {
-    //debug cbxx
-    console.log('findNodesAtXY()');
+    //debug
+    //console.log('findNodesAtXY()');
 
     return findNodesAtXY(this.root, pt, filter, '');
 };
@@ -439,12 +439,12 @@ function findNodesAtXY(root, pt, filter, tab) {
     let res = [];
 
     if (filter) {
-        //debug cbxx
-        console.log('-> using filter on root');
+        //debug
+        //console.log('-> using filter on root');
 
         if (!filter(root)) {
-            //debug cbxx
-            console.log('-> root skipped');
+            //debug
+            //console.log('-> root skipped');
 
             return res;
         }
@@ -454,8 +454,8 @@ function findNodesAtXY(root, pt, filter, tab) {
     const childCount = root.children?.length;
 
     if (childCount) {
-        //debug cbxx
-        console.log('-> checking ' + childCount + ' children');
+        //debug
+        //console.log('-> checking ' + childCount + ' children');
 
         for (let i = childCount - 1; i >= 0; i--) {
             const node = root.children[i];
@@ -465,14 +465,14 @@ function findNodesAtXY(root, pt, filter, tab) {
         }
     }
 
-    //debug cbxx
-    console.log('-> root ' + root.x() + ' ' + root.y() + ' ' + root.w() + ' ' + root.h());
-    console.log('-> point ' + tpt.x + ' ' + tpt.y);
+    //debug
+    //console.log('-> root ' + root.x() + ' ' + root.y() + ' ' + root.w() + ' ' + root.h());
+    //console.log('-> point ' + tpt.x + ' ' + tpt.y);
 
     //check root
     if (root?.contains(tpt)) {
-        //debug cbxx
-        console.log('-> added root');
+        //debug
+        //console.log('-> added root');
 
         res.push(root);
     }
