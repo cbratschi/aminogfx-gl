@@ -37,7 +37,6 @@ gfx.start(function (err) {
     });
 
     //mouse (touch) handling
-    //cbxx TODO verify
     let buttonPressed = -1;
     let lastButtonPressed = -1;
 
