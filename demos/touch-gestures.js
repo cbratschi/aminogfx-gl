@@ -16,8 +16,8 @@ const DEBUG = true;
 
     await gfx.start();
 
-    //setup root
-    const root = gfx.createGroup();
+    //setup root (full size)
+    const root = gfx.createGroup().w(gfx.w()).h(gfx.h());
 
     gfx.setRoot(root);
 
