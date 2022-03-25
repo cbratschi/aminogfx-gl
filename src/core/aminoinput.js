@@ -110,7 +110,7 @@ function makePoint(x, y) {
                 if (alpha > 0) {
                     alpha = Math.PI - alpha;
                 } else {
-                    alpha = - Math.PI + alpha;
+                    alpha = Math.PI + alpha;
                 }
             }
 
@@ -118,6 +118,8 @@ function makePoint(x, y) {
             if (Number.isNaN(alpha)) {
                 return 0;
             }
+
+            //cbxx TODO convert to 0..360 degrees
 
             return alpha;
         }

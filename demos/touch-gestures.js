@@ -44,8 +44,8 @@ const DEBUG = true;
     let angleStart;
 
     gfx.on('touch', root, event => {
-        //debug cbxx
-        console.log('-> handling touch event:');
+        //debug
+        //console.log('-> handling touch event:');
         //console.dir(event);
 
         //check release
@@ -122,13 +122,12 @@ const DEBUG = true;
         const angle = angleToDegrees(tp1.pt.angleWith(tp2.pt));
         const angleDiff = -(angle - angleStart);
 
-        model.rz(angleDiff);
+        //FIXME interferes with animation and texture
+        //model.rz(angleDiff);
 
         if (DEBUG) {
-            console.log('angle: ' + angle + '(' + angleDiff + ')');
+            console.log('angle: ' + angle + ' (' + angleDiff + ')');
         }
-
-        //cbxx TODO
     });
 })();
 
@@ -140,6 +139,7 @@ const DEBUG = true;
  */
 function angleToDegrees(angle) {
     //cbxx TODO move
+    //cbxx FIXME still getting negative values
     //-PI .. + PI -> 0 .. 360
     return (angle + Math.PI) / Math.PI * 180;
 }
@@ -213,7 +213,7 @@ function createMoonModel(model) {
     //texture (http://planetpixelemporium.com/earth.html)
     model.src(path.join(__dirname, 'tests/sphere/moonmap1k.jpg'));
     //model.src(path.join(__dirname, 'sphere/earthmap1k.jpg'));
-return;
+
     //animate
     model.rx.anim().from(0).to(360).dur(5000).loop(-1).start();
     model.ry.anim().from(0).to(360).dur(5000).loop(-1).start();
