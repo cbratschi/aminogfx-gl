@@ -53,7 +53,8 @@ const DEBUG = true;
             //reset
             touch1 = null;
             touch2 = null;
-            model.sx(1).sy(1);
+
+            model.sx(1).sy(1).rz(0);
 
             if (DEBUG) {
                 console.log('-> reset');
@@ -119,9 +120,12 @@ const DEBUG = true;
 
         // 3) rotate
         const angle = angleToDegrees(tp1.pt.angleWith(tp2.pt));
+        const angleDiff = angle - angleStart;
+
+        model.rz(angleDiff);
 
         if (DEBUG) {
-            console.log('angle: ' + angle + '(' + (angle - angleStart) + ')');
+            console.log('angle: ' + angle + '(' + angleDiff + ')');
         }
 
         //cbxx TODO
