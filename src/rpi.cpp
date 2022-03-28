@@ -922,7 +922,6 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
     Nan::Set(displayObj, Nan::New("topBarHeight").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.top_bar_height));
     Nan::Set(displayObj, Nan::New("bottomBarHeight").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.bottom_bar_height));
     Nan::Set(displayObj, Nan::New("overscanFlags").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.overscan_flags));
-    */
 
     //device
     TV_DEVICE_ID_T id;
@@ -934,14 +933,14 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
         v8::Local<v8::Object> deviceObj = Nan::New<v8::Object>();
 
         //add monitor property
-        //cbxx FIXME bullseye
-        //Nan::Set(hdmiObj, Nan::New("device").ToLocalChecked(), deviceObj);
+        Nan::Set(hdmiObj, Nan::New("device").ToLocalChecked(), deviceObj);
 
         //properties
         Nan::Set(deviceObj, Nan::New("vendor").ToLocalChecked(), Nan::New(id.vendor).ToLocalChecked());
         Nan::Set(deviceObj, Nan::New("monitorName").ToLocalChecked(), Nan::New(id.monitor_name).ToLocalChecked());
         Nan::Set(deviceObj, Nan::New("serialNum").ToLocalChecked(), Nan::New(id.serial_num));
     }
+    */
 }
 
 #ifdef EGL_DISPMANX
