@@ -78,9 +78,11 @@ void AminoGfxRPi::setup() {
             printf("-> initializing VideoCore\n");
         }
 
+#ifdef EGL_DISPMANX
         //VideoCore IV
-        //cbxx FIXME bullseye: undefined symbol: bcm_host_init
-        //bcm_host_init();
+        //Note: was supported on Buster but removed on Bullseye
+        bcm_host_init();
+#endif
 
 #ifdef EGL_GBM
         if (DEBUG_GLES) {
@@ -880,10 +882,9 @@ bool AminoGfxRPi::getScreenInfo(int &w, int &h, int &refreshRate, bool &fullscre
 void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
     AminoGfx::getStats(obj);
 
+#ifdef EGL_DISPMANX
     //HDMI (see https://github.com/raspberrypi/userland/blob/master/interface/vmcs_host/vc_hdmi.h)
-    //Note: works on RPi 4 too
-    //cbxx FIXME bullseye undefined symbol: vc_tv_get_display_state -> need replacement
-    /*
+    //Note: works on RPi 4 too (Buster but removed in Bullseye)
     TV_DISPLAY_STATE_T *tvState = getDisplayState();
 
     if (!tvState) {
@@ -928,7 +929,6 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
 
     memset(&id, 0, sizeof(id));
 
-    //cbxx TODO check on bullseye
     if (vc_tv_get_device_id(&id) == 0 && id.vendor[0] != '\0' && id.monitor_name[0] != '\0') {
         v8::Local<v8::Object> deviceObj = Nan::New<v8::Object>();
 
@@ -940,7 +940,9 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
         Nan::Set(deviceObj, Nan::New("monitorName").ToLocalChecked(), Nan::New(id.monitor_name).ToLocalChecked());
         Nan::Set(deviceObj, Nan::New("serialNum").ToLocalChecked(), Nan::New(id.serial_num));
     }
-    */
+#endif
+
+    //cbxx TODO DRM info on Bullseye
 }
 
 #ifdef EGL_DISPMANX
@@ -1009,9 +1011,8 @@ void AminoGfxRPi::populateRuntimeProperties(v8::Local<v8::Object> &obj) {
     drmFreeVersion(version);
 #endif
 
-    //VC (Note: works on RPi 4 too)
-    //cbxx FIXME bullseye: undefined symbol: vc_gencmd
-    /*
+#ifdef EGL_DISPMANX
+    //VC (Note: works on RPi 4 too, missing on Bullseye)
     char resp[80] = "";
 
     //Note: does not work on RPi 4!
@@ -1028,7 +1029,9 @@ void AminoGfxRPi::populateRuntimeProperties(v8::Local<v8::Object> &obj) {
             //printf("gpu_mem: %i\n", gpuMem);
         }
     }
-    */
+#endif
+
+    //cbxx TODO support on Bullseye
 
     //build info
 #ifdef RPI_BUILD
