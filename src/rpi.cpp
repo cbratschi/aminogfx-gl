@@ -934,7 +934,8 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
         v8::Local<v8::Object> deviceObj = Nan::New<v8::Object>();
 
         //add monitor property
-        Nan::Set(hdmiObj, Nan::New("device").ToLocalChecked(), deviceObj);
+        //cbxx FIXME bullseye
+        //Nan::Set(hdmiObj, Nan::New("device").ToLocalChecked(), deviceObj);
 
         //properties
         Nan::Set(deviceObj, Nan::New("vendor").ToLocalChecked(), Nan::New(id.vendor).ToLocalChecked());
