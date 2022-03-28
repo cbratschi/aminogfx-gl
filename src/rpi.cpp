@@ -848,6 +848,7 @@ bool AminoGfxRPi::getScreenInfo(int &w, int &h, int &refreshRate, bool &fullscre
 #ifdef EGL_GBM
     drmModeConnector *connector = drmModeGetConnector(driDevice, connector_id);
 
+    //cbxx TODO bullseye: more data?
     if (connector) {
         refreshRate = connector->modes[0].vrefresh;
 
@@ -881,6 +882,8 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
 
     //HDMI (see https://github.com/raspberrypi/userland/blob/master/interface/vmcs_host/vc_hdmi.h)
     //Note: works on RPi 4 too
+    //cbxx FIXME bullseye undefined symbol: vc_tv_get_display_state -> need replacement
+    /*
     TV_DISPLAY_STATE_T *tvState = getDisplayState();
 
     if (!tvState) {
@@ -919,12 +922,14 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
     Nan::Set(displayObj, Nan::New("topBarHeight").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.top_bar_height));
     Nan::Set(displayObj, Nan::New("bottomBarHeight").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.bottom_bar_height));
     Nan::Set(displayObj, Nan::New("overscanFlags").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.overscan_flags));
+    */
 
     //device
     TV_DEVICE_ID_T id;
 
     memset(&id, 0, sizeof(id));
 
+    //cbxx TODO check on bullseye
     if (vc_tv_get_device_id(&id) == 0 && id.vendor[0] != '\0' && id.monitor_name[0] != '\0') {
         v8::Local<v8::Object> deviceObj = Nan::New<v8::Object>();
 
@@ -1005,11 +1010,11 @@ void AminoGfxRPi::populateRuntimeProperties(v8::Local<v8::Object> &obj) {
 #endif
 
     //VC (Note: works on RPi 4 too)
+    //cbxx FIXME bullseye: undefined symbol: vc_gencmd
+    /*
     char resp[80] = "";
 
     //Note: does not work on RPi 4!
-    //cbxx FIXME bullseye: undefined symbol: vc_gencmd
-    /*
     if (vc_gencmd(resp, sizeof resp, "get_mem gpu") == 0) {
         //GPU memory in MB
         int gpuMem = 0;
