@@ -79,7 +79,8 @@ void AminoGfxRPi::setup() {
         }
 
         //VideoCore IV
-        bcm_host_init();
+        //cbxx FIXME bullseye: undefined symbol: bcm_host_init
+        //bcm_host_init();
 
 #ifdef EGL_GBM
         if (DEBUG_GLES) {
