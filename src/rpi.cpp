@@ -1008,6 +1008,8 @@ void AminoGfxRPi::populateRuntimeProperties(v8::Local<v8::Object> &obj) {
     char resp[80] = "";
 
     //Note: does not work on RPi 4!
+    //cbxx FIXME bullseye: undefined symbol: vc_gencmd
+    /*
     if (vc_gencmd(resp, sizeof resp, "get_mem gpu") == 0) {
         //GPU memory in MB
         int gpuMem = 0;
@@ -1021,6 +1023,7 @@ void AminoGfxRPi::populateRuntimeProperties(v8::Local<v8::Object> &obj) {
             //printf("gpu_mem: %i\n", gpuMem);
         }
     }
+    */
 
     //build info
 #ifdef RPI_BUILD
