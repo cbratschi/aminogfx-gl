@@ -979,8 +979,68 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
         printf("  -> %ix%i@%i (%s)\n", mode->hdisplay, mode->vdisplay, mode->vrefresh, mode->name);
     }
 
-    //properties
-    //cbxx properties_info(fd, conn->connector_id, DRM_MODE_OBJECT_CONNECTOR);
+    //properties (see https://github.com/ascent12/drm_info/blob/master/json.c#L376)
+    drmModeObjectProperties *props = drmModeObjectGetProperties(driDevice, conn->connector_id, DRM_MODE_OBJECT_CONNECTOR);
+
+    if (props) {
+        for (uint32_t i = 0; i < props->count_props; ++i) {
+            drmModePropertyRes *prop = drmModeGetProperty(fd, props->props[i]);
+
+            if (!prop) {
+                continue;
+            }
+
+            uint32_t flags = prop->flags;
+            uint32_t type = flags & (DRM_MODE_PROP_LEGACY_TYPE | DRM_MODE_PROP_EXTENDED_TYPE);
+            bool atomic = flags & DRM_MODE_PROP_ATOMIC;
+            bool immutable = flags & DRM_MODE_PROP_IMMUTABLE;
+            uint64_t value = props->prop_values[i];
+
+            //debug cbxx
+            printf(" -> property %s\n", prop->name);
+
+            //check type
+            switch (type) {
+                case DRM_MODE_PROP_RANGE:
+                    uint64_t rangeMin = prop->values[0];
+                    uint64_t rangeMax = prop->values[1];
+
+                    //debug cbxx
+                    printf(" -> range: %" PRIu64 " %" PRIu64 "\n", rangeMin, rangeMax);
+                    break;
+
+                case DRM_MODE_PROP_ENUM:
+                case DRM_MODE_PROP_BITMASK:
+                    for (int j = 0; j < prop->count_enums; ++j) {
+                        //debug cbxx
+                        printf(" -> enum %s: %" PRIu64 "\n", prop->enums[j].name, prop->enums[j].value);
+                    }
+                    break;
+
+                case DRM_MODE_PROP_OBJECT:
+                    //debug cbxx
+                    printf(" -> object %s: %" PRIu64 "\n", prop->values[0]);
+                    break;
+
+                case DRM_MODE_PROP_SIGNED_RANGE:
+                    int64_t rangeMin = (int64_t)prop->values[0];
+                    int64_t rangeMax = (int64_t)prop->values[1];
+
+                    //debug cbxx
+                    printf(" -> range: %" PRId64 " %" PRId64 "\n", rangeMin, rangeMax);
+                    break;
+
+                default:
+                    //debug cbxx
+                    printf(" -> unknown\n");
+                    break;
+            }
+
+            drmModeFreeProperty(prop);
+        }
+
+        drmModeFreeObjectProperties(props);
+    }
 
     //done
     drmModeFreeConnector(conn);
