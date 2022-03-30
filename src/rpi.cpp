@@ -984,7 +984,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
     if (props) {
         for (uint32_t i = 0; i < props->count_props; ++i) {
-            drmModePropertyRes *prop = drmModeGetProperty(fd, props->props[i]);
+            drmModePropertyRes *prop = drmModeGetProperty(driDevice, props->props[i]);
 
             if (!prop) {
                 continue;
@@ -1001,13 +1001,14 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
             //check type
             switch (type) {
-                case DRM_MODE_PROP_RANGE:
+                case DRM_MODE_PROP_RANGE: {
                     uint64_t rangeMin = prop->values[0];
                     uint64_t rangeMax = prop->values[1];
 
                     //debug cbxx
                     printf(" -> range: %" PRIu64 " %" PRIu64 "\n", rangeMin, rangeMax);
                     break;
+                }
 
                 case DRM_MODE_PROP_ENUM:
                 case DRM_MODE_PROP_BITMASK:
@@ -1019,16 +1020,17 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
                 case DRM_MODE_PROP_OBJECT:
                     //debug cbxx
-                    printf(" -> object %s: %" PRIu64 "\n", prop->values[0]);
+                    printf(" -> object %" PRIu64 "\n", prop->values[0]);
                     break;
 
-                case DRM_MODE_PROP_SIGNED_RANGE:
+                case DRM_MODE_PROP_SIGNED_RANGE: {
                     int64_t rangeMin = (int64_t)prop->values[0];
                     int64_t rangeMax = (int64_t)prop->values[1];
 
                     //debug cbxx
                     printf(" -> range: %" PRId64 " %" PRId64 "\n", rangeMin, rangeMax);
                     break;
+                }
 
                 default:
                     //debug cbxx
