@@ -109,6 +109,7 @@ private:
     void getStats(v8::Local<v8::Object> &obj) override;
 #ifdef EGL_GBM
     void getDrmStats(v8::Local<v8::Object> &obj);
+    void showPropertyBlob(uint32_t id);
 #endif
 
 #ifdef EGL_DISPMANX

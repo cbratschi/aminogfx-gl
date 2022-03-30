@@ -1034,9 +1034,14 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
                 case DRM_MODE_PROP_BLOB:
                     //debug cbxx
-                    printf(" -> blob: cont=%i\n", prop->count_blobs);
+                    printf(" -> blob: count=%i\n %" PRIu64 "\n", prop->count_blobs, prop->values[0]);
 
-                    //cbxx TODO blob_ids
+                    //debug cbxx TODO meaning
+                    for (int j = 0; j < prop->count_blobs; j++) {
+                        showPropertyBlob(prop->blob_ids[j]));
+                    }
+
+                    showPropertyBlob(prop->values[0]);
                     break;
 
                 default:
@@ -1053,6 +1058,33 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
     //done
     drmModeFreeConnector(conn);
+}
+
+/**
+ * @brief Display a blob on console.
+ *
+ * @param id
+ */
+void AminoGfxRPi::showPropertyBlob(uint32_t id) {
+    drmModePropertyBlobPtr blob = drmModeGetPropertyBlob(driDevice, id);
+
+    if (!blob) {
+        return;
+    }
+
+    unsigned char *blob_data = blob->data;
+
+    for (uint32_t i = 0; i < blob->length; i++) {
+        if (i % 16 == 0) {
+            printf("\n\t\t\t");
+        }
+
+        printf("%.2hhx", blob_data[i]);
+    }
+
+    printf("\n");
+
+    drmModeFreePropertyBlob(blob);
 }
 #endif
 
