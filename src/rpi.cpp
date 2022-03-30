@@ -1006,21 +1006,23 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     uint64_t rangeMax = prop->values[1];
 
                     //debug cbxx
-                    printf(" -> range: %" PRIu64 " %" PRIu64 "\n", rangeMin, rangeMax);
+                    printf(" -> range %" PRIu64 "..%" PRIu64 ": %" PRIu64 "\n", rangeMin, rangeMax, value);
                     break;
                 }
 
                 case DRM_MODE_PROP_ENUM:
                 case DRM_MODE_PROP_BITMASK:
+                    //debug cbxx
                     for (int j = 0; j < prop->count_enums; ++j) {
-                        //debug cbxx
                         printf(" -> enum %s: %" PRIu64 "\n", prop->enums[j].name, prop->enums[j].value);
                     }
+
+                    printf(" -> value %" PRIu64 "\n", value);
                     break;
 
                 case DRM_MODE_PROP_OBJECT:
                     //debug cbxx
-                    printf(" -> object %" PRIu64 "\n", prop->values[0]);
+                    printf(" -> object %" PRIu64 "\n", value);
                     break;
 
                 case DRM_MODE_PROP_SIGNED_RANGE: {
@@ -1028,7 +1030,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     int64_t rangeMax = (int64_t)prop->values[1];
 
                     //debug cbxx
-                    printf(" -> range: %" PRId64 " %" PRId64 "\n", rangeMin, rangeMax);
+                    printf(" -> range %" PRId64 "..%" PRId64 ": %" PRId64 "\n", rangeMin, rangeMax, (int64_t)value);
                     break;
                 }
 
@@ -1041,7 +1043,9 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                         showPropertyBlob(prop->blob_ids[j]);
                     }
 
-                    showPropertyBlob(prop->values[0]);
+                    if (value) {
+                        showPropertyBlob(value);
+                    }
                     break;
 
                 default:
@@ -1068,10 +1072,6 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
  * @param id
  */
 void AminoGfxRPi::showPropertyBlob(uint32_t id) {
-    if (!id) {
-        return;
-    }
-
     drmModePropertyBlobPtr blob = drmModeGetPropertyBlob(driDevice, id);
 
     if (!blob) {
@@ -1079,7 +1079,7 @@ void AminoGfxRPi::showPropertyBlob(uint32_t id) {
     }
 
     //debug cbxx
-    printf(" -> blong len=%i\n", blob->length);
+    printf(" -> blob len=%i\n", blob->length);
 
     unsigned char *blob_data = (unsigned char *)blob->data;
 
