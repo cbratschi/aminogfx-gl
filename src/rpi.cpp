@@ -952,7 +952,7 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
  *
  * @param obj
  */
-void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
+void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
     //current connector
     drmModeConnector *conn = drmModeGetConnector(driDevice, connector_id);
 
