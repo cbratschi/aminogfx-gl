@@ -997,7 +997,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
             uint64_t value = props->prop_values[i];
 
             //debug cbxx
-            printf(" -> property %s\n", prop->name);
+            printf(" -> property %s (values=%i)\n", prop->name, prop->count_values);
 
             //check type
             switch (type) {
@@ -1063,14 +1063,23 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 /**
  * @brief Display a blob on console.
  *
+ * See https://github.com/CPFL/drm/blob/master/tests/proptest/proptest.c#L87.
+ *
  * @param id
  */
 void AminoGfxRPi::showPropertyBlob(uint32_t id) {
+    if (!id) {
+        return;
+    }
+
     drmModePropertyBlobPtr blob = drmModeGetPropertyBlob(driDevice, id);
 
     if (!blob) {
         return;
     }
+
+    //debug cbxx
+    printf(" -> blong len=%i\n", blob->length);
 
     unsigned char *blob_data = (unsigned char *)blob->data;
 
