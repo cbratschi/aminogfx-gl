@@ -1038,7 +1038,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
                     //debug cbxx TODO meaning
                     for (int j = 0; j < prop->count_blobs; j++) {
-                        showPropertyBlob(prop->blob_ids[j]));
+                        showPropertyBlob(prop->blob_ids[j]);
                     }
 
                     showPropertyBlob(prop->values[0]);
@@ -1072,7 +1072,7 @@ void AminoGfxRPi::showPropertyBlob(uint32_t id) {
         return;
     }
 
-    unsigned char *blob_data = blob->data;
+    unsigned char *blob_data = (unsigned char *)blob->data;
 
     for (uint32_t i = 0; i < blob->length; i++) {
         if (i % 16 == 0) {
