@@ -114,7 +114,6 @@ void AminoGfxRPi::setup() {
          *
          * -> have to verify DRM first
          */
-        //cbxx TODO verify
         drmModeRes *resources = drmModeGetResources(driDevice);
 
         if (resources == NULL) {
@@ -850,7 +849,6 @@ bool AminoGfxRPi::getScreenInfo(int &w, int &h, int &refreshRate, bool &fullscre
 #ifdef EGL_GBM
     drmModeConnector *connector = drmModeGetConnector(driDevice, connector_id);
 
-    //cbxx TODO bullseye: more data?
     if (connector) {
         refreshRate = connector->modes[0].vrefresh;
 
@@ -880,6 +878,7 @@ bool AminoGfxRPi::getScreenInfo(int &w, int &h, int &refreshRate, bool &fullscre
  * Get runtime statistics.
  */
 void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
+    //get default values
     AminoGfx::getStats(obj);
 
 #ifdef EGL_DISPMANX
@@ -896,7 +895,7 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
     v8::Local<v8::Object> hdmiObj = Nan::New<v8::Object>();
 
     Nan::Set(obj, Nan::New("hdmi").ToLocalChecked(), hdmiObj);
-
+//cbxx add similar
     // HDMI_DISPLAY_STATE_T
     Nan::Set(hdmiObj, Nan::New("state").ToLocalChecked(), Nan::New(tvState->display.hdmi.state));
     Nan::Set(hdmiObj, Nan::New("width").ToLocalChecked(), Nan::New(tvState->display.hdmi.width));
@@ -909,7 +908,7 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
     Nan::Set(hdmiObj, Nan::New("aspectRatio").ToLocalChecked(), Nan::New(tvState->display.hdmi.aspect_ratio));
     Nan::Set(hdmiObj, Nan::New("pixelEncoding").ToLocalChecked(), Nan::New(tvState->display.hdmi.pixel_encoding));
     Nan::Set(hdmiObj, Nan::New("format3d").ToLocalChecked(), Nan::New(tvState->display.hdmi.format_3d));
-
+//cbxx add similar
     //display options (HDMI_DISPLAY_OPTIONS_T)
     v8::Local<v8::Object> displayObj = Nan::New<v8::Object>();
 
@@ -942,8 +941,51 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
     }
 #endif
 
-    //cbxx TODO DRM info on Bullseye
+#ifdef EGL_GBM
+    getDrmStats(obj);
+#endif
 }
+
+#ifdef EGL_GBM
+/**
+ * @brief Get stata from DRM.
+ *
+ * @param obj
+ */
+void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
+    //current connector
+    drmModeConnector *conn = drmModeGetConnector(driDevice, connector_id);
+
+    if (!conn) {
+        return;
+    }
+
+    //connector data
+    //cbxx TODO
+    std::string type = getDrmConnectorType(connector2);
+    std::string connected = SYS_connect->connection == DRM_MODE_CONNECTED ? "connected":"disconnected";
+
+    //debug cbxx
+    printf(" -> %s-%d (%s)\n", type.c_str(), conn->connector_type_id, connected.c_str());
+
+    //active mode
+    //cbxx TODO mode_info
+
+    //modes
+    for (int i = 0; i < connector2->count_modes; i++) {
+        drmModeModeInfo *mode = &const_pointer->modes[i];
+
+        //debug cbxx
+        printf("  -> %ix%i@%i (%s)\n", mode->hdisplay, mode->vdisplay, mode->vrefresh, mode->name);
+    }
+
+    //properties
+    //cbxx properties_info(fd, conn->connector_id, DRM_MODE_OBJECT_CONNECTOR);
+
+    //done
+    drmModeFreeConnector(conn);
+}
+#endif
 
 #ifdef EGL_DISPMANX
 /**
@@ -985,7 +1027,7 @@ void AminoGfxRPi::switchHdmiOff() {
 #endif
 
 /**
- * Add VideoCore IV properties.
+ * Add VideoCore IV and generic properties.
  */
 void AminoGfxRPi::populateRuntimeProperties(v8::Local<v8::Object> &obj) {
     if (DEBUG_GLES) {
@@ -1031,7 +1073,7 @@ void AminoGfxRPi::populateRuntimeProperties(v8::Local<v8::Object> &obj) {
     }
 #endif
 
-    //cbxx TODO support on Bullseye
+    //TODO support on Bullseye
 
     //build info
 #ifdef RPI_BUILD

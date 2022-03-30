@@ -107,6 +107,9 @@ private:
 
     bool getScreenInfo(int &w, int &h, int &refreshRate, bool &fullscreen) override;
     void getStats(v8::Local<v8::Object> &obj) override;
+#ifdef EGL_GBM
+    void getDrmStats(v8::Local<v8::Object> &obj);
+#endif
 
 #ifdef EGL_DISPMANX
     void forceHdmiMode(uint32_t code);
