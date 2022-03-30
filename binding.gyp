@@ -90,6 +90,8 @@
                                 # OMX
                                 "src/ilclient/ilclient.c",
                                 "src/ilclient/ilcore.c",
+                                # EDID
+                                "src/edid/edid.c",
                                 # base
                                 "src/rpi.cpp",
                                 "src/rpi_input.cpp",

@@ -9,6 +9,8 @@
 
 #include <sstream>
 
+#include "edid.h"
+
 #define gettid() syscall(SYS_gettid)
 
 //debug
@@ -1036,15 +1038,15 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
                 case DRM_MODE_PROP_BLOB:
                     //debug cbxx
-                    printf(" -> blob: count=%i\n value=%" PRIu64 "\n", prop->count_blobs, value);
+                    printf(" -> blob: count=%i value=%" PRIu64 "\n", prop->count_blobs, value);
 
                     //debug cbxx TODO meaning
                     for (int j = 0; j < prop->count_blobs; j++) {
-                        showPropertyBlob(prop->blob_ids[j]);
+                        showPropertyBlob(prop->blob_ids[j], prop->name);
                     }
 
                     if (value) {
-                        showPropertyBlob(value);
+                        showPropertyBlob(value, prop->name);
                     }
                     break;
 
@@ -1071,7 +1073,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
  *
  * @param id
  */
-void AminoGfxRPi::showPropertyBlob(uint32_t id) {
+void AminoGfxRPi::showPropertyBlob(uint32_t id, char *name) {
     drmModePropertyBlobPtr blob = drmModeGetPropertyBlob(driDevice, id);
 
     if (!blob) {
@@ -1092,6 +1094,22 @@ void AminoGfxRPi::showPropertyBlob(uint32_t id) {
     }
 
     printf("\n");
+
+    //parse data
+    if (strcmp(name, "EDID") == 0) {
+        //https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
+        //https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/drm_edid.c#L1988
+        //https://github.com/nyorain/kms-vulkan/blob/master/kms.c#L433
+        //Note: unfortunately no library to parse the EDID, need our own code
+        struct edid_info *edid = edid_parse((uint8_t *)blob->data, (size_t)blob->length)
+
+        if (edid) {
+            //debug cbxx
+             printf("-> EDID data eisa_id='%s', monitor_name='%s', pnp_id='%s', serial_number='%s'\n", edid->eisa_id, edid->monitor_name, edid->pnp_id, edid->serial_number);
+
+            free(edid);
+        }
+    }
 
     drmModeFreePropertyBlob(blob);
 }
