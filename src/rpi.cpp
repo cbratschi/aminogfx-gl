@@ -1101,7 +1101,7 @@ void AminoGfxRPi::showPropertyBlob(uint32_t id, char *name) {
         //https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/drm_edid.c#L1988
         //https://github.com/nyorain/kms-vulkan/blob/master/kms.c#L433
         //Note: unfortunately no library to parse the EDID, need our own code
-        struct edid_info *edid = edid_parse((uint8_t *)blob->data, (size_t)blob->length)
+        struct edid_info *edid = edid_parse((uint8_t *)blob->data, (size_t)blob->length);
 
         if (edid) {
             //debug cbxx
