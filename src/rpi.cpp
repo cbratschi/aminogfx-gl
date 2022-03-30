@@ -1032,9 +1032,16 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     break;
                 }
 
+                case DRM_MODE_PROP_BLOB:
+                    //debug cbxx
+                    printf(" -> blob: cont=%i\n", prop->count_blobs);
+
+                    //cbxx TODO blob_ids
+                    break;
+
                 default:
                     //debug cbxx
-                    printf(" -> unknown\n");
+                    printf(" -> unknown %d\n", type);
                     break;
             }
 
