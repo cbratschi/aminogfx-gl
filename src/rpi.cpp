@@ -9,7 +9,9 @@
 
 #include <sstream>
 
-#include "edid/edid.h"
+extern "C" {
+    #include "edid/edid.h"
+}
 
 #define gettid() syscall(SYS_gettid)
 

@@ -31,7 +31,7 @@
                 "<!(node -e \"require('nan')\")",
                 "src/",
                 "src/fonts/",
-                "src/images/"
+                "src/edid/"
             ],
             "cflags": [
                 "-Wall"
