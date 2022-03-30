@@ -962,7 +962,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
     //connector data
     //cbxx TODO
-    std::string type = getDrmConnectorType(connector2);
+    std::string type = getDrmConnectorType(conn);
     std::string connected = SYS_connect->connection == DRM_MODE_CONNECTED ? "connected":"disconnected";
 
     //debug cbxx
@@ -972,7 +972,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
     //cbxx TODO mode_info
 
     //modes
-    for (int i = 0; i < connector2->count_modes; i++) {
+    for (int i = 0; i < conn->count_modes; i++) {
         drmModeModeInfo *mode = &const_pointer->modes[i];
 
         //debug cbxx
