@@ -1036,7 +1036,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
                 case DRM_MODE_PROP_BLOB:
                     //debug cbxx
-                    printf(" -> blob: count=%i\n %" PRIu64 "\n", prop->count_blobs, prop->values[0]);
+                    printf(" -> blob: count=%i\n value=%" PRIu64 "\n", prop->count_blobs, value);
 
                     //debug cbxx TODO meaning
                     for (int j = 0; j < prop->count_blobs; j++) {
