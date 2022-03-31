@@ -1097,6 +1097,12 @@ void AminoGfxRPi::showPropertyBlob(uint32_t id, char *name) {
 
     printf("\n");
 
+    for (uint32_t i = 0; i < blob->length; i++) {
+        printf("%c", blob_data[i]);
+    }
+
+    printf("\n");
+
     //parse data
     if (strcmp(name, "EDID") == 0) {
         //https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
