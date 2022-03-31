@@ -72,19 +72,18 @@
 
 #include "edid.h"
 
-#define EDID_DESCRIPTOR_ALPHANUMERIC_DATA_STRING    0xfe
-#define EDID_DESCRIPTOR_DISPLAY_PRODUCT_NAME        0xfc
-#define EDID_DESCRIPTOR_DISPLAY_PRODUCT_SERIAL_NUMBER   0xff
-#define EDID_OFFSET_DATA_BLOCKS             0x36
-#define EDID_OFFSET_LAST_BLOCK              0x6c
-#define EDID_OFFSET_PNPID               0x08
-#define EDID_OFFSET_SERIAL              0x0c
+#define EDID_DESCRIPTOR_ALPHANUMERIC_DATA_STRING      0xfe
+#define EDID_DESCRIPTOR_DISPLAY_PRODUCT_NAME          0xfc
+#define EDID_DESCRIPTOR_DISPLAY_PRODUCT_SERIAL_NUMBER 0xff
+
+#define EDID_OFFSET_DATA_BLOCKS 0x36
+#define EDID_OFFSET_LAST_BLOCK  0x6c
+#define EDID_OFFSET_PNPID       0x08
+#define EDID_OFFSET_SERIAL      0x0c
 
 /* EDID strings are at most 12 bytes. They may or may not contain an
  * actual string. */
-static void
-edid_parse_string(const uint8_t *data, char text[])
-{
+static void edid_parse_string(const uint8_t *data, char text[]) {
     int i;
     int replaced = 0;
 
@@ -112,9 +111,19 @@ edid_parse_string(const uint8_t *data, char text[])
         }
     }
 
+    /* trim spaces at end */
+    int len = strlen(text);
+
+    while (len > 0 && text[len - 1] == ' ') {
+        len--;
+    }
+
+    text[len] = '\0';
+
     /* if the string is random junk, ignore the string */
-    if (replaced > 4)
+    if (replaced > 4) {
         text[0] = '\0';
+    }
 }
 
 /* Parse a standard EDID block. */
