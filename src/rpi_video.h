@@ -38,8 +38,9 @@ public:
     static void* omxThread(void *arg);
     static void* decoderThread(void *arg);
 #else
-    static void omxThread(void *arg);
-    static void decoderThread(void *arg);
+    //cbxx TODO unify
+    static void* omxThread(void *arg);
+    static void* decoderThread(void *arg);
 #endif
     static void handleFillBufferDone(void *data, COMPONENT_T *comp);
 
