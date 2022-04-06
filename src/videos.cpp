@@ -642,6 +642,10 @@ bool VideoDemuxer::loadFile(std::string filename, std::string options) {
         if (context->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
             //found video stream
             videoStream = i;
+
+            //debug cbxx
+            printf(" -> found stream %i\n", i);
+
             break;
         }
     }
@@ -731,8 +735,9 @@ bool VideoDemuxer::initStream() {
         //supported: h264_v4l2m2m h264_mmal
 
         //use V4L2
-        codec = avcodec_find_decoder_by_name("h264_v4l2m2m");
+//        codec = avcodec_find_decoder_by_name("h264_v4l2m2m");
         //cbxx FIXME no screen output (uses V4L2 decoder but shows no hardware acceleration in our check below)
+        //cbxx FIXME -> [h264_v4l2m2m @ 0xa28ea2d0] Got unexpected packet after EOF
     } else if (codecCtx->codec_id == AV_CODEC_ID_HEVC) {
         //supported: hevc_rpi hevc_v4l2m2m
         codec = avcodec_find_decoder_by_name("hevc_rpi");
@@ -886,6 +891,7 @@ READ_FRAME_RESULT VideoDemuxer::readFrame(AVPacket *packet) {
             }
 
             //FIXME getting EOF on RPi (libav) if animated gif is played!
+            //cbxx FIXME getting this error on RPi 4 software decoder
 
             return READ_END_OF_VIDEO;
         }
@@ -1062,6 +1068,8 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
             freeFrame(packet);
             continue;
         }
+
+        //error case
 
 done:
         freeFrame(packet);
@@ -1302,6 +1310,7 @@ bool VideoFileStream::init() {
 
     //Note: always using the demuxer on Pi 4
 #ifndef EGL_GBM
+    //OMX decoder only
     //check local H264 (direct file access)
     std::string postfix = ".h264";
     bool isLocalH264 = false;
@@ -1394,9 +1403,15 @@ unsigned int VideoFileStream::read(unsigned char *dest, unsigned int length, omx
     omxData.timeStamp = 0;
 
     if (file) {
+        //debug cbxx
+        printf("-> read file\n");
+
         //read block from file (Note: ferror() returns error state)
         return fread(dest, 1, length, file);
     } else if (demuxer) {
+        //debug cbxx -> check OMX special
+        printf("-> read stream\n");
+
         //header
         if (!headerRead) {
             uint8_t *data;

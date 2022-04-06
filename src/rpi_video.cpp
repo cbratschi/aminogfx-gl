@@ -1898,6 +1898,7 @@ void AminoOmxVideoPlayer::initDemuxer() {
 
     timeStartSys = getTime() / 1000;
 
+    //check end of video
     if (res == READ_END_OF_VIDEO) {
         lastError = "empty video";
         handleInitDone(false);
@@ -1905,6 +1906,7 @@ void AminoOmxVideoPlayer::initDemuxer() {
         return;
     }
 
+    //check read error
     if (res == READ_ERROR) {
         lastError = "could not load video stream";
         handleInitDone(false);
