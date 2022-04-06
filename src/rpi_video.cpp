@@ -228,6 +228,7 @@ void AminoOmxVideoPlayer::closeStream() {
     }
 }
 
+#ifdef USE_OMX_VCOS_THREAD
 /**
  * OMX thread.
  */
@@ -247,6 +248,25 @@ void* AminoOmxVideoPlayer::omxThread(void *arg) {
 
     return NULL;
 }
+#else
+/**
+ * OMX thread.
+ */
+void AminoOmxVideoPlayer::omxThread(void *arg) {
+    AminoOmxVideoPlayer *player = static_cast<AminoOmxVideoPlayer *>(arg);
+
+    assert(player);
+
+    //init OMX
+    player->initOmx();
+
+    //close stream
+    player->closeStream();
+
+    //done
+    player->threadRunning = false;
+}
+#endif
 
 /**
  * OMX buffer callback.
@@ -1820,6 +1840,7 @@ bool AminoOmxVideoPlayer::setOmxSpeed(OMX_S32 speed) {
     return res;
 }
 
+#ifdef USE_OMX_VCOS_THREAD
 /**
  * Software decoder.
  */
@@ -1839,6 +1860,25 @@ void* AminoOmxVideoPlayer::decoderThread(void *arg) {
 
     return NULL;
 }
+#else
+/**
+ * Software decoder.
+ */
+void AminoOmxVideoPlayer::decoderThread(void *arg) {
+    AminoOmxVideoPlayer *player = static_cast<AminoOmxVideoPlayer *>(arg);
+
+    assert(player);
+
+    //init demuxer
+    player->initDemuxer();
+
+    //close stream
+    player->closeStream();
+
+    //done
+    player->threadRunning = false;
+}
+#endif
 
 /**
  * Software decoding loop.
