@@ -10,7 +10,9 @@ extern "C" {
     #include "EGL/eglext.h"
 }
 
+#ifdef EGL_DISPMANX
 #define USE_OMX_VCOS_THREAD
+#endif
 
 /**
  * OMX Video Player.
