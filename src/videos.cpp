@@ -643,8 +643,8 @@ bool VideoDemuxer::loadFile(std::string filename, std::string options) {
             //found video stream
             videoStream = i;
 
-            //debug cbxx
-            printf(" -> found stream %i\n", i);
+            //debug
+            //printf(" -> found stream %i\n", i);
 
             break;
         }
@@ -729,10 +729,17 @@ bool VideoDemuxer::initStream() {
     AVCodec *codec = NULL;
 
 #ifdef EGL_GBM
-    //cbxx TODO verify
-    //cbxx check h264_vaapi
     if (codecCtx->codec_id == AV_CODEC_ID_H264) {
-        //supported: h264_v4l2m2m h264_mmal
+        /*
+         * Default RPi 4 decoder:
+         *
+         *   - h264 (H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10)
+         *     - works fine (min 12 fps)
+         *
+         * Hardware accelerated decoders:
+         *
+         *   - h264_v4l2m2m (V4L2 mem2mem H.264 decoder wrapper (codec h264))
+         */
 
         //use V4L2
 //        codec = avcodec_find_decoder_by_name("h264_v4l2m2m");
@@ -891,7 +898,7 @@ READ_FRAME_RESULT VideoDemuxer::readFrame(AVPacket *packet) {
             }
 
             //FIXME getting EOF on RPi (libav) if animated gif is played!
-            //cbxx FIXME getting this error on RPi 4 software decoder
+            //cbxx FIXME getting this error on RPi 4 hardware decoder
 
             return READ_END_OF_VIDEO;
         }
@@ -1403,13 +1410,13 @@ unsigned int VideoFileStream::read(unsigned char *dest, unsigned int length, omx
     omxData.timeStamp = 0;
 
     if (file) {
-        //debug cbxx
+        //debug cbxx -> not called
         printf("-> read file\n");
 
         //read block from file (Note: ferror() returns error state)
         return fread(dest, 1, length, file);
     } else if (demuxer) {
-        //debug cbxx -> check OMX special
+        //debug cbxx -> check OMX special -> not called
         printf("-> read stream\n");
 
         //header

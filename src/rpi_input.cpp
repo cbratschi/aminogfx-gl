@@ -289,7 +289,6 @@ void AminoInputRPi::handleAbsEvent(input_event ev) {
     //debug
     //printf("-> EV_ABS event: %d %d\n", ev.code, ev.value);
 
-    //cbxx TODO verify
     //see https://elixir.bootlin.com/linux/v4.6/source/include/uapi/linux/input-event-codes.h#L682
     //Note: only supporting protocol B touch devices (otherwise mtdev has to be used to convert the events)
     switch (ev.code) {
