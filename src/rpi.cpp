@@ -1729,7 +1729,7 @@ std::vector<std::string> AminoGfxRPi::getDrmModeFlags(uint32_t flags) {
  * @param type
  * @return std::string
  */
- AminoGfxRPi::getDrmModeTypes(uint32_t type) {
+std::vector<std::string> AminoGfxRPi::getDrmModeTypes(uint32_t type) {
     std::vector<std::string> items;
 
     //see https://lore.kernel.org/all/CADnq5_MWMZi348tJN55qzAd0Dia90AGEZAo50U2dAssUFT3DXA@mail.gmail.com/
