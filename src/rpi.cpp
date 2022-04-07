@@ -1034,7 +1034,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
     // 3) properties (see https://github.com/ascent12/drm_info/blob/master/json.c#L376)
     drmModeObjectProperties *props = drmModeObjectGetProperties(driDevice, conn->connector_id, DRM_MODE_OBJECT_CONNECTOR);
-    v8::Local<v8::Object> propObj = Nan::New<v8::Object>();
+    v8::Local<v8::Object> propsObj = Nan::New<v8::Object>();
 
     if (props) {
         for (uint32_t i = 0; i < props->count_props; ++i) {
@@ -1049,7 +1049,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
             //bool atomic = flags & DRM_MODE_PROP_ATOMIC;
             //bool immutable = flags & DRM_MODE_PROP_IMMUTABLE;
             uint64_t value = props->prop_values[i];
-            v8::Local<v8::Object> propsObj = Nan::New<v8::Object>();
+            v8::Local<v8::Object> propObj = Nan::New<v8::Object>();
 
             //debug cbxx
             printf(" -> property %s (values=%i)\n", prop->name, prop->count_values);
