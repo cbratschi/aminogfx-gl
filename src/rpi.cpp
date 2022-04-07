@@ -1137,14 +1137,14 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                         //showPropertyBlob(value, prop->name);
 
                         //get blob
-                        drmModePropertyBlobPtr blob = drmModeGetPropertyBlob(driDevice, id);
+                        drmModePropertyBlobPtr blob = drmModeGetPropertyBlob(driDevice, value);
 
-                        if (blog) {
+                        if (blob) {
                             //value
                             Nan::Set(propObj, Nan::New("value").ToLocalChecked(), Nan::NewBuffer((char*)blob->data, blob->length).ToLocalChecked());
 
                             //check EDID
-                            if (strcmp(name, "EDID") == 0) {
+                            if (strcmp(prop->name, "EDID") == 0) {
                                 //https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
                                 //https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/drm_edid.c#L1988
                                 //https://github.com/nyorain/kms-vulkan/blob/master/kms.c#L433
