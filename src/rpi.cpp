@@ -1087,15 +1087,31 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
                 case DRM_MODE_PROP_ENUM:
                 case DRM_MODE_PROP_BITMASK:
-                    //debug cbxx
+                    //debug
+                    /*
                     for (int j = 0; j < prop->count_enums; ++j) {
-                        printf(" -> %s %s: %" PRIu64 "\n", type == DRM_MODE_PROP_ENUM ? "enum":"bitmask",prop->enums[j].name, prop->enums[j].value);
+                        printf(" -> %s %s: %" PRIu64 "\n", type == DRM_MODE_PROP_ENUM ? "enum":"bitmask", prop->enums[j].name, prop->enums[j].value);
+                    }
+                    */
+
+                    //process
+                    if (type == DRM_MODE_PROP_ENUM) {
+                        //enum
+
+                        //find matching value
+                        for (int j = 0; j < prop->count_enums; ++j) {
+                            if (prop->enums[j].value == value) {
+                                Nan::Set(propObj, Nan::New("value").ToLocalChecked(), Nan::New(prop->enums[j].name).ToLocalChecked());
+                                break;
+                            }
+                        }
+                    } else {
+                        //bitmask
+                        //cbxx TODO check
                     }
 
-                    //collect values
-                    //cbxx TODO
-
-                    printf(" -> value %" PRIu64 "\n", value);
+                    //debug
+                    //printf(" -> value %" PRIu64 "\n", value);
                     break;
 
                 case DRM_MODE_PROP_OBJECT:
@@ -1103,9 +1119,9 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     printf(" -> object %" PRIu64 "\n", value);
                     break;
 
-                case DRM_MODE_PROP_BLOB:
-                    //debug cbxx
-                    printf(" -> blob: count=%i value=%" PRIu64 "\n", prop->count_blobs, value);
+                case DRM_MODE_PROP_BLOB: {
+                    //debug
+                    //printf(" -> blob: count=%i value=%" PRIu64 "\n", prop->count_blobs, value);
 
                     //debug (meaning?)
                     /*
@@ -1114,10 +1130,63 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     }
                     */
 
+                   bool valueSet = false;
+
                     if (value) {
-                        showPropertyBlob(value, prop->name);
+                        //debug
+                        //showPropertyBlob(value, prop->name);
+
+                        //get blob
+                        drmModePropertyBlobPtr blob = drmModeGetPropertyBlob(driDevice, id);
+
+                        if (blog) {
+                            //value
+                            Nan::Set(propObj, Nan::New("value").ToLocalChecked(), Nan::NewBuffer((char*)blob->data, blob->length).ToLocalChecked());
+
+                            //check EDID
+                            if (strcmp(name, "EDID") == 0) {
+                                //https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
+                                //https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/drm_edid.c#L1988
+                                //https://github.com/nyorain/kms-vulkan/blob/master/kms.c#L433
+                                //Note: unfortunately no library to parse the EDID, need our own code
+                                struct edid_info *edid = edid_parse((uint8_t *)blob->data, (size_t)blob->length);
+
+                                if (edid) {
+                                    v8::Local<v8::Object> edidObj = Nan::New<v8::Object>();
+
+                                    Nan::Set(edidObj, Nan::New("name").ToLocalChecked(), Nan::New(edid->monitor_name).ToLocalChecked());
+                                    Nan::Set(edidObj, Nan::New("serial").ToLocalChecked(), Nan::New(edid->serial_number).ToLocalChecked());
+                                    Nan::Set(edidObj, Nan::New("code").ToLocalChecked(), Nan::New<v8::Uint32>((uint32_t)edid->product_code));
+                                    Nan::Set(edidObj, Nan::New("pnpId").ToLocalChecked(), Nan::New(edid->pnp_id).ToLocalChecked());
+                                    Nan::Set(edidObj, Nan::New("eisaId").ToLocalChecked(), Nan::New(edid->eisa_id).ToLocalChecked());
+
+                                    if (edid->week >= 0) {
+                                        Nan::Set(edidObj, Nan::New("productionWeek").ToLocalChecked(), Nan::New<v8::Integer>(edid->week));
+                                    }
+
+                                    if (edid->year >= 0) {
+                                        Nan::Set(edidObj, Nan::New("productionYear").ToLocalChecked(), Nan::New<v8::Integer>(edid->year));
+                                    }
+
+                                    Nan::Set(edidObj, Nan::New("edidVer").ToLocalChecked(), Nan::New(edid->edid_version).ToLocalChecked());
+
+                                    //add
+                                    Nan::Set(hdmiObj, Nan::New("edid").ToLocalChecked(), edidObj);
+
+                                    //cleanup
+                                    free(edid);
+                                }
+                            }
+
+                            drmModeFreePropertyBlob(blob);
+                        }
+                    }
+
+                    if (!valueSet) {
+                        Nan::Set(propObj, Nan::New("value").ToLocalChecked(), Nan::Null());
                     }
                     break;
+                }
 
                 default:
                     //debug
@@ -1155,7 +1224,6 @@ void AminoGfxRPi::showPropertyBlob(uint32_t id, char *name) {
         return;
     }
 
-    //debug cbxx
     printf(" -> blob len=%i\n", blob->length);
 
     unsigned char *blob_data = (unsigned char *)blob->data;
@@ -1181,15 +1249,10 @@ void AminoGfxRPi::showPropertyBlob(uint32_t id, char *name) {
 
     //parse data
     if (strcmp(name, "EDID") == 0) {
-        //https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
-        //https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/drm_edid.c#L1988
-        //https://github.com/nyorain/kms-vulkan/blob/master/kms.c#L433
-        //Note: unfortunately no library to parse the EDID, need our own code
         struct edid_info *edid = edid_parse((uint8_t *)blob->data, (size_t)blob->length);
 
         if (edid) {
-            //debug cbxx
-             printf("-> EDID data eisa_id='%s', monitor_name='%s', pnp_id='%s', serial_number='%s'\n", edid->eisa_id, edid->monitor_name, edid->pnp_id, edid->serial_number);
+            printf("-> EDID data eisa_id='%s', monitor_name='%s', pnp_id='%s', serial_number='%s'\n", edid->eisa_id, edid->monitor_name, edid->pnp_id, edid->serial_number);
 
             free(edid);
         }
