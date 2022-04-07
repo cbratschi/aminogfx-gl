@@ -84,7 +84,7 @@
 #define EDID_OFFSET_YEAR        0x11
 #define EDID_OFFSET_WEEK        0x10
 #define EDID_OFFSET_PNPID       0x08
-#define EDID_OFFSET_CODE        0x0c
+#define EDID_OFFSET_CODE        0x0a
 #define EDID_OFFSET_SERIAL      0x0c
 
 /* EDID strings are at most 12 bytes. They may or may not contain an
