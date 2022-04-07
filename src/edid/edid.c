@@ -174,6 +174,9 @@ struct edid_info *edid_parse(const uint8_t *data, size_t length) {
 
     if (serial_number > 0) {
         sprintf(edid->serial_number, "%lu", (unsigned long) serial_number);
+
+        //debug cbxx
+        printf("-> serial number: %s\n", edid->serial_number);
     }
 
     //week and year
