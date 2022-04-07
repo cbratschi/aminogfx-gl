@@ -1781,7 +1781,7 @@ std::string AminoGfxRPi::join(std::vector<std::string> items, std::string spacer
  * @param arr
  * @param items
  */
-void populateArray(v8::Local<v8::Array> &arr, std::vector<std::string> items) {
+void AminoGfxRPi::populateArray(v8::Local<v8::Array> &arr, std::vector<std::string> items) {
     const size_t size = items.size();
 
     for (size_t i = 0; i < size; i++) {
