@@ -1666,37 +1666,37 @@ std::string AminoGfxRPi::getDrmModeFlags(uint32_t flags) {
     }
 
     //3D
-    uint32_t 3dFlags = flags & DRM_MODE_FLAG_3D_MASK;
+    uint32_t dddFlags = flags & DRM_MODE_FLAG_3D_MASK;
 
-    if (3dFlags & DRM_MODE_FLAG_3D_FRAME_PACKING) {
+    if (dddFlags & DRM_MODE_FLAG_3D_FRAME_PACKING) {
         items.push_back("3D frame packing");
     }
 
-    if (3dFlags & DRM_MODE_FLAG_3D_FIELD_ALTERNATIVE) {
+    if (dddFlags & DRM_MODE_FLAG_3D_FIELD_ALTERNATIVE) {
         items.push_back("3D field alternative");
     }
 
-    if (3dFlags & DRM_MODE_FLAG_3D_LINE_ALTERNATIVE) {
+    if (dddFlags & DRM_MODE_FLAG_3D_LINE_ALTERNATIVE) {
         items.push_back("3D line alternative");
     }
 
-    if (3dFlags & DRM_MODE_FLAG_3D_SIDE_BY_SIDE_FULL) {
+    if (dddFlags & DRM_MODE_FLAG_3D_SIDE_BY_SIDE_FULL) {
         items.push_back("3D side by side full");
     }
 
-    if (3dFlags & DRM_MODE_FLAG_3D_L_DEPTH) {
+    if (dddFlags & DRM_MODE_FLAG_3D_L_DEPTH) {
         items.push_back("3D l depth");
     }
 
-    if (3dFlags & DRM_MODE_FLAG_3D_L_DEPTH_GFX_GFX_DEPTH) {
+    if (dddFlags & DRM_MODE_FLAG_3D_L_DEPTH_GFX_GFX_DEPTH) {
         items.push_back("3D l depth gfx gfx depth");
     }
 
-    if (3dFlags & DRM_MODE_FLAG_3D_TOP_AND_BOTTOM) {
+    if (dddFlags & DRM_MODE_FLAG_3D_TOP_AND_BOTTOM) {
         items.push_back("3D top and bottom");
     }
 
-    if (3dFlags & DRM_MODE_FLAG_3D_SIDE_BY_SIDE_HALF) {
+    if (dddFlags & DRM_MODE_FLAG_3D_SIDE_BY_SIDE_HALF) {
         items.push_back("3D side by side half");
     }
 
@@ -1740,7 +1740,7 @@ std::string AminoGfxRPi::getDrmModeTypes(uint32_t type) {
 
     if (type & DRM_MODE_TYPE_BUILTIN) {
         //hardcoded mode
-        items.___POSIX_C_DEPRECATED_STARTING_199506L("builtin");
+        items.push_back("builtin");
     }
 
     if (type & DRM_MODE_TYPE_PREFERRED) {
