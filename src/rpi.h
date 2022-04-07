@@ -127,6 +127,7 @@ private:
 #ifdef EGL_GBM
     EGLSurface createGbmSurface();
     std::string getDrmConnectorType(drmModeConnector *connector);
+    std::string getDrmSubpixelMode(drmModeSubPixel subpixel);
     static void handlePageFlipEvent(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void *data);
 #endif
 

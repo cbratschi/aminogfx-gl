@@ -12,9 +12,16 @@
  * more information, such as the mode.
  */
 struct edid_info {
+    char pnp_id[5];         //Manufacturer ID (legacy value)
+    uint16_t product_code;  //Manufacturer Product Code
+
+    int week;
+    int year;
+
+    char edid_version[4];
+
     char eisa_id[13];
     char monitor_name[13];
-    char pnp_id[5];
     char serial_number[13];
 };
 

@@ -72,13 +72,19 @@
 
 #include "edid.h"
 
+//see https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
 #define EDID_DESCRIPTOR_ALPHANUMERIC_DATA_STRING      0xfe
 #define EDID_DESCRIPTOR_DISPLAY_PRODUCT_NAME          0xfc
 #define EDID_DESCRIPTOR_DISPLAY_PRODUCT_SERIAL_NUMBER 0xff
+//cbxx TODO need model (7972 on WaveShare)
 
 #define EDID_OFFSET_DATA_BLOCKS 0x36
 #define EDID_OFFSET_LAST_BLOCK  0x6c
+#define EDID_OFFSET_VERSION     0x12
+#define EDID_OFFSET_YEAR        0x11
+#define EDID_OFFSET_WEEK        0x10
 #define EDID_OFFSET_PNPID       0x08
+#define EDID_OFFSET_CODE        0x0c
 #define EDID_OFFSET_SERIAL      0x0c
 
 /* EDID strings are at most 12 bytes. They may or may not contain an
@@ -127,18 +133,17 @@ static void edid_parse_string(const uint8_t *data, char text[]) {
 }
 
 /* Parse a standard EDID block. */
-struct edid_info *
-edid_parse(const uint8_t *data, size_t length)
-{
+struct edid_info *edid_parse(const uint8_t *data, size_t length) {
     struct edid_info *edid = calloc(1, sizeof(*edid));
-    int i;
-    uint32_t serial_number;
 
     /* check header */
-    if (length < 128)
+    if (length < 128) {
         goto err;
-    if (data[0] != 0x00 || data[1] != 0xff)
+    }
+
+    if (data[0] != 0x00 || data[1] != 0xff) {
         goto err;
+    }
 
     /* decode the PNP ID from three 5 bit words packed into 2 bytes
      * /--08--\/--09--\
@@ -150,34 +155,71 @@ edid_parse(const uint8_t *data, size_t length)
     edid->pnp_id[2] = 'A' + (data[EDID_OFFSET_PNPID + 1] & 0x1f) - 1;
     edid->pnp_id[3] = '\0';
 
+    //manufacturer product code
+    uint16_t product_code;
+
+    product_code = (uint16_t)data[EDID_OFFSET_CODE + 0];
+    product_code += (uint16_t)data[EDID_OFFSET_CODE + 1] * 0x100;
+
+    edid->product_code = product_code;
+
     /* maybe there isn't a ASCII serial number descriptor, so use this instead */
+    //4 bytes
+    uint32_t serial_number;
+
     serial_number = (uint32_t) data[EDID_OFFSET_SERIAL + 0];
     serial_number += (uint32_t) data[EDID_OFFSET_SERIAL + 1] * 0x100;
     serial_number += (uint32_t) data[EDID_OFFSET_SERIAL + 2] * 0x10000;
     serial_number += (uint32_t) data[EDID_OFFSET_SERIAL + 3] * 0x1000000;
-    if (serial_number > 0)
+
+    if (serial_number > 0) {
         sprintf(edid->serial_number, "%lu", (unsigned long) serial_number);
+    }
+
+    //week and year
+    uint8_t week = data[EDID_OFFSET_WEEK];
+    uint8_t year = data[EDID_OFFSET_YEAR];
+
+    if (week == 0xFF) {
+        //year flag
+        edid->week = -1;
+        edid->year = 1900 + year;
+    } else {
+        edid->week = week;
+        edid->year = year;
+    }
+
+    //version
+    uint8_t versionLo = data[EDID_OFFSET_VERSION];
+    uint8_t versionHi = data[EDID_OFFSET_VERSION + 1];
+
+    edid->edid_version[0] = versionLo;
+    edid->edid_version[1] = '.';
+    edid->edid_version[2] = versionLo;
+    edid->edid_version[3] = 0;
+
+    //basic display parameters
+    //-> not parsed
 
     /* parse EDID data */
-    for (i = EDID_OFFSET_DATA_BLOCKS;
-         i <= EDID_OFFSET_LAST_BLOCK;
-         i += 18) {
+    //offset: 54 bytes
+    for (int i = EDID_OFFSET_DATA_BLOCKS; i <= EDID_OFFSET_LAST_BLOCK; i += 18) {
         /* ignore pixel clock data */
-        if (data[i] != 0)
+        if (data[i] != 0) {
             continue;
-        if (data[i+2] != 0)
+        }
+
+        if (data[i + 2] != 0) {
             continue;
+        }
 
         /* any useful blocks? */
-        if (data[i+3] == EDID_DESCRIPTOR_DISPLAY_PRODUCT_NAME) {
-            edid_parse_string(&data[i+5],
-                      edid->monitor_name);
+        if (data[i + 3] == EDID_DESCRIPTOR_DISPLAY_PRODUCT_NAME) {
+            edid_parse_string(&data[i + 5], edid->monitor_name);
         } else if (data[i+3] == EDID_DESCRIPTOR_DISPLAY_PRODUCT_SERIAL_NUMBER) {
-            edid_parse_string(&data[i+5],
-                      edid->serial_number);
+            edid_parse_string(&data[i + 5], edid->serial_number);
         } else if (data[i+3] == EDID_DESCRIPTOR_ALPHANUMERIC_DATA_STRING) {
-            edid_parse_string(&data[i+5],
-                      edid->eisa_id);
+            edid_parse_string(&data[i + 5], edid->eisa_id);
         }
     }
 

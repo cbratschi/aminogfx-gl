@@ -965,26 +965,81 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
     }
 
     //connector data
-    //cbxx TODO
+    //cbxx TODO verify
     std::string type = getDrmConnectorType(conn);
-    std::string connected = conn->connection == DRM_MODE_CONNECTED ? "connected":"disconnected";
+    bool connected = conn->connection == DRM_MODE_CONNECTED;
 
-    //debug cbxx
-    printf(" -> %s-%d (%s)\n", type.c_str(), conn->connector_type_id, connected.c_str());
+    //debug
+    //printf(" -> %s-%d (%s)\n", type.c_str(), conn->connector_type_id, connected ? "connected":"disconnected");
 
-    //active mode
-    //cbxx TODO mode_info
+    //collect HDMI data
+    v8::Local<v8::Object> hdmiObj = Nan::New<v8::Object>();
 
-    //modes
+    Nan::Set(obj, Nan::New("hdmi").ToLocalChecked(), hdmiObj);
+
+    // 1) drmModeConnector (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L242)
+    std::string type = getDrmConnectorType(conn);
+
+    Nan::Set(hdmiObj, Nan::New("id").ToLocalChecked(), Nan::New<v8::Uint32>(conn->connector_id));
+    Nan::Set(hdmiObj, Nan::New("type").ToLocalChecked(), Nan::New(type).ToLocalChecked());
+    Nan::Set(hdmiObj, Nan::New("typeId").ToLocalChecked(), Nan::New<v8::Uint32>(conn->connector_type_id));
+
+    Nan::Set(hdmiObj, Nan::New("mmWidth").ToLocalChecked(), Nan::New<v8::Uint32>(conn->mmWidth));
+    Nan::Set(hdmiObj, Nan::New("mmHeight").ToLocalChecked(), Nan::New<v8::Uint32>(conn->mmHeight));
+
+    //drmModeConnection (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L227)
+    Nan::Set(hdmiObj, Nan::New("connected").ToLocalChecked(), Nan::New<v8::Boolean>(connected));
+
+    //drmModeSubPixel (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L233)
+    std:string subpixel = getDrmSubpixelMode(conn->subpixel);
+
+    Nan::Set(hdmiObj, Nan::New("subpixel").ToLocalChecked(), Nan::New(subpixel).ToLocalChecked());
+
+    // 2) modes (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L166)
+    v8::Local<v8::Array> modeArr = Nan::New<v8::Array>();
+
     for (int i = 0; i < conn->count_modes; i++) {
         drmModeModeInfo *mode = &conn->modes[i];
 
-        //debug cbxx
-        printf("  -> %ix%i@%i (%s)\n", mode->hdisplay, mode->vdisplay, mode->vrefresh, mode->name);
+        //debug
+        //printf("  -> %ix%i@%i (%s)\n", mode->hdisplay, mode->vdisplay, mode->vrefresh, mode->name);
+
+        //add
+        v8::Local<v8::Object> modeObj = Nan::New<v8::Object>();
+
+        Nan::Set(modeObj, Nan::New("clock").ToLocalChecked(), Nan::New<v8::Uint32>(mode->clock));
+
+        Nan::Set(modeObj, Nan::New("hdisplay").ToLocalChecked(), Nan::New<v8::Uint16>(mode->hdisplay));
+        Nan::Set(modeObj, Nan::New("hsync_start").ToLocalChecked(), Nan::New<v8::Uint16>(mode->hsync_start));
+        Nan::Set(modeObj, Nan::New("hsync_end").ToLocalChecked(), Nan::New<v8::Uint16>(mode->hsync_end));
+        Nan::Set(modeObj, Nan::New("htotal").ToLocalChecked(), Nan::New<v8::Uint16>(mode->htotal));
+        Nan::Set(modeObj, Nan::New("hskew").ToLocalChecked(), Nan::New<v8::Uint16>(mode->hskew));
+
+        Nan::Set(modeObj, Nan::New("vdisplay").ToLocalChecked(), Nan::New<v8::Uint16>(mode->vdisplay));
+        Nan::Set(modeObj, Nan::New("vsync_start").ToLocalChecked(), Nan::New<v8::Uint16>(mode->vsync_start));
+        Nan::Set(modeObj, Nan::New("vsync_end").ToLocalChecked(), Nan::New<v8::Uint16>(mode->vsync_end));
+        Nan::Set(modeObj, Nan::New("vtotal").ToLocalChecked(), Nan::New<v8::Uint16>(mode->vtotal));
+        Nan::Set(modeObj, Nan::New("vscan").ToLocalChecked(), Nan::New<v8::Uint16>(mode->vscan));
+
+
+        //cbxx TODO check value
+        Nan::Set(modeObj, Nan::New("vrefresh").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vrefresh));
+
+        //cbxx TODO convert
+        Nan::Set(modeObj, Nan::New("flags").ToLocalChecked(), Nan::New<v8::Uint32>(mode->flags));
+        Nan::Set(modeObj, Nan::New("type").ToLocalChecked(), Nan::New<v8::Uint32>(mode->type));
+
+        Nan::Set(modeObj, Nan::New("name").ToLocalChecked(), Nan::New(mode->name).ToLocalChecked());
+
+        //add to array
+        Nan::Set(modeArr, Nan::New<v8::Uint32>(i), modeObj);
     }
 
-    //properties (see https://github.com/ascent12/drm_info/blob/master/json.c#L376)
+    Nan::Set(hdmiObj, Nan::New("modes").ToLocalChecked(), modeArr);
+
+    // 3) properties (see https://github.com/ascent12/drm_info/blob/master/json.c#L376)
     drmModeObjectProperties *props = drmModeObjectGetProperties(driDevice, conn->connector_id, DRM_MODE_OBJECT_CONNECTOR);
+    v8::Local<v8::Array> propArr = Nan::New<v8::Array>();
 
     if (props) {
         for (uint32_t i = 0; i < props->count_props; ++i) {
@@ -996,9 +1051,12 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
             uint32_t flags = prop->flags;
             uint32_t type = flags & (DRM_MODE_PROP_LEGACY_TYPE | DRM_MODE_PROP_EXTENDED_TYPE);
-            bool atomic = flags & DRM_MODE_PROP_ATOMIC;
-            bool immutable = flags & DRM_MODE_PROP_IMMUTABLE;
+            //bool atomic = flags & DRM_MODE_PROP_ATOMIC;
+            //bool immutable = flags & DRM_MODE_PROP_IMMUTABLE;
             uint64_t value = props->prop_values[i];
+            v8::Local<v8::Object> propObj = Nan::New<v8::Object>();
+
+            Nan::Set(modeObj, Nan::New("name").ToLocalChecked(), Nan::New(prop->name).ToLocalChecked());
 
             //debug cbxx
             printf(" -> property %s (values=%i)\n", prop->name, prop->count_values);
@@ -1006,11 +1064,17 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
             //check type
             switch (type) {
                 case DRM_MODE_PROP_RANGE: {
+                    //value in a certain range
                     uint64_t rangeMin = prop->values[0];
                     uint64_t rangeMax = prop->values[1];
 
                     //debug cbxx
                     printf(" -> range %" PRIu64 "..%" PRIu64 ": %" PRIu64 "\n", rangeMin, rangeMax, value);
+
+                    //FIXME no BigInt support yet
+                    Nan::Set(propObj, Nan::New("min").ToLocalChecked(), Nan::New<v8::Uint32>(rangeMin));
+                    Nan::Set(propObj, Nan::New("max").ToLocalChecked(), Nan::New<v8::Uint32>(rangeMax));
+                    Nan::Set(propObj, Nan::New("value").ToLocalChecked(), Nan::New<v8::Uint32>(value));
                     break;
                 }
 
@@ -1058,11 +1122,17 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     break;
             }
 
+            //add to array
+            Nan::Set(propArr, Nan::New<v8::Uint32>(i), propObj);
+
+            //cleanup
             drmModeFreeProperty(prop);
         }
 
         drmModeFreeObjectProperties(props);
     }
+
+    Nan::Set(hdmiObj, Nan::New("props").ToLocalChecked(), propArr);
 
     //done
     drmModeFreeConnector(conn);
@@ -1416,6 +1486,35 @@ std::string AminoGfxRPi::getDrmConnectorType(drmModeConnector *connector) {
         case DRM_MODE_CONNECTOR_Unknown:
         default:
             return "unknown";
+    }
+}
+
+/**
+ * @brief Get the DRM subpixel mode as string.
+ *
+ * @param subpixel
+ * @return std::string
+ */
+std::string AminoGfxRPi::getDrmSubpixelMode(drmModeSubPixel subpixel) {
+    switch (subpixel) {
+        default:
+        case DRM_MODE_SUBPIXEL_UNKNOWN:
+            return "unknown";
+
+        case DRM_MODE_SUBPIXEL_HORIZONTAL_RGB:
+            return "horizontal RGB";
+
+        case DRM_MODE_SUBPIXEL_HORIZONTAL_BGR:
+            return "horizontal BGR";
+
+        case DRM_MODE_SUBPIXEL_VERTICAL_RGB:
+            return "vertical RGB";
+
+        case DRM_MODE_SUBPIXEL_VERTICAL_BGR:
+            return "vertical BGR";
+
+        case DRM_MODE_SUBPIXEL_NONE:
+            return "none";
     }
 }
 
