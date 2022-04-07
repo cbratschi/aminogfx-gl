@@ -1054,7 +1054,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
             uint64_t value = props->prop_values[i];
             v8::Local<v8::Object> propObj = Nan::New<v8::Object>();
 
-            Nan::Set(modeObj, Nan::New("name").ToLocalChecked(), Nan::New(prop->name).ToLocalChecked());
+            Nan::Set(propObj, Nan::New("name").ToLocalChecked(), Nan::New(prop->name).ToLocalChecked());
 
             //debug cbxx
             printf(" -> property %s (values=%i)\n", prop->name, prop->count_values);
