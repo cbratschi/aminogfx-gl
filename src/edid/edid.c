@@ -198,7 +198,7 @@ struct edid_info *edid_parse(const uint8_t *data, size_t length) {
 
     edid->edid_version[0] = versionLo;
     edid->edid_version[1] = '.';
-    edid->edid_version[2] = versionLo;
+    edid->edid_version[2] = versionHi;
     edid->edid_version[3] = 0;
 
     //basic display parameters

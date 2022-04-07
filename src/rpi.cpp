@@ -978,8 +978,6 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
     Nan::Set(obj, Nan::New("hdmi").ToLocalChecked(), hdmiObj);
 
     // 1) drmModeConnector (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L242)
-    std::string type = getDrmConnectorType(conn);
-
     Nan::Set(hdmiObj, Nan::New("id").ToLocalChecked(), Nan::New<v8::Uint32>(conn->connector_id));
     Nan::Set(hdmiObj, Nan::New("type").ToLocalChecked(), Nan::New(type).ToLocalChecked());
     Nan::Set(hdmiObj, Nan::New("typeId").ToLocalChecked(), Nan::New<v8::Uint32>(conn->connector_type_id));
@@ -991,7 +989,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
     Nan::Set(hdmiObj, Nan::New("connected").ToLocalChecked(), Nan::New<v8::Boolean>(connected));
 
     //drmModeSubPixel (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L233)
-    std:string subpixel = getDrmSubpixelMode(conn->subpixel);
+    std::string subpixel = getDrmSubpixelMode(conn->subpixel);
 
     Nan::Set(hdmiObj, Nan::New("subpixel").ToLocalChecked(), Nan::New(subpixel).ToLocalChecked());
 
@@ -1009,17 +1007,17 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
         Nan::Set(modeObj, Nan::New("clock").ToLocalChecked(), Nan::New<v8::Uint32>(mode->clock));
 
-        Nan::Set(modeObj, Nan::New("hdisplay").ToLocalChecked(), Nan::New<v8::Uint16>(mode->hdisplay));
-        Nan::Set(modeObj, Nan::New("hsync_start").ToLocalChecked(), Nan::New<v8::Uint16>(mode->hsync_start));
-        Nan::Set(modeObj, Nan::New("hsync_end").ToLocalChecked(), Nan::New<v8::Uint16>(mode->hsync_end));
-        Nan::Set(modeObj, Nan::New("htotal").ToLocalChecked(), Nan::New<v8::Uint16>(mode->htotal));
-        Nan::Set(modeObj, Nan::New("hskew").ToLocalChecked(), Nan::New<v8::Uint16>(mode->hskew));
+        Nan::Set(modeObj, Nan::New("hdisplay").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hdisplay));
+        Nan::Set(modeObj, Nan::New("hsync_start").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hsync_start));
+        Nan::Set(modeObj, Nan::New("hsync_end").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hsync_end));
+        Nan::Set(modeObj, Nan::New("htotal").ToLocalChecked(), Nan::New<v8::Uint32>(mode->htotal));
+        Nan::Set(modeObj, Nan::New("hskew").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hskew));
 
-        Nan::Set(modeObj, Nan::New("vdisplay").ToLocalChecked(), Nan::New<v8::Uint16>(mode->vdisplay));
-        Nan::Set(modeObj, Nan::New("vsync_start").ToLocalChecked(), Nan::New<v8::Uint16>(mode->vsync_start));
-        Nan::Set(modeObj, Nan::New("vsync_end").ToLocalChecked(), Nan::New<v8::Uint16>(mode->vsync_end));
-        Nan::Set(modeObj, Nan::New("vtotal").ToLocalChecked(), Nan::New<v8::Uint16>(mode->vtotal));
-        Nan::Set(modeObj, Nan::New("vscan").ToLocalChecked(), Nan::New<v8::Uint16>(mode->vscan));
+        Nan::Set(modeObj, Nan::New("vdisplay").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vdisplay));
+        Nan::Set(modeObj, Nan::New("vsync_start").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vsync_start));
+        Nan::Set(modeObj, Nan::New("vsync_end").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vsync_end));
+        Nan::Set(modeObj, Nan::New("vtotal").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vtotal));
+        Nan::Set(modeObj, Nan::New("vscan").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vscan));
 
 
         //cbxx TODO check value
