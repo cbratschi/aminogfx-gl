@@ -128,8 +128,10 @@ private:
     EGLSurface createGbmSurface();
     std::string getDrmConnectorType(drmModeConnector *connector);
     std::string getDrmSubpixelMode(drmModeSubPixel subpixel);
-    std::string getDrmModeTypes(uint32_t type);
-    std::string getDrmModeFlags(uint32_t flags);
+    std::vector<std::string> getDrmModeTypes(uint32_t type);
+    std::vector<std::string> getDrmModeFlags(uint32_t flags);
+    std::string join(std::vector<std::string> items, std::string spacer);
+    void populateArray(v8::Local<v8::Array> &arr, std::vector<std::string> items);
     static void handlePageFlipEvent(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void *data);
 #endif
 

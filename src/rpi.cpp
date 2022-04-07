@@ -1020,7 +1020,6 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
         Nan::Set(modeObj, Nan::New("vrefresh").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vrefresh));
 
-        //cbxx TODO verify
         Nan::Set(modeObj, Nan::New("flags").ToLocalChecked(), Nan::New(getDrmModeFlags(mode->flags)).ToLocalChecked());
         Nan::Set(modeObj, Nan::New("type").ToLocalChecked(), Nan::New(getDrmModeTypes(mode->type)).ToLocalChecked());
 
@@ -1605,7 +1604,7 @@ std::string AminoGfxRPi::getDrmSubpixelMode(drmModeSubPixel subpixel) {
  * @param flags
  * @return std::string
  */
-std::string AminoGfxRPi::getDrmModeFlags(uint32_t flags) {
+std::vector<std::string> AminoGfxRPi::getDrmModeFlags(uint32_t flags) {
     std::vector<std::string> items;
 
     //basic
@@ -1711,19 +1710,7 @@ std::string AminoGfxRPi::getDrmModeFlags(uint32_t flags) {
         items.push_back("16:9");
     }
 
-    //collect
-    std::string str = "";
-    size_t size = items.size();
-
-    for (size_t i = 0; i < size; i++) {
-        if (i > 0) {
-            str += ", ";
-        }
-
-        str += items[i];
-    }
-
-    return str;
+    return items;
 }
 
 /**
@@ -1732,7 +1719,7 @@ std::string AminoGfxRPi::getDrmModeFlags(uint32_t flags) {
  * @param type
  * @return std::string
  */
-std::string AminoGfxRPi::getDrmModeTypes(uint32_t type) {
+ AminoGfxRPi::getDrmModeTypes(uint32_t type) {
     std::vector<std::string> items;
 
     //see https://lore.kernel.org/all/CADnq5_MWMZi348tJN55qzAd0Dia90AGEZAo50U2dAssUFT3DXA@mail.gmail.com/
@@ -1753,19 +1740,43 @@ std::string AminoGfxRPi::getDrmModeTypes(uint32_t type) {
         items.push_back("userdef");
     }
 
-    //collect
+    return items;
+}
+
+/**
+ * @brief Join a vector of strings using a spacer.
+ *
+ * @param items
+ * @param spacer
+ * @return std::string
+ */
+std::string AminoGfxRPi::join(std::vector<std::string> items, std::string spacer) {
     std::string str = "";
     size_t size = items.size();
 
     for (size_t i = 0; i < size; i++) {
         if (i > 0) {
-            str += ", ";
+            str += spacer;
         }
 
         str += items[i];
     }
 
     return str;
+}
+
+/**
+ * @brief Populate an array of strings.
+ *
+ * @param arr
+ * @param items
+ */
+void populateArray(v8::Local<v8::Array> &arr, std::vector<std::string> items) {
+    const size_t size = items.size();
+
+    for (size_t i = 0; i < size; i++) {
+        Nan::Set(arr, Nan::New<v8::Uint32>(i), Nan::New(items[i]).ToLocalChecked());
+    }
 }
 
 #endif
