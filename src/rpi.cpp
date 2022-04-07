@@ -1703,11 +1703,11 @@ std::string AminoGfxRPi::getDrmModeFlags(uint32_t flags) {
     //aspect ration
     uint32_t arFlags = flags & DRM_MODE_FLAG_PIC_AR_MASK;
 
-    if (flags & DRM_MODE_FLAG_PIC_AR_4_3) {
+    if (arFlags & DRM_MODE_FLAG_PIC_AR_4_3) {
         items.push_back("4:3");
     }
 
-    if (flags & DRM_MODE_FLAG_PIC_AR_16_9) {
+    if (arFlags & DRM_MODE_FLAG_PIC_AR_16_9) {
         items.push_back("16:9");
     }
 
