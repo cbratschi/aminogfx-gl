@@ -186,19 +186,23 @@ struct edid_info *edid_parse(const uint8_t *data, size_t length) {
     if (week == 0xFF) {
         //year flag
         edid->week = -1;
-        edid->year = 1900 + year;
+        edid->year = 1990 + year;
     } else {
         edid->week = week;
         edid->year = year;
+    }
+
+    if (edid->year < 50) {
+        edid->year += 1990;
     }
 
     //version
     uint8_t versionLo = data[EDID_OFFSET_VERSION];
     uint8_t versionHi = data[EDID_OFFSET_VERSION + 1];
 
-    edid->edid_version[0] = versionLo;
+    edid->edid_version[0] = '0' + versionLo;
     edid->edid_version[1] = '.';
-    edid->edid_version[2] = versionHi;
+    edid->edid_version[2] = '0' + versionHi;
     edid->edid_version[3] = 0;
 
     //basic display parameters

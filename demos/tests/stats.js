@@ -80,4 +80,11 @@ function showHdmiState(stats) {
             console.log('HDMI: ???');
         }
     }
+
+    //EDID
+    const edid = hdmi.edid;
+
+    if (edid) {
+        console.dir(edid);
+    }
 }

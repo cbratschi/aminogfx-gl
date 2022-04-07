@@ -1142,6 +1142,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                         if (blob) {
                             //value
                             Nan::Set(propObj, Nan::New("value").ToLocalChecked(), Nan::NewBuffer((char*)blob->data, blob->length).ToLocalChecked());
+                            valueSet = true;
 
                             //check EDID
                             if (strcmp(prop->name, "EDID") == 0) {
