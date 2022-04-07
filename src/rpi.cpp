@@ -1606,109 +1606,109 @@ std::string AminoGfxRPi::getDrmSubpixelMode(drmModeSubPixel subpixel) {
  * @return std::string
  */
 std::string AminoGfxRPi::getDrmModeFlags(uint32_t flags) {
-    std::vector<std::string> items = new std::vector<std::string>();
+    std::vector<std::string> items;
 
     //basic
     if (flags & DRM_MODE_FLAG_PHSYNC) {
-        items->push_back("phsync");
+        items.push_back("phsync");
     }
 
     if (flags & DRM_MODE_FLAG_NHSYNC) {
-        items->push_back("nhsync");
+        items.push_back("nhsync");
     }
 
     if (flags & DRM_MODE_FLAG_PVSYNC) {
-        items->push_back("pvsync");
+        items.push_back("pvsync");
     }
 
     if (flags & DRM_MODE_FLAG_NVSYNC) {
-        items->push_back("nvsync");
+        items.push_back("nvsync");
     }
 
     if (flags & DRM_MODE_FLAG_INTERLACE) {
-        items->push_back("interlace");
+        items.push_back("interlace");
     }
 
     if (flags & DRM_MODE_FLAG_DBLSCAN) {
-        items->push_back("dblscan");
+        items.push_back("dblscan");
     }
 
     if (flags & DRM_MODE_FLAG_CSYNC) {
-        items->push_back("csync");
+        items.push_back("csync");
     }
 
     if (flags & DRM_MODE_FLAG_PCSYNC) {
-        items->push_back("pcsync");
+        items.push_back("pcsync");
     }
 
     if (flags & DRM_MODE_FLAG_NCSYNC) {
-        items->push_back("ncsync");
+        items.push_back("ncsync");
     }
 
     if (flags & DRM_MODE_FLAG_HSKEW) {
-        items->push_back("hskew");
+        items.push_back("hskew");
     }
 
     if (flags & DRM_MODE_FLAG_BCAST) {
-        items->push_back("bcast");
+        items.push_back("bcast");
     }
 
     if (flags & DRM_MODE_FLAG_PIXMUX) {
-        items->push_back("pixmux");
+        items.push_back("pixmux");
     }
 
     if (flags & DRM_MODE_FLAG_DBLCLK) {
-        items->push_back("dblclk");
+        items.push_back("dblclk");
     }
 
     if (flags & DRM_MODE_FLAG_CLKDIV2) {
-        items->push_back("clkdiv2");
+        items.push_back("clkdiv2");
     }
 
     //3D
     uint32_t 3dFlags = flags & DRM_MODE_FLAG_3D_MASK;
 
     if (3dFlags & DRM_MODE_FLAG_3D_FRAME_PACKING) {
-        items->push_back("3D frame packing");
+        items.push_back("3D frame packing");
     }
 
     if (3dFlags & DRM_MODE_FLAG_3D_FIELD_ALTERNATIVE) {
-        items->push_back("3D field alternative");
+        items.push_back("3D field alternative");
     }
 
     if (3dFlags & DRM_MODE_FLAG_3D_LINE_ALTERNATIVE) {
-        items->push_back("3D line alternative");
+        items.push_back("3D line alternative");
     }
 
     if (3dFlags & DRM_MODE_FLAG_3D_SIDE_BY_SIDE_FULL) {
-        items->push_back("3D side by side full");
+        items.push_back("3D side by side full");
     }
 
     if (3dFlags & DRM_MODE_FLAG_3D_L_DEPTH) {
-        items->push_back("3D l depth");
+        items.push_back("3D l depth");
     }
 
     if (3dFlags & DRM_MODE_FLAG_3D_L_DEPTH_GFX_GFX_DEPTH) {
-        items->push_back("3D l depth gfx gfx depth");
+        items.push_back("3D l depth gfx gfx depth");
     }
 
     if (3dFlags & DRM_MODE_FLAG_3D_TOP_AND_BOTTOM) {
-        items->push_back("3D top and bottom");
+        items.push_back("3D top and bottom");
     }
 
     if (3dFlags & DRM_MODE_FLAG_3D_SIDE_BY_SIDE_HALF) {
-        items->push_back("3D side by side half");
+        items.push_back("3D side by side half");
     }
 
     //aspect ration
     uint32_t arFlags = flags & DRM_MODE_FLAG_PIC_AR_MASK;
 
     if (flags & DRM_MODE_FLAG_PIC_AR_4_3) {
-        items->push_back("4:3");
+        items.push_back("4:3");
     }
 
     if (flags & DRM_MODE_FLAG_PIC_AR_16_9) {
-        items->push_back("16:9");
+        items.push_back("16:9");
     }
 
     //collect
@@ -1733,24 +1733,24 @@ std::string AminoGfxRPi::getDrmModeFlags(uint32_t flags) {
  * @return std::string
  */
 std::string AminoGfxRPi::getDrmModeTypes(uint32_t type) {
-    std::vector<std::string> items = new std::vector<std::string>();
+    std::vector<std::string> items;
 
     //see https://lore.kernel.org/all/CADnq5_MWMZi348tJN55qzAd0Dia90AGEZAo50U2dAssUFT3DXA@mail.gmail.com/
     //see https://android.googlesource.com/platform/external/kernel-headers/+/62240ee6662daa3f339206717125c59ff8143df0/original/uapi/drm/drm_mode.h#41
 
     if (type & DRM_MODE_TYPE_BUILTIN) {
         //hardcoded mode
-        items->push_back("builtin");
+        items.___POSIX_C_DEPRECATED_STARTING_199506L("builtin");
     }
 
     if (type & DRM_MODE_TYPE_PREFERRED) {
         //preferred mode by display
-        items->push_back("preferred");
+        items.push_back("preferred");
     }
 
     if (type & DRM_MODE_TYPE_USERDEF) {
         //user defined
-        items->push_back("userdef");
+        items.push_back("userdef");
     }
 
     //collect
