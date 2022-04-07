@@ -51,19 +51,33 @@ function showHdmiState(stats) {
         return;
     }
 
+    //DRM version
+    const connected = hdmi.connected;
+
+    if (connected !== undefined) {
+        if (connected) {
+            console.log('HDMI: connected');
+        } else {
+            console.log('HDMI: disconnected');
+        }
+    }
+
+    //legacy
     const state = hdmi.state;
 
-    if (state & VC_HDMI_UNPLUGGED) {
-        console.log('HDMI: unplugged');
-    } else if (state & VC_HDMI_ATTACHED) {
-        console.log('HDMI: attached');
-    } else if (state & VC_HDMI_DVI) {
-        console.log('HDMI: on (DVI mode)');
-    } else if (state & VC_HDMI_HDMI) {
-        console.log('HDMI: on');
-    } else if (state & VC_HDMI_CHANGING_MODE) {
-        console.log('HDMI: changing mode');
-    } else {
-        console.log('HDMI: ???');
+    if (state !== undefined) {
+        if (state & VC_HDMI_UNPLUGGED) {
+            console.log('HDMI: unplugged');
+        } else if (state & VC_HDMI_ATTACHED) {
+            console.log('HDMI: attached');
+        } else if (state & VC_HDMI_DVI) {
+            console.log('HDMI: on (DVI mode)');
+        } else if (state & VC_HDMI_HDMI) {
+            console.log('HDMI: on');
+        } else if (state & VC_HDMI_CHANGING_MODE) {
+            console.log('HDMI: changing mode');
+        } else {
+            console.log('HDMI: ???');
+        }
     }
 }

@@ -899,7 +899,7 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
     v8::Local<v8::Object> hdmiObj = Nan::New<v8::Object>();
 
     Nan::Set(obj, Nan::New("hdmi").ToLocalChecked(), hdmiObj);
-//cbxx add similar
+
     // HDMI_DISPLAY_STATE_T
     Nan::Set(hdmiObj, Nan::New("state").ToLocalChecked(), Nan::New(tvState->display.hdmi.state));
     Nan::Set(hdmiObj, Nan::New("width").ToLocalChecked(), Nan::New(tvState->display.hdmi.width));
@@ -912,7 +912,7 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
     Nan::Set(hdmiObj, Nan::New("aspectRatio").ToLocalChecked(), Nan::New(tvState->display.hdmi.aspect_ratio));
     Nan::Set(hdmiObj, Nan::New("pixelEncoding").ToLocalChecked(), Nan::New(tvState->display.hdmi.pixel_encoding));
     Nan::Set(hdmiObj, Nan::New("format3d").ToLocalChecked(), Nan::New(tvState->display.hdmi.format_3d));
-//cbxx add similar
+
     //display options (HDMI_DISPLAY_OPTIONS_T)
     v8::Local<v8::Object> displayObj = Nan::New<v8::Object>();
 
@@ -965,7 +965,6 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
     }
 
     //connector data
-    //cbxx TODO verify
     std::string type = getDrmConnectorType(conn);
     bool connected = conn->connection == DRM_MODE_CONNECTED;
 
@@ -1019,8 +1018,6 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
         Nan::Set(modeObj, Nan::New("vtotal").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vtotal));
         Nan::Set(modeObj, Nan::New("vscan").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vscan));
 
-
-        //cbxx TODO check value
         Nan::Set(modeObj, Nan::New("vrefresh").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vrefresh));
 
         //cbxx TODO convert
@@ -1037,7 +1034,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
     // 3) properties (see https://github.com/ascent12/drm_info/blob/master/json.c#L376)
     drmModeObjectProperties *props = drmModeObjectGetProperties(driDevice, conn->connector_id, DRM_MODE_OBJECT_CONNECTOR);
-    v8::Local<v8::Array> propArr = Nan::New<v8::Array>();
+    v8::Local<v8::Object> propObj = Nan::New<v8::Object>();
 
     if (props) {
         for (uint32_t i = 0; i < props->count_props; ++i) {
@@ -1052,9 +1049,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
             //bool atomic = flags & DRM_MODE_PROP_ATOMIC;
             //bool immutable = flags & DRM_MODE_PROP_IMMUTABLE;
             uint64_t value = props->prop_values[i];
-            v8::Local<v8::Object> propObj = Nan::New<v8::Object>();
-
-            Nan::Set(propObj, Nan::New("name").ToLocalChecked(), Nan::New(prop->name).ToLocalChecked());
+            v8::Local<v8::Object> propsObj = Nan::New<v8::Object>();
 
             //debug cbxx
             printf(" -> property %s (values=%i)\n", prop->name, prop->count_values);
@@ -1066,8 +1061,8 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     uint64_t rangeMin = prop->values[0];
                     uint64_t rangeMax = prop->values[1];
 
-                    //debug cbxx
-                    printf(" -> range %" PRIu64 "..%" PRIu64 ": %" PRIu64 "\n", rangeMin, rangeMax, value);
+                    //debug
+                    //printf(" -> range %" PRIu64 "..%" PRIu64 ": %" PRIu64 "\n", rangeMin, rangeMax, value);
 
                     //FIXME no BigInt support yet
                     Nan::Set(propObj, Nan::New("min").ToLocalChecked(), Nan::New<v8::Uint32>((uint32_t)rangeMin));
@@ -1076,12 +1071,29 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     break;
                 }
 
+                case DRM_MODE_PROP_SIGNED_RANGE: {
+                    int64_t rangeMin = (int64_t)prop->values[0];
+                    int64_t rangeMax = (int64_t)prop->values[1];
+
+                    //debug
+                    //printf(" -> signed range %" PRId64 "..%" PRId64 ": %" PRId64 "\n", rangeMin, rangeMax, (int64_t)value);
+
+                    //FIXME no BigInt support yet
+                    Nan::Set(propObj, Nan::New("min").ToLocalChecked(), Nan::New<v8::Int32>((int32_t)rangeMin));
+                    Nan::Set(propObj, Nan::New("max").ToLocalChecked(), Nan::New<v8::Int32>((int32_t)rangeMax));
+                    Nan::Set(propObj, Nan::New("value").ToLocalChecked(), Nan::New<v8::Int32>((int32_t)value));
+                    break;
+                }
+
                 case DRM_MODE_PROP_ENUM:
                 case DRM_MODE_PROP_BITMASK:
                     //debug cbxx
                     for (int j = 0; j < prop->count_enums; ++j) {
-                        printf(" -> enum %s: %" PRIu64 "\n", prop->enums[j].name, prop->enums[j].value);
+                        printf(" -> %s %s: %" PRIu64 "\n", type == DRM_MODE_PROP_ENUM ? "enum":"bitmask",prop->enums[j].name, prop->enums[j].value);
                     }
+
+                    //collect values
+                    //cbxx TODO
 
                     printf(" -> value %" PRIu64 "\n", value);
                     break;
@@ -1091,23 +1103,16 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     printf(" -> object %" PRIu64 "\n", value);
                     break;
 
-                case DRM_MODE_PROP_SIGNED_RANGE: {
-                    int64_t rangeMin = (int64_t)prop->values[0];
-                    int64_t rangeMax = (int64_t)prop->values[1];
-
-                    //debug cbxx
-                    printf(" -> range %" PRId64 "..%" PRId64 ": %" PRId64 "\n", rangeMin, rangeMax, (int64_t)value);
-                    break;
-                }
-
                 case DRM_MODE_PROP_BLOB:
                     //debug cbxx
                     printf(" -> blob: count=%i value=%" PRIu64 "\n", prop->count_blobs, value);
 
-                    //debug cbxx TODO meaning
+                    //debug (meaning?)
+                    /*
                     for (int j = 0; j < prop->count_blobs; j++) {
                         showPropertyBlob(prop->blob_ids[j], prop->name);
                     }
+                    */
 
                     if (value) {
                         showPropertyBlob(value, prop->name);
@@ -1115,13 +1120,13 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     break;
 
                 default:
-                    //debug cbxx
-                    printf(" -> unknown %d\n", type);
+                    //debug
+                    //printf(" -> unknown %d\n", type);
                     break;
             }
 
-            //add to array
-            Nan::Set(propArr, Nan::New<v8::Uint32>(i), propObj);
+            //add to object
+            Nan::Set(propsObj, Nan::New(prop->name).ToLocalChecked(), propObj);
 
             //cleanup
             drmModeFreeProperty(prop);
@@ -1130,7 +1135,7 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
         drmModeFreeObjectProperties(props);
     }
 
-    Nan::Set(hdmiObj, Nan::New("props").ToLocalChecked(), propArr);
+    Nan::Set(hdmiObj, Nan::New("props").ToLocalChecked(), propsObj);
 
     //done
     drmModeFreeConnector(conn);
