@@ -1020,9 +1020,19 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
         Nan::Set(modeObj, Nan::New("vrefresh").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vrefresh));
 
-        Nan::Set(modeObj, Nan::New("flags").ToLocalChecked(), Nan::New(getDrmModeFlags(mode->flags)).ToLocalChecked());
-        Nan::Set(modeObj, Nan::New("type").ToLocalChecked(), Nan::New(getDrmModeTypes(mode->type)).ToLocalChecked());
+        //flags
+        v8::Local<v8::Array> flagsArr = Nan::New<v8::Array>();
 
+        populateArray(&flagsArr, getDrmModeFlags(mode->flags));
+        Nan::Set(modeObj, Nan::New("flags").ToLocalChecked(), flagsArr);
+
+        //type
+        v8::Local<v8::Array> typeArr = Nan::New<v8::Array>();
+
+        populateArray(&typeArr, getDrmModeTypes(mode->type));
+        Nan::Set(modeObj, Nan::New("type").ToLocalChecked(), typeArr);
+
+        //name
         Nan::Set(modeObj, Nan::New("name").ToLocalChecked(), Nan::New(mode->name).ToLocalChecked());
 
         //add to array
