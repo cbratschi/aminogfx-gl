@@ -1070,9 +1070,9 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     printf(" -> range %" PRIu64 "..%" PRIu64 ": %" PRIu64 "\n", rangeMin, rangeMax, value);
 
                     //FIXME no BigInt support yet
-                    Nan::Set(propObj, Nan::New("min").ToLocalChecked(), Nan::New<v8::Uint32>(rangeMin));
-                    Nan::Set(propObj, Nan::New("max").ToLocalChecked(), Nan::New<v8::Uint32>(rangeMax));
-                    Nan::Set(propObj, Nan::New("value").ToLocalChecked(), Nan::New<v8::Uint32>(value));
+                    Nan::Set(propObj, Nan::New("min").ToLocalChecked(), Nan::New<v8::Uint32>((uint32_t)rangeMin));
+                    Nan::Set(propObj, Nan::New("max").ToLocalChecked(), Nan::New<v8::Uint32>((uint32_t)rangeMax));
+                    Nan::Set(propObj, Nan::New("value").ToLocalChecked(), Nan::New<v8::Uint32>((uint32_t)value));
                     break;
                 }
 
