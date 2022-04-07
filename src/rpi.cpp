@@ -1020,9 +1020,9 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
         Nan::Set(modeObj, Nan::New("vrefresh").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vrefresh));
 
-        //cbxx TODO convert
-        Nan::Set(modeObj, Nan::New("flags").ToLocalChecked(), Nan::New<v8::Uint32>(mode->flags));
-        Nan::Set(modeObj, Nan::New("type").ToLocalChecked(), Nan::New<v8::Uint32>(mode->type));
+        //cbxx TODO verify
+        Nan::Set(modeObj, Nan::New("flags").ToLocalChecked(), Nan::New(getDrmModeFlags(mode->flags)).ToLocalChecked());
+        Nan::Set(modeObj, Nan::New("type").ToLocalChecked(), Nan::New(getDrmModeTypes(mode->type)).ToLocalChecked());
 
         Nan::Set(modeObj, Nan::New("name").ToLocalChecked(), Nan::New(mode->name).ToLocalChecked());
 
@@ -1051,8 +1051,8 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
             uint64_t value = props->prop_values[i];
             v8::Local<v8::Object> propObj = Nan::New<v8::Object>();
 
-            //debug cbxx
-            printf(" -> property %s (values=%i)\n", prop->name, prop->count_values);
+            //debug
+            //printf(" -> property %s (values=%i)\n", prop->name, prop->count_values);
 
             //check type
             switch (type) {
@@ -1107,7 +1107,19 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                         }
                     } else {
                         //bitmask
-                        //cbxx TODO check
+                        v8::Local<v8::Array> valueArr = Nan::New<v8::Array>();
+
+                        for (int j = 0; j < prop->count_enums; ++j) {
+                            uint64_t mask = 1LL << prop->enums[j].value;
+                            int pos = 0;
+
+                            if (value & mask) {
+                                Nan::Set(valueArr, Nan::New<v8::Uint32>(pos), Nan::New(prop->enums[j].name).ToLocalChecked());
+                                pos++;
+                            }
+                        }
+
+                        Nan::Set(propObj, Nan::New("value").ToLocalChecked(), valueArr);
                     }
 
                     //debug
@@ -1115,8 +1127,10 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
                     break;
 
                 case DRM_MODE_PROP_OBJECT:
-                    //debug cbxx
-                    printf(" -> object %" PRIu64 "\n", value);
+                    //debug
+                    //printf(" -> object %" PRIu64 "\n", value);
+
+                    //Note: nothing parsed yet
                     break;
 
                 case DRM_MODE_PROP_BLOB: {
@@ -1583,6 +1597,175 @@ std::string AminoGfxRPi::getDrmSubpixelMode(drmModeSubPixel subpixel) {
         case DRM_MODE_SUBPIXEL_NONE:
             return "none";
     }
+}
+
+/**
+ * @brief Get all DRM mode flags as string.
+ *
+ * @param flags
+ * @return std::string
+ */
+std::string AminoGfxRPi::getDrmModeFlags(uint32_t flags) {
+    std::vector<std::string> items = new std::vector<std::string>();
+
+    //basic
+    if (flags & DRM_MODE_FLAG_PHSYNC) {
+        items->push_back("phsync");
+    }
+
+    if (flags & DRM_MODE_FLAG_NHSYNC) {
+        items->push_back("nhsync");
+    }
+
+    if (flags & DRM_MODE_FLAG_PVSYNC) {
+        items->push_back("pvsync");
+    }
+
+    if (flags & DRM_MODE_FLAG_NVSYNC) {
+        items->push_back("nvsync");
+    }
+
+    if (flags & DRM_MODE_FLAG_INTERLACE) {
+        items->push_back("interlace");
+    }
+
+    if (flags & DRM_MODE_FLAG_DBLSCAN) {
+        items->push_back("dblscan");
+    }
+
+    if (flags & DRM_MODE_FLAG_CSYNC) {
+        items->push_back("csync");
+    }
+
+    if (flags & DRM_MODE_FLAG_PCSYNC) {
+        items->push_back("pcsync");
+    }
+
+    if (flags & DRM_MODE_FLAG_NCSYNC) {
+        items->push_back("ncsync");
+    }
+
+    if (flags & DRM_MODE_FLAG_HSKEW) {
+        items->push_back("hskew");
+    }
+
+    if (flags & DRM_MODE_FLAG_BCAST) {
+        items->push_back("bcast");
+    }
+
+    if (flags & DRM_MODE_FLAG_PIXMUX) {
+        items->push_back("pixmux");
+    }
+
+    if (flags & DRM_MODE_FLAG_DBLCLK) {
+        items->push_back("dblclk");
+    }
+
+    if (flags & DRM_MODE_FLAG_CLKDIV2) {
+        items->push_back("clkdiv2");
+    }
+
+    //3D
+    uint32_t 3dFlags = flags & DRM_MODE_FLAG_3D_MASK;
+
+    if (3dFlags & DRM_MODE_FLAG_3D_FRAME_PACKING) {
+        items->push_back("3D frame packing");
+    }
+
+    if (3dFlags & DRM_MODE_FLAG_3D_FIELD_ALTERNATIVE) {
+        items->push_back("3D field alternative");
+    }
+
+    if (3dFlags & DRM_MODE_FLAG_3D_LINE_ALTERNATIVE) {
+        items->push_back("3D line alternative");
+    }
+
+    if (3dFlags & DRM_MODE_FLAG_3D_SIDE_BY_SIDE_FULL) {
+        items->push_back("3D side by side full");
+    }
+
+    if (3dFlags & DRM_MODE_FLAG_3D_L_DEPTH) {
+        items->push_back("3D l depth");
+    }
+
+    if (3dFlags & DRM_MODE_FLAG_3D_L_DEPTH_GFX_GFX_DEPTH) {
+        items->push_back("3D l depth gfx gfx depth");
+    }
+
+    if (3dFlags & DRM_MODE_FLAG_3D_TOP_AND_BOTTOM) {
+        items->push_back("3D top and bottom");
+    }
+
+    if (3dFlags & DRM_MODE_FLAG_3D_SIDE_BY_SIDE_HALF) {
+        items->push_back("3D side by side half");
+    }
+
+    //aspect ration
+    uint32_t arFlags = flags & DRM_MODE_FLAG_PIC_AR_MASK;
+
+    if (flags & DRM_MODE_FLAG_PIC_AR_4_3) {
+        items->push_back("4:3");
+    }
+
+    if (flags & DRM_MODE_FLAG_PIC_AR_16_9) {
+        items->push_back("16:9");
+    }
+
+    //collect
+    std::string str = "";
+    size_t size = items.size();
+
+    for (size_t i = 0; i < size; i++) {
+        if (i > 0) {
+            str += ", ";
+        }
+
+        str += items[i];
+    }
+
+    return str;
+}
+
+/**
+ * @brief Get all set DRM mode types as string.
+ *
+ * @param type
+ * @return std::string
+ */
+std::string AminoGfxRPi::getDrmModeTypes(uint32_t type) {
+    std::vector<std::string> items = new std::vector<std::string>();
+
+    //see https://lore.kernel.org/all/CADnq5_MWMZi348tJN55qzAd0Dia90AGEZAo50U2dAssUFT3DXA@mail.gmail.com/
+    //see https://android.googlesource.com/platform/external/kernel-headers/+/62240ee6662daa3f339206717125c59ff8143df0/original/uapi/drm/drm_mode.h#41
+
+    if (type & DRM_MODE_TYPE_BUILTIN) {
+        //hardcoded mode
+        items->push_back("builtin");
+    }
+
+    if (type & DRM_MODE_TYPE_PREFERRED) {
+        //preferred mode by display
+        items->push_back("preferred");
+    }
+
+    if (type & DRM_MODE_TYPE_USERDEF) {
+        //user defined
+        items->push_back("userdef");
+    }
+
+    //collect
+    std::string str = "";
+    size_t size = items.size();
+
+    for (size_t i = 0; i < size; i++) {
+        if (i > 0) {
+            str += ", ";
+        }
+
+        str += items[i];
+    }
+
+    return str;
 }
 
 #endif
