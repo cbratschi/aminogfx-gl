@@ -826,7 +826,7 @@ bool VideoDemuxer::initStream() {
         std::string drmNode = "/dev/dri/renderD128";
         AVBufferRef *hwDeviceCtx = NULL;
 
-        if (av_hwdevice_ctx_create(&hwDeviceCtx, AV_HWDEVICE_TYPE_VAAPI, drmNode, NULL, 0) < 0) {
+        if (av_hwdevice_ctx_create(&hwDeviceCtx, AV_HWDEVICE_TYPE_VAAPI, drmNode.c_str(), NULL, 0) < 0) {
             lastError = "could not initialize vaapi device";
 
             return false;

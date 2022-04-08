@@ -14,6 +14,8 @@ extern "C" {
     #include <va/va_drm.h>
     #include <va/va_drmcommon.h>
 
+    #include <libavutil/hwcontext_vaapi.h>
+
     #include <drm_fourcc.h>
 #endif
 }
