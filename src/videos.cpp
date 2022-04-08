@@ -717,6 +717,23 @@ bool VideoDemuxer::loadFile(std::string filename, std::string options) {
     return true;
 }
 
+#ifdef EGL_GBM
+
+/**
+ * @brief Get the Hw Format object.
+ *
+ * @param ctx
+ * @param pix_fmts
+ * @return enum AVPixelFormat
+ */
+static enum AVPixelFormat getHwFormat(AVCodecContext *ctx, const enum AVPixelFormat *pix_fmts) {
+    (void)ctx, (void)pix_fmts;
+
+    return AV_PIX_FMT_VAAPI;
+}
+
+#endif
+
 /**
  * Initialize decoder.
  */
@@ -833,10 +850,10 @@ bool VideoDemuxer::initStream() {
         }
 
         const AVHWDeviceContext *hwCtx = (AVHWDeviceContext*)hwDeviceCtx->data;
-        const AVVAAPIDeviceContext *vaCtx = hwCtx->hwctx;
+        const AVVAAPIDeviceContext *vaCtx = (AVVAAPIDeviceContext*)hwCtx->hwctx;
 
         vaDisplay = vaCtx->display;
-        codecCtx->get_format = AV_PIX_FMT_VAAPI;
+        codecCtx->get_format = getHwFormat;
         codecCtx->hw_device_ctx = av_buffer_ref(hwDeviceCtx);
         codecCtx->thread_count = 3;
     }
@@ -1057,7 +1074,7 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
                 //send to hardware decoder
                 if (avcodec_send_packet(codecCtx, packet) < 0) {
                     res = READ_ERROR;
-                    goto end;
+                    goto done;
                 }
 
                 //get from decoder
@@ -1071,10 +1088,10 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
 
                 if (ret == AVERROR_EOF) {
                     ret = READ_END_OF_VIDEO;
-                    goto end;
+                    goto done;
                 } else if (ret < 0) {
                     ret = READ_ERROR;
-                    goto end;
+                    goto done;
                 }
 
                 //process
@@ -1083,12 +1100,12 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
 
                 if (vaExportSurfaceHandle(vaDisplay, vaSurface, VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME_2, VA_EXPORT_SURFACE_READ_ONLY | VA_EXPORT_SURFACE_SEPARATE_LAYERS, &prime) != VA_STATUS_SUCCESS) {
                     ret = READ_ERROR;
-                    goto end;
+                    goto done;
                 }
 
                 if (prime.fourcc != VA_FOURCC_NV12) {
                     ret = READ_ERROR;
-                    goto end;
+                    goto done;
                 }
 
                 vaSyncSurface(vaDisplay, vaSurface);
