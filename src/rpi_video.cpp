@@ -1388,7 +1388,7 @@ bool AminoOmxVideoPlayer::initTexture() {
         GLvoid *data = NULL;
 
         if (softwareDecoding) {
-            data = stream->getDemuxer()->getFrameData(frameId);
+            data = stream->getDemuxer()->getFrameRGBData(frameId);
 
             assert(data);
         }
@@ -1441,7 +1441,7 @@ void AminoOmxVideoPlayer::updateVideoTexture(GLContext *ctx) {
     if (softwareDecoding) {
         //get current frame
         int id;
-        GLvoid *data = stream->getDemuxer()->getFrameData(id);
+        GLvoid *data = stream->getDemuxer()->getFrameRGBData(id);
 
         if (!data) {
             uv_mutex_unlock(&destroyLock);
@@ -1894,7 +1894,7 @@ void AminoOmxVideoPlayer::initDemuxer() {
 
     //read first frame
     double timeStart;
-    READ_FRAME_RESULT res = demuxer->readRGBFrame(timeStart);
+    READ_FRAME_RESULT res = demuxer->readDecodedFrame(timeStart);
 
     timeStartSys = getTime() / 1000;
 
@@ -1951,7 +1951,7 @@ void AminoOmxVideoPlayer::initDemuxer() {
 
         //next frame
         double time;
-        int res = demuxer->readRGBFrame(time);
+        int res = demuxer->readDecodedFrame(time);
         double timeSys = getTime() / 1000;
 
         if (res == READ_ERROR) {
@@ -1979,7 +1979,7 @@ void AminoOmxVideoPlayer::initDemuxer() {
             }
 
             //rewind
-            if (!demuxer->rewindRGB(timeStart)) {
+            if (!demuxer->rewindDecoder(timeStart)) {
                 handlePlaybackError();
                 return;
             }
@@ -2010,7 +2010,7 @@ void AminoOmxVideoPlayer::initDemuxer() {
         }
 
         //show
-        demuxer->switchRGBFrame();
+        demuxer->switchDecodedFrame();
 
         //update media time
         mediaTime = getTime() / 1000 - timeStartSys;

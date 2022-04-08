@@ -635,6 +635,13 @@ bool VideoDemuxer::loadFile(std::string filename, std::string options) {
     }
 
     //get video stream
+    videoStream = av_find_best_stream(context, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+
+    if (videoStream < 0) {
+        videoStream = -1;
+    }
+
+    /* Note: previous implementation
     videoStream = -1;
 
     for (unsigned int i = 0; i < context->nb_streams; i++) {
@@ -649,6 +656,7 @@ bool VideoDemuxer::loadFile(std::string filename, std::string options) {
             break;
         }
     }
+    */
 
     if (videoStream == -1) {
         lastError = "not a video";
@@ -729,6 +737,8 @@ bool VideoDemuxer::initStream() {
     AVCodec *codec = NULL;
 
 #ifdef EGL_GBM
+    useVaapi = false;
+
     if (codecCtx->codec_id == AV_CODEC_ID_H264) {
         /*
          * Default RPi 4 decoder:
@@ -742,7 +752,9 @@ bool VideoDemuxer::initStream() {
          */
 
         //use V4L2
-//        codec = avcodec_find_decoder_by_name("h264_v4l2m2m");
+        codec = avcodec_find_decoder_by_name("h264_v4l2m2m");
+        useVaapi = true;
+
         //cbxx FIXME no screen output (uses V4L2 decoder but shows no hardware acceleration in our check below)
         //cbxx FIXME -> [h264_v4l2m2m @ 0xa28ea2d0] Got unexpected packet after EOF
     } else if (codecCtx->codec_id == AV_CODEC_ID_HEVC) {
@@ -807,6 +819,28 @@ bool VideoDemuxer::initStream() {
 
         return false;
     }
+
+#ifdef EGL_GBM
+    //init vaapi (cbxx see https://gist.github.com/kajott/d1b29c613be30893c855621edd1f212e#file-vaapi_egl_interop_example-c-L231)
+    if (useVaapi) {
+        std::string drmNode = "/dev/dri/renderD128";
+        AVBufferRef *hwDeviceCtx = NULL;
+
+        if (av_hwdevice_ctx_create(&hwDeviceCtx, AV_HWDEVICE_TYPE_VAAPI, drm_node, NULL, 0) < 0) {
+            lastError = "could not initialize vaapi device";
+
+            return false;
+        }
+
+        const AVHWDeviceContext *hwCtx = (void*)hwDeviceCtx->data;
+        const AVVAAPIDeviceContext *vaCtx = hwCtx->hwctx;
+
+        vaDisplay = vaCtx->display;
+        codecCtx->get_format = AV_PIX_FMT_VAAPI;
+        codecCtx->hw_device_ctx = av_buffer_ref(hwDeviceCtx);
+        codecCtx->thread_count = 3;
+    }
+#endif
 
     //open codec
     AVDictionary *opts = NULL;
@@ -949,9 +983,9 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
 }
 
 /**
- * Read a video frame in RGB format.
+ * Read a decoded video frame.
  */
- READ_FRAME_RESULT VideoDemuxer::readRGBFrame(double &time) {
+ READ_FRAME_RESULT VideoDemuxer::readDecodedFrame(double &time) {
     if (!context || !codecCtx) {
         return READ_ERROR;
     }
@@ -961,42 +995,45 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
         //allocate video frame
         frame = av_frame_alloc();
 
-        //allocate an AVFrame structure
-        frameRGB = av_frame_alloc();
+        //init RGB
+        if (!useVaapi) {
+            //allocate an AVFrame structure
+            frameRGB = av_frame_alloc();
 
-        if (!frame || !frameRGB) {
-            lastError = "could not allocate frame";
-            return READ_ERROR;
-        }
-
-        if (!buffer) {
-            //determine required buffer size and allocate buffer (using RGB 24 bits)
-            //Note: deprecated warning on macOS
-            int numBytes = avpicture_get_size(AV_PIX_FMT_RGB24, codecCtx->width, codecCtx->height);
-            //int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, codecCtx->width, codecCtx->height, 1);
-
-            bufferSize = numBytes * sizeof(uint8_t);
-            buffer = (uint8_t *)av_malloc(bufferSize);
-
-            assert(buffer);
-
-            memset(buffer, 0, bufferSize);
-
-            if (!bufferCurrent) {
-                bufferCurrent = (uint8_t *)av_malloc(bufferSize);
+            if (!frame || !frameRGB) {
+                lastError = "could not allocate frame";
+                return READ_ERROR;
             }
+
+            if (!buffer) {
+                //determine required buffer size and allocate buffer (using RGB 24 bits)
+                //Note: deprecated warning on macOS
+                int numBytes = avpicture_get_size(AV_PIX_FMT_RGB24, codecCtx->width, codecCtx->height);
+                //int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, codecCtx->width, codecCtx->height, 1);
+
+                bufferSize = numBytes * sizeof(uint8_t);
+                buffer = (uint8_t *)av_malloc(bufferSize);
+
+                assert(buffer);
+
+                memset(buffer, 0, bufferSize);
+
+                if (!bufferCurrent) {
+                    bufferCurrent = (uint8_t *)av_malloc(bufferSize);
+                }
+            }
+
+            //fill buffer
+            //Note: deprecated warning on macOS
+
+            avpicture_fill((AVPicture *)frameRGB, buffer, AV_PIX_FMT_RGB24, codecCtx->width, codecCtx->height);
+            //av_image_fill_arrays(frameRGB->data, frameRGB->linesize, buffer, AV_PIX_FMT_RGB24, codecCtx->width, codecCtx->height, 1);
+
+            switchDecodedFrame();
+
+            //initialize SWS context for software scaling
+            sws_ctx = sws_getContext(codecCtx->width, codecCtx->height, codecCtx->pix_fmt, codecCtx->width, codecCtx->height, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
         }
-
-        //fill buffer
-        //Note: deprecated warning on macOS
-
-        avpicture_fill((AVPicture *)frameRGB, buffer, AV_PIX_FMT_RGB24, codecCtx->width, codecCtx->height);
-        //av_image_fill_arrays(frameRGB->data, frameRGB->linesize, buffer, AV_PIX_FMT_RGB24, codecCtx->width, codecCtx->height, 1);
-
-        switchRGBFrame();
-
-        //initialize SWS context for software scaling
-        sws_ctx = sws_getContext(codecCtx->width, codecCtx->height, codecCtx->pix_fmt, codecCtx->width, codecCtx->height, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
     }
 
     //read frame
@@ -1008,10 +1045,62 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
     packet->data = NULL;
     packet->size = 0;
 
+    //cbxx TODO better packet memory management
     while (true) {
         res = readFrame(packet);
 
         if (res == READ_OK) {
+#ifdef EGL_GBM
+            //vaapi
+            if (useVaapi) {
+                //cbxx TODO verify
+                //send to hardware decoder
+                if (avcodec_send_packet(codecCtx, packet) < 0) {
+                    res = READ_ERROR;
+                    goto end;
+                }
+
+                //get from decoder
+                int ret = avcodec_receive_frame(codecCtx, frame);
+
+                if (ret == AVERROR(EAGAIN)) {
+                    //next frame
+                    freeFrame(packet);
+                    continue;
+                }
+
+                if (ret == AVERROR_EOF) {
+                    ret = READ_END_OF_VIDEO;
+                    goto end;
+                } else if (ret < 0) {
+                    ret = READ_ERROR;
+                    goto end;
+                }
+
+                //process
+                VASurfaceID vaSurface = (uintptr_t)frame->data[3];
+                VADRMPRIMESurfaceDescriptor prime;
+
+                if (vaExportSurfaceHandle(vaDisplay, vaSurface, VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME_2, VA_EXPORT_SURFACE_READ_ONLY | VA_EXPORT_SURFACE_SEPARATE_LAYERS, &prime) != VA_STATUS_SUCCESS) {
+                    ret = READ_ERROR;
+                    goto end;
+                }
+
+                if (prime.fourcc != VA_FOURCC_NV12) {
+                    ret = READ_ERROR;
+                    goto end;
+                }
+
+                vaSyncSurface(vaDisplay, vaSurface);
+
+                //cbxx TODO debug
+
+                goto done;
+            }
+#endif
+
+            //use RGB decoder
+
             //decode video frame
             int frameFinished;
 
@@ -1092,7 +1181,16 @@ done:
 /**
  * Switch active RGB frame.
  */
-void VideoDemuxer::switchRGBFrame() {
+void VideoDemuxer::switchDecodedFrame() {
+#ifdef EGL_GBM
+    if (useVaapi) {
+        //cbxx TODO vaapi
+        return;
+    }
+#endif
+
+    //RGB decoder
+    //cbxx TODO optimize buffer copy
     memcpy(bufferCurrent, buffer, bufferSize);
     bufferCount = frameRGBCount;
 }
@@ -1154,19 +1252,19 @@ bool VideoDemuxer::rewind() {
 /**
  * Rewind RGB stream.
  */
-bool VideoDemuxer::rewindRGB(double &time) {
+bool VideoDemuxer::rewindDecoder(double &time) {
     if (!rewind()) {
         return false;
     }
 
     //load first frame
-    return readRGBFrame(time) == READ_OK;
+    return readDecodedFrame(time) == READ_OK;
 }
 
 /**
  * Get frame data.
  */
-uint8_t *VideoDemuxer::getFrameData(int &id) {
+uint8_t *VideoDemuxer::getFrameRGBData(int &id) {
     id = bufferCount;
 
     return bufferCurrent;

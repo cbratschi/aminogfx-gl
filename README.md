@@ -48,13 +48,14 @@ brew install freetype
 * libav
 * libswscale-dev
 * libavcodec-dev
+* libva-dev
 * Raspbian (other Linux variants should work too)
 
 Setup:
 
 ```bash
 sudo rpi-update
-sudo apt-get install libegl1-mesa-dev libdrm-dev libgbm-dev libfreetype6-dev libjpeg-dev libavformat-dev libswscale-dev libavcodec-dev g++
+sudo apt-get install libegl1-mesa-dev libdrm-dev libgbm-dev libfreetype6-dev libjpeg-dev libavformat-dev libswscale-dev libavcodec-dev libva-dev g++
 ```
 
 ## Installation

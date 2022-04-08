@@ -784,7 +784,7 @@ void AminoMacVideoPlayer::initDemuxer() {
 
     //read first frame
     double timeStart;
-    READ_FRAME_RESULT res = demuxer->readRGBFrame(timeStart);
+    READ_FRAME_RESULT res = demuxer->readDecodedFrame(timeStart);
     double timeStartSys = getTime() / 1000;
 
     if (res == READ_END_OF_VIDEO) {
@@ -839,7 +839,7 @@ void AminoMacVideoPlayer::initDemuxer() {
 
         //next frame
         double time;
-        int res = demuxer->readRGBFrame(time);
+        int res = demuxer->readDecodedFrame(time);
         double timeSys = getTime() / 1000;
 
         if (res == READ_ERROR) {
@@ -867,7 +867,7 @@ void AminoMacVideoPlayer::initDemuxer() {
             }
 
             //rewind
-            if (!demuxer->rewindRGB(timeStart)) {
+            if (!demuxer->rewindDecoder(timeStart)) {
                 handlePlaybackError();
                 return;
             }
@@ -898,7 +898,7 @@ void AminoMacVideoPlayer::initDemuxer() {
         }
 
         //show
-        demuxer->switchRGBFrame();
+        demuxer->switchDecodedFrame();
 
         //update media time
         mediaTime = getTime() / 1000 - timeStartSys;
@@ -959,7 +959,7 @@ bool AminoMacVideoPlayer::initTexture() {
 
     assert(demuxer);
 
-    GLvoid *data = demuxer->getFrameData(frameId);
+    GLvoid *data = demuxer->getFrameRGBData(frameId);
 
     assert(data);
     assert(textureW > 0);
@@ -990,7 +990,7 @@ void AminoMacVideoPlayer::updateVideoTexture(GLContext *ctx) {
 
     //get current frame
     int id;
-    GLvoid *data = demuxer->getFrameData(id);
+    GLvoid *data = demuxer->getFrameRGBData(id);
 
     if (!data) {
         uv_mutex_unlock(&frameLock);

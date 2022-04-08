@@ -8,6 +8,14 @@ extern "C" {
     #include "libavcodec/avcodec.h"
     #include "libavformat/avformat.h"
     #include "libswscale/swscale.h"
+
+#ifdef EGL_GBM
+    #include <va/va.h>
+    #include <va/va_drm.h>
+    #include <va/va_drmcommon.h>
+
+    #include <drm_fourcc.h>
+#endif
 }
 
 //cbxx FIXME
@@ -143,8 +151,8 @@ public:
     bool loadFile(std::string filename, std::string options);
     bool initStream();
 
-    READ_FRAME_RESULT readRGBFrame(double &time);
-    void switchRGBFrame();
+    READ_FRAME_RESULT readDecodedFrame(double &time);
+    void switchDecodedFrame();
 
     bool hasH264NaluStartCodes();
     bool getHeader(uint8_t **data, int *size);
@@ -156,8 +164,8 @@ public:
     void resume();
 
     bool rewind();
-    bool rewindRGB(double &time);
-    uint8_t *getFrameData(int &id);
+    bool rewindDecoder(double &time);
+    uint8_t *getFrameRGBData(int &id);
 
     bool isTimeout();
 
@@ -170,6 +178,12 @@ private:
     AVFormatContext *context = NULL;
     AVCodecContext *codecCtx = NULL;
     bool codecCtxAlloc = false;
+
+    //vaapi
+    bool useVaapi = false;
+#ifdef EGL_GBM
+    VADisplay vaDisplay = NULL;
+#endif
 
     //stream info
     std::string filename;
@@ -184,14 +198,16 @@ private:
 
     //read
     AVFrame *frame = NULL;
+    double lastPts = 0;
+    bool paused = false;
+
+    //RGB decoder
     AVFrame *frameRGB = NULL;
     int frameRGBCount = -1;
-    double lastPts = 0;
     uint8_t *buffer = NULL;
     uint8_t *bufferCurrent = NULL;
     int bufferCount = -1;
     unsigned int bufferSize = 0;
-    bool paused = false;
 
     struct SwsContext *sws_ctx = NULL;
 
