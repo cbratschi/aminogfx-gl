@@ -729,7 +729,11 @@ bool VideoDemuxer::loadFile(std::string filename, std::string options) {
 static enum AVPixelFormat getHwFormat(AVCodecContext *ctx, const enum AVPixelFormat *pix_fmts) {
     (void)ctx, (void)pix_fmts;
 
-    return AV_PIX_FMT_VAAPI;
+    //DRM managed buffer
+    return AV_PIX_FMT_DRM_PRIME;
+
+    //VA-PI
+    //return AV_PIX_FMT_VAAPI;
 }
 
 #endif
@@ -754,6 +758,7 @@ bool VideoDemuxer::initStream() {
     AVCodec *codec = NULL;
 
 #ifdef EGL_GBM
+    useV4L2 = false;
     useVaapi = false;
 
     if (codecCtx->codec_id == AV_CODEC_ID_H264) {
@@ -770,7 +775,8 @@ bool VideoDemuxer::initStream() {
 
         //use V4L2
         codec = avcodec_find_decoder_by_name("h264_v4l2m2m");
-        useVaapi = true;
+        useV4L2 = true;
+        //useVaapi = true;
 
         //cbxx FIXME no screen output (uses V4L2 decoder but shows no hardware acceleration in our check below)
         //cbxx FIXME -> [h264_v4l2m2m @ 0xa28ea2d0] Got unexpected packet after EOF
@@ -838,11 +844,66 @@ bool VideoDemuxer::initStream() {
     }
 
 #ifdef EGL_GBM
-    //init vaapi (cbxx see https://gist.github.com/kajott/d1b29c613be30893c855621edd1f212e#file-vaapi_egl_interop_example-c-L231)
+    //init V2L2 (see https://github.com/jc-kynesim/hello_drmprime/blob/master/hello_drmprime.c)
+    if (useV4L2) {
+        enum AVHWDeviceType type = av_hwdevice_find_type_by_name(hwdev);
+        const char * hwdev = "drm";
+
+        if (type == AV_HWDEVICE_TYPE_NONE) {
+            fprintf(stderr, "Device type %s is not supported.\n", hwdev);
+            fprintf(stderr, "Available device types:");
+
+            while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE) {
+                fprintf(stderr, " %s", av_hwdevice_get_type_name(type));
+            }
+
+            fprintf(stderr, "\n");
+
+            //fail
+            lastError = "could not initialize DRM decoder";
+
+            return false;
+        }
+
+        //cbxx TODO store
+        //cbxx FIXME drmprime_out_delete(dpo);
+        /* cbxx TODO DRM init
+        drmprime_out_env_t * dpo = drmprime_out_new();
+
+        if (dpo == NULL) {
+            lastError = "Failed to open drmprime output";
+
+            return false;
+        }
+        */
+
+        //create the hardware decoder
+        codecCtx->get_format  = get_hw_format;
+        codecCtx->hw_frames_ctx = NULL;
+
+        int err = 0;
+
+        if ((err = av_hwdevice_ctx_create(&codecCtx->hw_device_ctx, type, NULL, NULL, 0)) < 0) {
+            lastError = "could not initialize DRM device";
+
+            return false;
+        }
+
+        codecCtx->thread_count = 3;
+        cbxx
+    }
+
+    //init vaapi (see https://gist.github.com/kajott/d1b29c613be30893c855621edd1f212e#file-vaapi_egl_interop_example-c-L231)
     if (useVaapi) {
         std::string drmNode = "/dev/dri/renderD128";
         AVBufferRef *hwDeviceCtx = NULL;
 
+        /*
+         * FIXME VA-PI not supported on RPi 4:
+         *
+         *   - [AVHWDeviceContext @ 0xa38d03f0] libva: vaGetDriverNameByIndex() failed with unknown libva error, driver_name = (null)
+         *   - [AVHWDeviceContext @ 0xa38d03f0] Failed to initialise VAAPI connection: -1 (unknown libva error).
+         */
         if (av_hwdevice_ctx_create(&hwDeviceCtx, AV_HWDEVICE_TYPE_VAAPI, drmNode.c_str(), NULL, 0) < 0) {
             lastError = "could not initialize vaapi device";
 
@@ -1013,7 +1074,7 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
         frame = av_frame_alloc();
 
         //init RGB
-        if (!useVaapi) {
+        if (!useVaapi && !useV4L2) {
             //allocate an AVFrame structure
             frameRGB = av_frame_alloc();
 
@@ -1068,6 +1129,36 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
 
         if (res == READ_OK) {
 #ifdef EGL_GBM
+            //V4L2
+            if (useV4L2) {
+                //send to hardware decoder
+                if (avcodec_send_packet(codecCtx, packet) < 0) {
+                    res = READ_ERROR;
+                    goto done;
+                }
+
+                //get from decoder
+                int ret = avcodec_receive_frame(codecCtx, frame);
+
+                if (ret == AVERROR(EAGAIN)) {
+                    //next frame
+                    freeFrame(packet);
+                    continue;
+                }
+
+                if (ret == AVERROR_EOF) {
+                    ret = READ_END_OF_VIDEO;
+                    goto done;
+                } else if (ret < 0) {
+                    ret = READ_ERROR;
+                    goto done;
+                }
+
+                //process
+                //cbxx TODO drmprime_out_display(dpo, frame);
+                goto done;
+            }
+
             //vaapi
             if (useVaapi) {
                 //cbxx TODO verify

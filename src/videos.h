@@ -181,6 +181,9 @@ private:
     AVCodecContext *codecCtx = NULL;
     bool codecCtxAlloc = false;
 
+    //v4l2
+    bool useV4L2 = false;
+
     //vaapi
     bool useVaapi = false;
 #ifdef EGL_GBM
