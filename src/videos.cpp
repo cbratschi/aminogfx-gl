@@ -865,6 +865,70 @@ bool VideoDemuxer::initStream() {
             return false;
         }
 
+        //open DRM device
+        if ((drmFD = drmOpen("vc4", NULL)) < 0) {
+            lastError = "could not open VC4 DRM device";
+
+            return false;
+        }
+
+        //get DRM resources
+        drmModeRes *res = drmModeGetResources(drmFD);
+
+        if (!res) {
+            lastError('could not get VC4 resources');
+
+            return false;
+        }
+
+        if (res->count_crtcs <= 0) {
+            lastError = "no DRM crts found";
+
+            drmModeFreeResources(res);
+
+            return false;
+        }
+
+        //cbxx TODO move
+        int conId = 0;
+        int crtcId = 0;
+
+        for (int i = 0; i < res->count_connectors; i++) {
+            drmModeConnector *con = drmModeGetConnector(drmFD, res->connectors[i]);
+            drmModeEncoder *enc = NULL;
+            drmModeCrtc *crtc = NULL;
+
+            if (con->encoder_id) {
+                enc = drmModeGetEncoder(drmFD, con->encoder_id);
+
+                if (enc->crtc_id) {
+                    crtc = drmModeGetCrtc(drmFD, enc->crtc_id);
+                }
+            }
+
+            conId = con->connector_id;
+            crtcId = crtc->crtc_id;
+
+            fprintf(stderr, "Connector %d (crtc %d): type %d, %dx%d%s\n",
+                   con->connector_id,
+                   crtc ? crtc->crtc_id : 0,
+                   con->connector_type,
+                   crtc ? crtc->width : 0,
+                   crtc ? crtc->height : 0,
+                   (conId == (int)con->connector_id ?
+                    " (chosen)" : ""));
+        }
+
+        if (!conId) {
+            lastError = "No suitable enabled connector found.";
+
+            drmModeFreeResources(res);
+
+            return false;
+        }
+
+        //cbxx TODO more
+
         //cbxx TODO store
         //cbxx FIXME drmprime_out_delete(dpo);
         /* cbxx TODO DRM init
@@ -883,6 +947,7 @@ bool VideoDemuxer::initStream() {
 
         int err = 0;
 
+        //cbxx FIXME fails here
         if ((err = av_hwdevice_ctx_create(&codecCtx->hw_device_ctx, type, NULL, NULL, 0)) < 0) {
             lastError = "could not initialize DRM device";
 

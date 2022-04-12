@@ -183,6 +183,7 @@ private:
 
     //v4l2
     bool useV4L2 = false;
+    int drmFD = 0;
 
     //vaapi
     bool useVaapi = false;
