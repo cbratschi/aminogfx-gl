@@ -727,10 +727,24 @@ bool VideoDemuxer::loadFile(std::string filename, std::string options) {
  * @return enum AVPixelFormat
  */
 static enum AVPixelFormat getHwFormat(AVCodecContext *ctx, const enum AVPixelFormat *pix_fmts) {
-    (void)ctx, (void)pix_fmts;
+    const enum AVPixelFormat *p;
+
+    for (p = pix_fmts; *p != -1; p++) {
+        if (*p == AV_PIX_FMT_DRM_PRIME) {
+            //debug cbxx
+            printf(" -> found HW format\n");
+
+            return *p;
+        }
+    }
+
+    //debug cbxx
+    printf("Failed to get HW surface format.\n");
+
+    return AV_PIX_FMT_NONE;
 
     //DRM managed buffer
-    return AV_PIX_FMT_DRM_PRIME;
+    //return AV_PIX_FMT_DRM_PRIME;
 
     //VA-PI
     //return AV_PIX_FMT_VAAPI;
@@ -1004,7 +1018,7 @@ bool VideoDemuxer::initStream() {
 
         int err = 0;
 
-        //cbxx FIXME fails here
+        //cbxx FIXME fails here -> bad address
         if ((err = av_hwdevice_ctx_create(&codecCtx->hw_device_ctx, type, NULL, NULL, 0)) < 0) {
             char str[1024] = { 0 };
 
