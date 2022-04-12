@@ -778,8 +778,11 @@ bool VideoDemuxer::initStream() {
         useV4L2 = true;
         //useVaapi = true;
 
-        //cbxx FIXME no screen output (uses V4L2 decoder but shows no hardware acceleration in our check below)
-        //cbxx FIXME -> [h264_v4l2m2m @ 0xa28ea2d0] Got unexpected packet after EOF
+        if (!codec) {
+            lastError = "could not h264 v4l2m2m decoder";
+
+            return false;
+        }
     } else if (codecCtx->codec_id == AV_CODEC_ID_HEVC) {
         //supported: hevc_rpi hevc_v4l2m2m
         codec = avcodec_find_decoder_by_name("hevc_rpi");
@@ -987,14 +990,14 @@ bool VideoDemuxer::initStream() {
         //cbxx TODO more
 
         //create the hardware decoder
-        codecCtx->get_format  = getHwFormat;
+        codecCtx->get_format = getHwFormat;
         codecCtx->hw_frames_ctx = NULL;
 
         int err = 0;
 
         //cbxx FIXME fails here
         if ((err = av_hwdevice_ctx_create(&codecCtx->hw_device_ctx, type, NULL, NULL, 0)) < 0) {
-            lastError = "could not initialize DRM device";
+            lastError = "could not initialize DRM device: " + std::to_string(err);
 
             return false;
         }
