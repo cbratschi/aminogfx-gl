@@ -997,7 +997,11 @@ bool VideoDemuxer::initStream() {
 
         //cbxx FIXME fails here
         if ((err = av_hwdevice_ctx_create(&codecCtx->hw_device_ctx, type, NULL, NULL, 0)) < 0) {
-            lastError = "could not initialize DRM device: " + std::to_string(err);
+            char str[1024] = { 0 };
+
+            av_strerror(err, str, 1024);
+
+            lastError = "could not initialize DRM device: " + std::to_string(err) + " " + std::string(str);
 
             return false;
         }
