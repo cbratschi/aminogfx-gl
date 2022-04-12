@@ -906,7 +906,7 @@ bool VideoDemuxer::initStream() {
                 }
             }
 
-            if (conId && crtc) {
+            if (!conId && crtc) {
                 conId = con->connector_id;
                 crtcId = crtc->crtc_id;
             }
@@ -923,7 +923,7 @@ bool VideoDemuxer::initStream() {
         }
 
         if (!conId) {
-            lastError = "No suitable enabled connector found.";
+            lastError = "no suitable enabled connector found";
 
             drmModeFreeResources(res);
 
@@ -983,8 +983,6 @@ bool VideoDemuxer::initStream() {
         s->compose.height = crtc->height;
         drmModeFreeCrtc(crtc);
         */
-
-        conId = c->connector_id;
 
         //cbxx TODO more
 
