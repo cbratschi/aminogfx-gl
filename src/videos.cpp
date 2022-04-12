@@ -874,14 +874,14 @@ bool VideoDemuxer::initStream() {
     //init V2L2 (see https://github.com/jc-kynesim/hello_drmprime/blob/master/hello_drmprime.c)
     if (useV4L2) {
         const char * hwdev = "drm";
-        enum AVHWDeviceType type = av_hwdevice_find_type_by_name(hwdev);
+        enum AVHWDeviceType deviceType = av_hwdevice_find_type_by_name(hwdev);
 
-        if (type == AV_HWDEVICE_TYPE_NONE) {
+        if (deviceType == AV_HWDEVICE_TYPE_NONE) {
             fprintf(stderr, "Device type %s is not supported.\n", hwdev);
             fprintf(stderr, "Available device types:");
 
-            while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE) {
-                fprintf(stderr, " %s", av_hwdevice_get_type_name(type));
+            while((deviceType = av_hwdevice_iterate_types(deviceType)) != AV_HWDEVICE_TYPE_NONE) {
+                fprintf(stderr, " %s", av_hwdevice_get_type_name(deviceType));
             }
 
             fprintf(stderr, "\n");
@@ -890,10 +890,14 @@ bool VideoDemuxer::initStream() {
             lastError = "could not initialize DRM decoder";
 
             return false;
+        } else if (deviceType != AV_HWDEVICE_TYPE_DRM) {
+            lastError = "DRM device not found";
+
+            return false;
         }
 
         //debug cbxx
-        printf("-> found hardware device\n");
+        printf("-> found DRM hardware device\n");
 /*
         //open DRM device
         if ((drmFD = drmOpen("vc4", NULL)) < 0) {
@@ -1022,12 +1026,13 @@ bool VideoDemuxer::initStream() {
         //create the hardware decoder
         codecCtx->get_format = getHwFormat;
         codecCtx->hw_frames_ctx = NULL;
+        codecCtx->hw_device_ctx = NULL; //cbxx TODO verify
 
         int err = 0;
 
         //cbxx FIXME fails here -> bad address
         //cbxx FIXME not defined -> https://ffmpeg.org/doxygen/2.3/error_8c.html#af516c6ccf78bd27740c438b30445272d
-        if ((err = av_hwdevice_ctx_create(&codecCtx->hw_device_ctx, type, NULL, NULL, 0)) < 0) {
+        if ((err = av_hwdevice_ctx_create(&codecCtx->hw_device_ctx, deviceType, NULL, NULL, 0)) < 0) {
             char str[1024] = { 0 };
 
             av_strerror(err, str, 1024);
