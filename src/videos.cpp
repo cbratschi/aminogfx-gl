@@ -839,12 +839,21 @@ bool VideoDemuxer::initStream() {
     codecCtx = avcodec_alloc_context3(codec);
     codecCtxAlloc = true;
 
+    //cbxx TODO verify
+    if (avcodec_parameters_to_context(codecCtxOrig, stream->codecpar) < 0) {
+        lastError = "could not copy codec context";
+
+        return false;
+    }
+
+    /*
     //Note: deprecated warning on macOS
     if (avcodec_copy_context(codecCtx, codecCtxOrig) != 0) {
         lastError = "could not copy codec context";
 
         return false;
     }
+    */
 
 #ifdef EGL_GBM
     //init V2L2 (see https://github.com/jc-kynesim/hello_drmprime/blob/master/hello_drmprime.c)
