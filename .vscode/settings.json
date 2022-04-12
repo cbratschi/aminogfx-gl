@@ -77,7 +77,8 @@
         "string_view": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "__functional_base_03": "cpp"
     },
     "C_Cpp.intelliSenseEngine": "Default"
 }
