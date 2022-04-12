@@ -846,8 +846,8 @@ bool VideoDemuxer::initStream() {
 #ifdef EGL_GBM
     //init V2L2 (see https://github.com/jc-kynesim/hello_drmprime/blob/master/hello_drmprime.c)
     if (useV4L2) {
-        enum AVHWDeviceType type = av_hwdevice_find_type_by_name(hwdev);
         const char * hwdev = "drm";
+        enum AVHWDeviceType type = av_hwdevice_find_type_by_name(hwdev);
 
         if (type == AV_HWDEVICE_TYPE_NONE) {
             fprintf(stderr, "Device type %s is not supported.\n", hwdev);
@@ -878,7 +878,7 @@ bool VideoDemuxer::initStream() {
         */
 
         //create the hardware decoder
-        codecCtx->get_format  = get_hw_format;
+        codecCtx->get_format  = getHwFormat;
         codecCtx->hw_frames_ctx = NULL;
 
         int err = 0;
@@ -890,7 +890,6 @@ bool VideoDemuxer::initStream() {
         }
 
         codecCtx->thread_count = 3;
-        cbxx
     }
 
     //init vaapi (see https://gist.github.com/kajott/d1b29c613be30893c855621edd1f212e#file-vaapi_egl_interop_example-c-L231)
