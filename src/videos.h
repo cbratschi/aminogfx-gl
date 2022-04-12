@@ -10,6 +10,7 @@ extern "C" {
     #include "libswscale/swscale.h"
 
 #ifdef EGL_GBM
+    //VA-PI
     #include <va/va.h>
     #include <va/va_drm.h>
     #include <va/va_drmcommon.h>
@@ -17,6 +18,12 @@ extern "C" {
     #include <libavutil/hwcontext_vaapi.h>
 
     #include <drm_fourcc.h>
+
+    //V4L2
+    #include <xf86drm.h>
+    #include <xf86drmMode.h>
+#endif
+
 #endif
 }
 

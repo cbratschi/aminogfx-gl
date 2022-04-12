@@ -876,7 +876,7 @@ bool VideoDemuxer::initStream() {
         drmModeRes *res = drmModeGetResources(drmFD);
 
         if (!res) {
-            lastError('could not get VC4 resources');
+            lastError = "could not get VC4 resources";
 
             return false;
         }
