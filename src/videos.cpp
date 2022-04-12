@@ -793,7 +793,7 @@ bool VideoDemuxer::initStream() {
         //useVaapi = true;
 
         if (!codec) {
-            lastError = "could not h264 v4l2m2m decoder";
+            lastError = "could not find h264 v4l2m2m decoder";
 
             return false;
         }
@@ -890,6 +890,9 @@ bool VideoDemuxer::initStream() {
 
             return false;
         }
+
+        //debug cbxx
+        printf("-> found hardware device\n");
 
         //open DRM device
         if ((drmFD = drmOpen("vc4", NULL)) < 0) {
@@ -1011,6 +1014,9 @@ bool VideoDemuxer::initStream() {
         */
 
         //cbxx TODO more
+
+        //debug cbxx
+        printf("-> creating hardware decoder\n");
 
         //create the hardware decoder
         codecCtx->get_format = getHwFormat;

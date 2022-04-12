@@ -102,11 +102,12 @@ void AminoOmxVideoPlayer::init() {
     assert(stream);
 
     if (!stream->init()) {
+        lastError = stream->getLastError();
+
         if (DEBUG_OMX) {
-            printf("-> could not initialize stream\n");
+            printf("-> could not initialize stream: %s\n", lastError.c_str());
         }
 
-        lastError = stream->getLastError();
         delete stream;
         stream = NULL;
 
