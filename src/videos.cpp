@@ -906,9 +906,12 @@ bool VideoDemuxer::initStream() {
                 }
             }
 
-            conId = con->connector_id;
-            crtcId = crtc->crtc_id;
+            if (conId && crtc) {
+                conId = con->connector_id;
+                crtcId = crtc->crtc_id;
+            }
 
+            //debug
             fprintf(stderr, "Connector %d (crtc %d): type %d, %dx%d%s\n",
                    con->connector_id,
                    crtc ? crtc->crtc_id : 0,
@@ -927,19 +930,63 @@ bool VideoDemuxer::initStream() {
             return false;
         }
 
-        //cbxx TODO more
+        int crtcIdx = -1;
 
-        //cbxx TODO store
-        //cbxx FIXME drmprime_out_delete(dpo);
-        /* cbxx TODO DRM init
-        drmprime_out_env_t * dpo = drmprime_out_new();
+        for (int i = 0; i < res->count_crtcs; ++i) {
+            if (crtcId == res->crtcs[i]) {
+                crtcIdx = i;
+                break;
+            }
+        }
 
-        if (dpo == NULL) {
-            lastError = "Failed to open drmprime output";
+        if (crtcIdx == -1) {
+            lastError = "CRTC not found";
+
+            drmModeFreeResources(res);
 
             return false;
         }
+
+        if (res->count_connectors <= 0) {
+            lastError = "no DRM connectors";
+
+            drmModeFreeResources(res);
+
+            return false;
+        }
+
+        drmModeConnector *c = drmModeGetConnector(drmFD, conId);
+
+        if (!c) {
+            lastError = "drmModeGetConnector failed";
+
+            drmModeFreeResources(res);
+
+            return false;
+        }
+
+        if (!c->count_modes) {
+            lastError = "connector supports no mode";
+
+            drmModeFreeConnector(c);
+            drmModeFreeResources(res);
+
+            return false;
+        }
+
+        //cbxx needed?
+        /*
+        drmModeCrtc *crtc = drmModeGetCrtc(drmfd, s->crtcId);
+        s->compose.x = crtc->x;
+        s->compose.y = crtc->y;
+        s->compose.width = crtc->width;
+        s->compose.height = crtc->height;
+        drmModeFreeCrtc(crtc);
         */
+
+        conId = c->connector_id;
+
+        //cbxx TODO more
 
         //create the hardware decoder
         codecCtx->get_format  = getHwFormat;
