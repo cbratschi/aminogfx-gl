@@ -769,6 +769,7 @@ bool VideoDemuxer::initStream() {
         printf(" -> codec: %s\n", buf);
     }
 
+    //find decoder
     AVCodec *codec = NULL;
 
 #ifdef EGL_GBM
@@ -893,7 +894,7 @@ bool VideoDemuxer::initStream() {
 
         //debug cbxx
         printf("-> found hardware device\n");
-
+/*
         //open DRM device
         if ((drmFD = drmOpen("vc4", NULL)) < 0) {
             lastError = "could not open VC4 DRM device";
@@ -1002,7 +1003,7 @@ bool VideoDemuxer::initStream() {
 
             return false;
         }
-
+*/
         //cbxx needed?
         /*
         drmModeCrtc *crtc = drmModeGetCrtc(drmfd, s->crtcId);
@@ -1025,6 +1026,7 @@ bool VideoDemuxer::initStream() {
         int err = 0;
 
         //cbxx FIXME fails here -> bad address
+        //cbxx FIXME not defined -> https://ffmpeg.org/doxygen/2.3/error_8c.html#af516c6ccf78bd27740c438b30445272d
         if ((err = av_hwdevice_ctx_create(&codecCtx->hw_device_ctx, type, NULL, NULL, 0)) < 0) {
             char str[1024] = { 0 };
 
