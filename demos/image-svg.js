@@ -33,5 +33,5 @@ const amino = require('../main.js');
 
         //set full width
         iv.w(gfx.w());
-    }, 2000);
+    }, 4000);
 })();
