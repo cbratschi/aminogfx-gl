@@ -2,6 +2,7 @@
 
 const DEBUG = false;
 const DEBUG_ERRORS = true;
+const DEBUG_SVG = false;
 
 if (DEBUG) {
     console.log('inside of the aminogfx main.js');
@@ -15,6 +16,7 @@ const native = require(binding_path);
 
 let request = require('request');
 const fs = require('fs');
+const sharp = require('sharp');
 
 const packageInfo = require('./package.json');
 
@@ -1097,10 +1099,38 @@ ImageView.prototype.init = function () {
     });
 
     const self = this;
+    let svgResizeNr = 0;
 
-    function applySize(texture, mode, position) {
+    async function applySize(texture, mode, position) {
         //debug
         //console.log('applySize() ' + mode);
+
+        //resize SVG
+        if (texture?.svg) {
+            const newW = self.w();
+            const newH = self.h();
+            const resizeNr = ++svgResizeNr; //prevent run conditions
+
+            if (newW !== texture.imgW || newH !== texture.imgH) {
+                let failed = false;
+
+                await loadTextureFromSvgImage(self, texture.img, (err, texture) => {
+                    if (err) {
+                        failed = true;
+                        return;
+                    }
+
+                    if (resizeNr === svgResizeNr) {
+                        self.image(texture);
+                    }
+                });
+
+                if (!failed) {
+                    //new image was set
+                    return;
+                }
+            }
+        }
 
         switch (mode) {
             case 'resize':
@@ -1229,8 +1259,25 @@ function setImage(img, obj) {
  * Load and set texture.
  */
 function loadTexture(obj, img) {
-    const amino = obj.amino;
-    const texture = amino.createTexture();
+    //check SVG
+    if (img.svg) {
+        loadTextureFromSvgImage(obj, img, (err, texture) => {
+            if (err) {
+                if (DEBUG || DEBUG_ERRORS) {
+                    console.log('could not load SVG image texture: ' + err.message);
+                }
+
+                return;
+            }
+
+            //use texture
+            setImage(texture, obj);
+        });
+        return;
+    }
+
+    //native image
+    const texture = obj.amino.createTexture();
 
     texture.loadTextureFromImage(img, (err, texture) => {
         if (err) {
@@ -1397,7 +1444,7 @@ PixelView.prototype.init = function () {
     makeProps(this, {
         pw: 100,
         ph: 100,
-        bpp: 4
+        bpp: 4 //RGBA
     });
 };
 
@@ -1410,14 +1457,14 @@ PixelView.prototype.initDone = function () {
     function rebuildBuffer() {
         const w = self.pw();
         const h = self.ph();
-        const len = w * h * 4;
+        const len = w * h * 4; //RGBA
 
         if (!self.buf || self.buf.length != len) {
             self.buf = Buffer.alloc(len);
         }
 
-        const c1 = [0, 0, 0];
-        const c2 = [255, 255, 255];
+        const c1 = [ 0, 0, 0 ];
+        const c2 = [ 255, 255, 255 ];
         const buf = self.buf;
 
         for (let x = 0; x < w; x++) {
@@ -1739,6 +1786,9 @@ Object.defineProperty(AminoImage.prototype, 'src', {
             return;
         }
 
+        //reset SVG
+        this.svg = null;
+
         //check file
         if (typeof src === 'string') {
             //check URLs
@@ -1764,6 +1814,15 @@ Object.defineProperty(AminoImage.prototype, 'src', {
                     //debug
                     //console.log('image: buffer=' + Buffer.isBuffer(buffer) + ' len=' + buffer.length);
 
+                    //check content type
+                    const type = response.headers['content-type'];
+
+                    //SVG handler
+                    if (type === 'image/svg+xml') {
+                        loadSvgImage(this, buffer, this.onload);
+                        return;
+                    }
+
                     //native call
                     this.loadImage(buffer, this.onload, this.maxWH);
                 });
@@ -1779,6 +1838,12 @@ Object.defineProperty(AminoImage.prototype, 'src', {
                         this.onload(err);
                     }
 
+                    return;
+                }
+
+                //check SVG
+                if (src.endsWith('.svg')) {
+                    loadSvgImage(this, data, this.onload);
                     return;
                 }
 
@@ -1807,6 +1872,47 @@ Object.defineProperty(AminoImage.prototype, 'src', {
         this.loadImage(src, this.onload, this.maxWH);
     }
 });
+
+/**
+ * Load an SVG image.
+ *
+ * @param {*} buffer
+ * @param {*} onload
+ */
+async function loadSvgImage(img, buffer, onload) {
+    if (DEBUG_SVG) {
+        console.log('-> loading SVG image');
+    }
+
+    try {
+        //load SVG
+        const svgImg = sharp(buffer);
+        const meta = await svgImg.metadata();
+
+        if (meta.format !== 'svg') {
+            throw new Error('unknown format');
+        }
+
+        if (DEBUG_SVG) {
+            console.dir(meta);
+        }
+
+        //save for texture usage
+        img.svg = svgImg;
+    } catch (e) {
+        //failed
+        if (onload) {
+            onload(e);
+        }
+
+        return;
+    }
+
+    //done
+    if (onload) {
+        onload(null, img);
+    }
+}
 
 /**
  * Abort loading (from network).
@@ -2114,6 +2220,12 @@ Texture.prototype.loadTexture = function (src, callback) {
     }
 
     if (src instanceof AminoImage) {
+        //check SVG
+        if (src.svg) {
+            loadTextureFromSvgImage(this, src, callback);
+            return;
+        }
+
         //image (JPEG, PNG)
         this.loadTextureFromImage(src, callback);
     } else if (src instanceof AminoVideo) {
@@ -2129,6 +2241,75 @@ Texture.prototype.loadTexture = function (src, callback) {
         throw new Error('unknown source');
     }
 };
+
+/**
+ * Create texture from SVG image.
+ *
+ * @param {*} obj
+ * @param {*} img
+ * @param {*} callback
+ */
+async function loadTextureFromSvgImage(obj, img, callback) {
+    if (DEBUG_SVG) {
+        console.log('loadTextureFromSvgImage()');
+    }
+
+    try {
+        //resize SVG image
+        if (obj instanceof Texture) {
+            //need size
+            throw new Error('need size for SVG');
+        }
+
+        const svgImage = img.svg;
+        const imgW = obj.w();
+        const imgH = obj.h();
+        const resized = await svgImage.resize(imgW, imgH, {
+            fit: 'contain',
+            position: 'centre',
+            background: {
+                r: 0,
+                g: 0,
+                b: 0,
+                alpha: 0
+            }
+        });
+
+        //get data
+        const { data: buffer, info } = await resized.raw().toBuffer({ resolveWithObject: true });
+
+        if (DEBUG_SVG) {
+            console.log('-> using resized SVG texture ' + info.width + 'x' + info.height + ' (' + imgW + 'x' + imgH + ')');
+            //console.dir(info);
+            //console.dir(img);
+            //console.dir(buffer);
+        }
+
+        //create texture
+        const texture = obj.amino.createTexture();
+
+        texture.loadTextureFromBuffer({
+            buffer,
+            w: info.width,
+            h: info.height,
+            bpp: info.channels
+        }, err => {
+            if (err) {
+                return callback(err);
+            }
+
+            //store img reference
+            texture.svg = svgImage;
+            texture.img = img;
+            texture.imgW = imgW;
+            texture.imgH = imgH;
+
+            callback(null, texture);
+        });
+    } catch (e) {
+        callback(e);
+    }
+}
 
 /**
  * Add an event listener.

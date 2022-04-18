@@ -20,7 +20,8 @@
     "nan": "^2.15.0",
     "node-pre-gyp": "0.15.x",
     "onecolor": "^3.1.0",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "sharp": "^0.30.3"
   },
   "maintainers": [
     {

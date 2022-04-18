@@ -23,9 +23,9 @@ extern "C" {
 //
 
 struct myjpeg_error_mgr {
-    struct jpeg_error_mgr pub;	/* "public" fields */
+    struct jpeg_error_mgr pub;  /* "public" fields */
 
-    jmp_buf setjmp_buffer;	/* for return to caller */
+    jmp_buf setjmp_buffer;  /* for return to caller */
 };
 
 typedef struct myjpeg_error_mgr *myjpeg_error_ptr;
@@ -85,6 +85,7 @@ private:
     int32_t imgH;
     bool imgAlpha;
     int32_t imgBPP;
+    std::string contentType;
 
 public:
     AsyncImageWorker(Nan::Callback *callback, v8::Local<v8::Object> &obj, v8::Local<v8::Value> &bufferObj, int32_t maxWH) : AsyncWorker(callback) {
@@ -306,6 +307,8 @@ public:
         png_read_end(png_ptr, info_ptr);
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
+        contentType = "image/png";
+
         if (DEBUG_IMAGES) {
             printf("-> size=%ix%i, alpha=%i, bpp=%i\n", imgW, imgH, imgAlpha ? 1:0, imgBPP);
         }
@@ -371,13 +374,13 @@ public:
 
         //get JPEG data
         imgW = cinfo.output_width;
-	    imgH = cinfo.output_height;
+        imgH = cinfo.output_height;
         imgAlpha = false;
         imgBPP = cinfo.output_components;
 
         //read pixels
         imgDataLen = imgW * imgH * imgBPP;
-	    imgData = (char *)malloc(imgDataLen); //gets transferred to buffer
+        imgData = (char *)malloc(imgDataLen); //gets transferred to buffer
 
         assert(imgData != NULL);
 
@@ -391,14 +394,16 @@ public:
         while (cinfo.output_scanline < cinfo.output_height) {
             unsigned char *bufferArray[1];
 
-		    bufferArray[0] = (unsigned char *)imgData + cinfo.output_scanline * rowStride;
+            bufferArray[0] = (unsigned char *)imgData + cinfo.output_scanline * rowStride;
 
-    		jpeg_read_scanlines(&cinfo, bufferArray, 1);
+            jpeg_read_scanlines(&cinfo, bufferArray, 1);
         }
 
         //done
         jpeg_finish_decompress(&cinfo);
         jpeg_destroy_decompress(&cinfo);
+
+        contentType = "image/jpeg";
 
         if (DEBUG_IMAGES) {
             printf("-> size=%ix%i, alpha=%i, bpp=%i\n", imgW, imgH, imgAlpha ? 1:0, imgBPP);
@@ -535,6 +540,7 @@ public:
         Nan::Set(obj, Nan::New("h").ToLocalChecked(),      Nan::New(imgH));
         Nan::Set(obj, Nan::New("alpha").ToLocalChecked(),  Nan::New(imgAlpha));
         Nan::Set(obj, Nan::New("bpp").ToLocalChecked(),    Nan::New(imgBPP));
+        Nan::Set(obj, Nan::New("type").ToLocalChecked(),   Nan::New(contentType).ToLocalChecked());
         Nan::Set(obj, Nan::New("buffer").ToLocalChecked(), buff);
 
         //store local values
@@ -632,11 +638,11 @@ GLuint AminoImage::createTexture(GLuint textureId, char *bufferData, size_t buff
 
     if (textureId != INVALID_TEXTURE) {
         //use existing texture
-	    texture = textureId;
+        texture = textureId;
     } else {
         //create new texture
         texture = INVALID_TEXTURE;
-	    glGenTextures(1, &texture);
+        glGenTextures(1, &texture);
 
         assert(texture != INVALID_TEXTURE);
     }

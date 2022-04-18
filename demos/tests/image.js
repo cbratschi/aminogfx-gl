@@ -17,7 +17,6 @@ img.onload = function (err, img) {
 
 img.src = path.join(__dirname, '../slideshow/images/iTermScreenSnapz001.png');
 
-
 //GC test
 /*
 for (let i = 0; i < 10000; i++) {
