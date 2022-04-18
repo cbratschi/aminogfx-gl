@@ -21,7 +21,7 @@
     "node-pre-gyp": "0.15.x",
     "onecolor": "^3.1.0",
     "request": "^2.88.2",
-    "sharp": "^0.30.3"
+    "sharp": "^0.30.4"
   },
   "maintainers": [
     {
@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/joshmarinacci/aminogfx-gl",
   "devDependencies": {
-    "eslint": "^8.11.0",
+    "eslint": "^8.13.0",
     "feedparser": "^2.2.10"
   }
 }
