@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
+//cbxx FIXME crashes on M1 (e.g. move or resize window; see https://github.com/glfw/glfw/issues/1997)
 #define DEBUG_GLFW false
 #define DEBUG_RENDER false
 #define DEBUG_VIDEO_TIMING false
