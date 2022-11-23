@@ -16,12 +16,12 @@
     "url": "https://github.com/joshmarinacci/aminogfx-gl.git"
   },
   "dependencies": {
-    "async": "^3.2.3",
-    "nan": "^2.15.0",
-    "node-pre-gyp": "0.15.x",
+    "async": "^3.2.4",
+    "nan": "^2.17.0",
+    "node-pre-gyp": "^0.15.0",
     "onecolor": "^3.1.0",
     "request": "^2.88.2",
-    "sharp": "^0.30.4"
+    "sharp": "^0.31.2"
   },
   "maintainers": [
     {
@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/joshmarinacci/aminogfx-gl",
   "devDependencies": {
-    "eslint": "^8.13.0",
+    "eslint": "^8.28.0",
     "feedparser": "^2.2.10"
   }
 }
