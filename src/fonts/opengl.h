@@ -41,8 +41,7 @@
 #endif
 
 #ifdef LINUX
-#include <GL/glfw.h>
-#include <GL/glext.h>
+#include <GLFW/glfw3.h>
 #endif
 
 #ifdef RPI

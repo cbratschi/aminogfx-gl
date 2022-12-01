@@ -1,3 +1,4 @@
+//cbxx TODO rename to glfw.cpp (supports Linux and macOS)
 #include "mac.h"
 
 #include <execinfo.h>
@@ -1122,17 +1123,27 @@ void crashHandler(int sig) {
 
     //process & thread
     pid_t pid = getpid();
+#ifdef LINUX
+    pid_t tid = gettid();
+#endif
+#ifdef MAC
     uint64_t tid;
     bool mainThread = pthread_main_np() != 0;
-    uv_thread_t threadId = uv_thread_self();
 
     pthread_threadid_np(NULL, &tid);
+#endif
+    uv_thread_t threadId = uv_thread_self();
 
     // get void*'s for all entries on the stack
     size = backtrace(array, 10);
 
     // print out all the frames to stderr
+#ifdef MAC
     fprintf(stderr, "Error: signal %d (process=%d, thread=%i, uvThread=%lu, main=%s):\n", sig, pid, (int)tid, (unsigned long)threadId, mainThread ? "yes":"no");
+#endif
+#ifdef LINUX
+    fprintf(stderr, "Error: signal %d (process=%d, thread=%d, uvThread=%lu):\n", sig, pid, tid, (unsigned long)threadId);
+#endif
     backtrace_symbols_fd(array, size, STDERR_FILENO);
     exit(1);
 }

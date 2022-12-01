@@ -31,6 +31,15 @@ static double __attribute__((unused)) getTime(void) {
 
 #endif
 
+#ifdef LINUX
+
+//Linux
+#include "GLES2/gl2.h"
+#include "GLES2/gl2ext.h"
+#include <GLFW/glfw3.h>
+
+#endif
+
 #ifdef RPI
 
 #include <EGL/egl.h>
@@ -38,6 +47,10 @@ static double __attribute__((unused)) getTime(void) {
 
 #include "GLES2/gl2.h"
 #include "GLES2/gl2ext.h"
+
+#endif
+
+#if defined RPI || defined LINUX
 
 #include <time.h>
 

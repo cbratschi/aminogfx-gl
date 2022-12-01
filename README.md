@@ -5,18 +5,25 @@ AminoGfx implementation for OpenGL 2 / OpenGL ES 2. Node.js based animation fram
 ## Platforms
 
 * macOS
+* Linux
 * Raspberry Pi
 
 ## Requirements
 
 In order to build the native components a couple of libraries and tools are needed.
 
-* Node.js 4.x to 16.x
+* Node.js 4.x to 18.x
   * There is a bug in Node.js v6.9.1 (see <https://github.com/nodejs/node/issues/9288>; fixed in Node.js > 6.10).
 * Freetype 2.7
 * libpng
 * libjpeg
 * libswscale
+
+The node-gyp module has to be globally installed:
+
+```bash
+sudo npm i node-gyp -g
+```
 
 ### macOS
 
@@ -38,6 +45,27 @@ brew install glfw3
 brew install freetype
 ```
 
+### Linux
+
+* libegl1-mesa-dev
+* mesa-common-dev
+* libdrm-dev
+* libgbm-dev
+* libfreetype6-dev
+* libjpeg-dev
+* libswscale-dev
+* libglew-dev
+* libglfw3
+* libglfw3-dev
+* libavformat-dev
+* libvips-dev
+
+Setup:
+
+```bash
+sudo apt-get install libegl1-mesa-dev mesa-common-dev libdrm-dev libgbm-dev libfreetype6-dev libjpeg-dev libswscale-dev libglew-dev libglfw3 libglfw3-dev libavformat-dev libvips-dev
+```
+
 ### Raspberry Pi
 
 * libegl1-mesa-dev
@@ -49,7 +77,8 @@ brew install freetype
 * libswscale-dev
 * libavcodec-dev
 * libva-dev
-* Raspbian (other Linux variants should work too)
+
+OS is Raspberry Pi OS (former Raspbian).
 
 Setup:
 
