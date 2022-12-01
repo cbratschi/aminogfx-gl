@@ -10,11 +10,6 @@
             'is_linux': 0, # exlucding RPi
 
             'conditions': [
-                # macOS
-                [ 'OS == "mac"', {
-                    'use_glfw': 1
-                }],
-
                 # Linux
                 [ 'OS == "linux"', {
                     # any
@@ -25,14 +20,21 @@
                 }],
 
                 [ 'rpi_model == ""', {
+                    # macOS or Linux
                     'use_glfw': 1,
-                    'is_linux': 1,
+                    'is_linux': 1, # Note: macOS corrected below
                     'is_rpi': 0
                 }, {
                     # Raspberry Pi
                     'is_rpi': 1,
                     'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | { grep -c "Pi 4" || true; })'
-                }]
+                }],
+
+                # macOS
+                [ 'OS == "mac"', {
+                    'use_glfw': 1,
+                    'is_linux': 0
+                }],
             ]
         },
 
