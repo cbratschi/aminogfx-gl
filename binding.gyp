@@ -18,7 +18,16 @@
                     'linux_codename': '<!@(lsb_release -c -s)"', # e.g. 'jessie', 'bullseye'
 
                     # Raspberry Pi
-                    'rpi_model': '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)"'
+                    'rpi_model': '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)"',
+
+                    # cbxx TODO check
+                    'conditions': [
+                        'rpi_model != ""', {
+                            # Raspberry Pi
+                            'is_rpi': 1,
+                            'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | { grep -c "Pi 4" || true; })'
+                        }
+                    ]
                 }],
 
                 # cbxx FIXME this condition fails
