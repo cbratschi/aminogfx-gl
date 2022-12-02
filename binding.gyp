@@ -48,7 +48,7 @@
             ]
         },
 
-        # cbxx check
+        # cbxx FIXME not working either
         'conditions': [
             [ '<(rpi_model) != ""', {
                 # Raspberry Pi
