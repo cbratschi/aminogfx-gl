@@ -48,7 +48,7 @@
                 'Build flags: glfw=<(use_glfw) rpi_model=<(rpi_model) is_rpi_4=<(is_rpi_4) is_linux=<(is_linux)'
             ],
             'inputs': [],
-            'outputs': [ "src/rpi.cpp" ] # Note: file has to exist
+            'outputs': [ 'src/rpi.cpp' ] # Note: file has to exist
         }],
 
         # platform independent source files
@@ -119,11 +119,11 @@
             [ 'use_glfw == 1', {
                 "include_dirs": [
                     # Note: space at beginning needed
-                    " <!@(pkg-config --cflags glfw3)"
+#cbxx                    " <!@(pkg-config --cflags glfw3)"
                 ],
 
                 "libraries": [
-                    "<!@(pkg-config --libs glfw3)"
+#cbxx                    "<!@(pkg-config --libs glfw3)"
                 ]
             }],
 
