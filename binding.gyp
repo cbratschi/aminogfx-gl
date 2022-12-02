@@ -33,7 +33,7 @@
                     'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | { grep -c "Pi 4" || true; })'
                 }],
 
-                # cbxx check
+                # cbxx FIXME not working either
                 [ 'rpi_model != ""', {
                     # Raspberry Pi
                     'is_rpi': 1,
@@ -47,6 +47,17 @@
                 }],
             ]
         },
+
+        # cbxx check
+        'conditions': [
+            [ 'rpi_model != ""', {
+                # Raspberry Pi
+                'variables': {
+                    'is_rpi': 1,
+                    'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | { grep -c "Pi 4" || true; })'
+                }
+            }]
+        ],
 
         # report flags
         'actions': [{
