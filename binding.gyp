@@ -50,7 +50,7 @@
 
         # cbxx check
         'conditions': [
-            [ 'rpi_model != ""', {
+            [ '<(rpi_model) != ""', {
                 # Raspberry Pi
                 'variables': {
                     'is_rpi': 1,
