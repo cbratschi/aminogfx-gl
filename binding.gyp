@@ -21,8 +21,9 @@
                     'rpi_model': '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)"'
                 }],
 
+                # cbxx FIXME this condition fails
                 [ 'rpi_model == ""', {
-                    # macOS or Linux
+                    # macOS or Linux (excluding RPi)
                     'use_glfw': 1,
                     'is_linux': 1, # Note: macOS corrected below
                     'is_rpi': 0
@@ -45,7 +46,7 @@
             'action_name': 'build_flags',
             'action': [
                 'echo',
-                'Build flags: glfw=<(use_glfw) rpi_model=<(rpi_model) is_rpi_4=<(is_rpi_4) is_linux=<(is_linux)'
+                'Build flags: OS=<(OS) use_glfw=<(use_glfw) rpi_model=<(rpi_model) is_rpi=<(is_rpi) is_rpi_4=<(is_rpi_4) is_linux=<(is_linux)'
             ],
             'inputs': [],
             'outputs': [ 'src/rpi.cpp' ] # Note: file has to exist
