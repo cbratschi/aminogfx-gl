@@ -9,11 +9,12 @@
             'is_rpi': 0,
             'is_linux': 0, # exlucding RPi
 
+            #cbxx FIXME RPi build broken -> glfw3
             'conditions': [
                 # Linux
                 [ 'OS == "linux"', {
                     # any
-                    'linux_codename': '<!@(lsb_release -c -s)"', # e.g. 'jessie'
+                    'linux_codename': '<!@(lsb_release -c -s)"', # e.g. 'jessie', 'bullseye'
 
                     # Raspberry Pi
                     'rpi_model': '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)"'
@@ -103,7 +104,7 @@
         # platform specific part
         'conditions': [
             # GLFW library
-            [ '<(use_glfw) == 1', {
+            [ 'use_glfw == 1', {
                 "include_dirs": [
                     # Note: space at beginning needed
                     " <!@(pkg-config --cflags glfw3)"
