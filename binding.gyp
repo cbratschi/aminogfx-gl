@@ -7,6 +7,7 @@
             'use_glfw': 0,
             'rpi_model': '',
             'is_rpi': 0,
+            'is_rpi_4': 0,
             'is_linux': 0, # exlucding RPi
 
             #cbxx FIXME RPi build broken -> glfw3
@@ -38,6 +39,17 @@
                 }],
             ]
         },
+
+        # report flags
+        'actions': [{
+            'action_name': 'build_flags',
+            'action': [
+                'echo',
+                'Build flags: glfw=<(use_glfw) rpi_model=<(rpi_model) is_rpi_4=<(is_rpi_4) is_linux=<(is_linux)'
+            ],
+            'inputs': [],
+            'outputs': [ "src/rpi.cpp" ] # Note: file has to exist
+        }],
 
         # platform independent source files
         "sources": [
