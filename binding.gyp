@@ -24,7 +24,9 @@
                 # cbxx FIXME this condition fails
                 [ 'rpi_model == ""', {
                     # macOS or Linux (excluding RPi)
-                    'use_glfw': 1,
+                    # cbxx test
+                    'use_glfw': 4,
+                    #'use_glfw': 1,
                     'is_linux': 1, # Note: macOS corrected below
                     'is_rpi': 0
                 }, {
@@ -50,7 +52,7 @@
 
         # cbxx FIXME not working either
         'conditions': [
-            [ '<(rpi_model) != ""', {
+            [ 'rpi_model != ""', {
                 # Raspberry Pi
                 'variables': {
                     'is_rpi': 1,
