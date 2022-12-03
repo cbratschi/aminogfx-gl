@@ -54,6 +54,8 @@
         'conditions': [
             #[ 'rpi_model != ""', {
             [ '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)" == ""', {
+                # cbxx TODO
+            }, {
                 # Raspberry Pi
                 'variables': {
                     'is_rpi': 1,
