@@ -21,7 +21,7 @@
                     'rpi_model': '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)"',
                 }],
 
-                # cbxx FIXME this condition fails
+                # cbxx FIXME this condition fails (rpi_model has value but equals to empty string!!!)
                 [ 'rpi_model == ""', {
                     # macOS or Linux (excluding RPi)
                     # cbxx test
@@ -52,7 +52,8 @@
 
         # cbxx FIXME not working either
         'conditions': [
-            [ 'rpi_model != ""', {
+            #[ 'rpi_model != ""', {
+            [ '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)" == ""', {
                 # Raspberry Pi
                 'variables': {
                     'is_rpi': 1,
