@@ -53,7 +53,7 @@
         # cbxx FIXME not working either
         'conditions': [
             #[ 'rpi_model != ""', {
-            [ '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)" == ""', {
+            [ '<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo) == ""', {
                 # cbxx TODO
             }, {
                 # Raspberry Pi
