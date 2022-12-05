@@ -3,73 +3,54 @@
         'target_name': 'aminonative',
 
         'variables': {
-            # default values
+            # flags
             'use_glfw': 0,
+
+            # Linux
+            'linux_codename': '',
+            'is_linux': 0, # exlcuding RPi
+
+            # Raspberry Pi
             'rpi_model': '',
             'is_rpi': 0,
             'is_rpi_4': 0,
-            'is_linux': 0, # exlucding RPi
 
-            #cbxx FIXME RPi build broken -> glfw3
             'conditions': [
                 # Linux
                 [ 'OS == "linux"', {
                     # any
-                    'linux_codename': '<!@(lsb_release -c -s)"', # e.g. 'jessie', 'bullseye'
+                    'linux_codename': '"<!@(lsb_release -c -s)"', # e.g. 'jessie', 'bullseye'
 
                     # Raspberry Pi
                     'rpi_model': '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)"',
-                }],
 
-                # cbxx FIXME this condition fails (rpi_model has value but equals to empty string!!!)
-                [ 'rpi_model == ""', {
-                    # macOS or Linux (excluding RPi)
-                    # cbxx test
-                    'use_glfw': 4,
-                    #'use_glfw': 1,
-                    'is_linux': 1, # Note: macOS corrected below
-                    'is_rpi': 0
-                }, {
-                    # Raspberry Pi
-                    'is_rpi': 1,
-                    'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | { grep -c "Pi 4" || true; })'
-                }],
-
-                # cbxx FIXME not working either
-                [ 'rpi_model != ""', {
-                    # Raspberry Pi
-                    'is_rpi': 1,
-                    'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | { grep -c "Pi 4" || true; })'
+                    'conditions': [
+                        # cbxx evaluate again rpi_model
+                        [ '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)" == ""', {
+                            # Linux (excluding RPi)
+                            'use_glfw': 1,
+                            'is_linux': 1,
+                            'is_rpi': 0
+                        }, {
+                            # Raspberry Pi
+                            'is_rpi': 1
+                        }],
+                    ]
                 }],
 
                 # macOS
                 [ 'OS == "mac"', {
-                    'use_glfw': 1,
-                    'is_linux': 0
-                }],
+                    'use_glfw': 1
+                }]
             ]
         },
-
-        # cbxx FIXME not working either
-        'conditions': [
-            #[ 'rpi_model != ""', {
-            [ '<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo) == ""', {
-                # cbxx TODO
-            }, {
-                # Raspberry Pi
-                'variables': {
-                    'is_rpi': 1,
-                    'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | { grep -c "Pi 4" || true; })'
-                }
-            }]
-        ],
 
         # report flags
         'actions': [{
             'action_name': 'build_flags',
             'action': [
                 'echo',
-                'Build flags: OS=<(OS) use_glfw=<(use_glfw) rpi_model=<(rpi_model) is_rpi=<(is_rpi) is_rpi_4=<(is_rpi_4) is_linux=<(is_linux)'
+                'Build flags: OS=<(OS) use_glfw=<(use_glfw) rpi_model=<(rpi_model) is_rpi=<(is_rpi) is_rpi_4=<(is_rpi_4) is_linux=<(is_linux) linux_codename=<(linux_codename)'
             ],
             'inputs': [],
             'outputs': [ 'src/rpi.cpp' ] # Note: file has to exist
@@ -143,11 +124,11 @@
             [ 'use_glfw == 1', {
                 "include_dirs": [
                     # Note: space at beginning needed
-#cbxx                    " <!@(pkg-config --cflags glfw3)"
+                    " <!@(pkg-config --cflags glfw3)"
                 ],
 
                 "libraries": [
-#cbxx                    "<!@(pkg-config --libs glfw3)"
+                    "<!@(pkg-config --libs glfw3)"
                 ]
             }],
 
