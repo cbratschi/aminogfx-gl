@@ -34,7 +34,7 @@
                         }, {
                             # Raspberry Pi
                             'is_rpi': 1,
-                            'is_rpi_4': '<!@(cat /sys/firmware/devicetree/base/model | grep -c \"Pi 4\")'
+                            'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | grep -c \"Pi 4\")'
                         }],
                     ]
                 }],
