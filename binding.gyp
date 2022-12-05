@@ -53,7 +53,7 @@
                 'Build flags: OS=<(OS) use_glfw=<(use_glfw) rpi_model=<(rpi_model) is_rpi=<(is_rpi) is_rpi_4=<(is_rpi_4) is_linux=<(is_linux) linux_codename=<(linux_codename)'
             ],
             'inputs': [],
-            'outputs': [ 'src/rpi.cpp' ] # Note: file has to exist
+            'outputs': [ 'src/base.cpp' ] # Note: file has to exist
         }],
 
         # platform independent source files
