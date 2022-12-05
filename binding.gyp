@@ -25,7 +25,7 @@
                     'rpi_model': '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)"',
 
                     'conditions': [
-                        # cbxx evaluate again rpi_model
+                        # evaluate rpi_model again
                         [ '"<!@(awk \'/^Revision/ {sub(\"^1000\", \"\", $3); print $3}\' /proc/cpuinfo)" == ""', {
                             # Linux (excluding RPi)
                             'use_glfw': 1,
@@ -33,7 +33,8 @@
                             'is_rpi': 0
                         }, {
                             # Raspberry Pi
-                            'is_rpi': 1
+                            'is_rpi': 1,
+                            'is_rpi_4': '<!@(cat /sys/firmware/devicetree/base/model | grep -c \"Pi 4\")'
                         }],
                     ]
                 }],
@@ -216,20 +217,10 @@
                     "src/rpi_input.cpp",
                     "src/rpi_video.cpp"
                 ],
-                'actions': [{
-                    # output RPi model
-                    'action_name': 'build_info',
-                    'action': [
-                        'echo',
-                        'RPi model: <(rpi_model); Pi 4: <(is_rpi_4)'
-                    ],
-                    'inputs': [],
-                    'outputs': [ "src/rpi.cpp" ] # Note: file has to exist
-                }],
                 # OS specific libraries
                 'conditions': [
                     # RPi 4
-                    [ '<(is_rpi_4) == 1', {
+                    [ 'is_rpi_4 == 1', {
                         "include_dirs": [
                             " <!@(pkg-config --cflags libdrm)"
                         ],
@@ -247,7 +238,7 @@
                     }, {
                         # RPi 3
                         'conditions': [
-                            [ '"<!@(lsb_release -c -s)" == "jessie"', {
+                            [ 'linux_codename == "jessie"', {
                                 # RPi 3 (Jessie 8.x)
                                 'libraries': [
                                     # OpenGL
