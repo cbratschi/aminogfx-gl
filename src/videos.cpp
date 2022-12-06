@@ -820,32 +820,58 @@ bool VideoDemuxer::initStream() {
         printf(" -> decoder: %s (%s)\n", codec->name, codec->long_name);
 
         //show hardware configs
-        //cbxx TODO
-        /*
         if (codec->hw_configs) {
             int pos = 0;
+            bool first = true;
 
             while (true) {
-                AVCodecHWConfigInternal *item = (AVCodecHWConfigInternal *)codec->hw_configs[pos];
+                const AVCodecHWConfig *config = avcodec_get_hw_config(codec, pos);
 
-                if (!item) {
+                if (!config) {
                     break;
                 }
 
-                printf("Hardware config:\n");
+                if (first) {
+                    printf("Hardware config:\n");
+                    first = false;
+                }
 
-                //TODO item->public
+                //check device context
+                if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) {
+                    //show type
+                    switch (config->device_type) {
+                        case AV_HWDEVICE_TYPE_VDPAU:
+                            printf(" -> VDPAU\n");
+                            break;
 
-                if (item->hwaccel) {
-                    printf(" -> hardware accelerated\n");
-                } else {
-                    printf(" -> not hardware accelerated\n");
+                        case AV_HWDEVICE_TYPE_CUDA:
+                            printf(" -> CUDA\n");
+                            break;
+
+                        case AV_HWDEVICE_TYPE_VAAPI:
+                            printf(" -> VAAPI\n");
+                            break;
+
+                        case AV_HWDEVICE_TYPE_DRM:
+                            printf(" -> DRM\n");
+                            break;
+
+                        case AV_HWDEVICE_TYPE_NONE:
+                            break;
+
+                        default:
+                            printf(" -> unknown (%i)\n", config->device_type);
+                            break;
+                    }
+                }
+
+                if (config->methods & AV_CODEC_HW_CONFIG_METHOD_INTERNAL) {
+                    printf("-> internal\n");
                 }
 
                 pos++;
             }
         }
-        */
     }
 
     //copy context
