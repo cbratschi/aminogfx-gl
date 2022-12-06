@@ -854,21 +854,19 @@ bool VideoDemuxer::initStream() {
     codecCtx = avcodec_alloc_context3(codec);
     codecCtxAlloc = true;
 
-    //cbxx TODO verify
+    /* FIXME this replacement did not work (width and height were zero)
     if (avcodec_parameters_to_context(codecCtxOrig, stream->codecpar) < 0) {
         lastError = "could not copy codec context";
 
         return false;
     }
+    */
 
-    /*
-    //Note: deprecated warning on macOS
     if (avcodec_copy_context(codecCtx, codecCtxOrig) != 0) {
         lastError = "could not copy codec context";
 
         return false;
     }
-    */
 
 #ifdef EGL_GBM
     //init V2L2 (see https://github.com/jc-kynesim/hello_drmprime/blob/master/hello_drmprime.c)
@@ -877,10 +875,11 @@ bool VideoDemuxer::initStream() {
         enum AVHWDeviceType deviceType = av_hwdevice_find_type_by_name(hwdev);
 
         if (deviceType == AV_HWDEVICE_TYPE_NONE) {
+            //output debug info
             fprintf(stderr, "Device type %s is not supported.\n", hwdev);
             fprintf(stderr, "Available device types:");
 
-            while((deviceType = av_hwdevice_iterate_types(deviceType)) != AV_HWDEVICE_TYPE_NONE) {
+            while ((deviceType = av_hwdevice_iterate_types(deviceType)) != AV_HWDEVICE_TYPE_NONE) {
                 fprintf(stderr, " %s", av_hwdevice_get_type_name(deviceType));
             }
 
@@ -891,6 +890,7 @@ bool VideoDemuxer::initStream() {
 
             return false;
         } else if (deviceType != AV_HWDEVICE_TYPE_DRM) {
+            //wrong device type
             lastError = "DRM device not found";
 
             return false;
@@ -1030,7 +1030,8 @@ bool VideoDemuxer::initStream() {
 
         int err = 0;
 
-        //cbxx FIXME fails here -> bad address
+        //cbxx type right? /dev/video10 ???
+        //cbxx FIXME fails here -> bad address (EFAULT)
         //cbxx FIXME not defined -> https://ffmpeg.org/doxygen/2.3/error_8c.html#af516c6ccf78bd27740c438b30445272d
         if ((err = av_hwdevice_ctx_create(&codecCtx->hw_device_ctx, deviceType, NULL, NULL, 0)) < 0) {
             char str[1024] = { 0 };
@@ -1215,7 +1216,7 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
 /**
  * Read a decoded video frame.
  */
- READ_FRAME_RESULT VideoDemuxer::readDecodedFrame(double &time) {
+READ_FRAME_RESULT VideoDemuxer::readDecodedFrame(double &time) {
     if (!context || !codecCtx) {
         return READ_ERROR;
     }
@@ -1240,6 +1241,9 @@ void VideoDemuxer::freeFrame(AVPacket *packet) {
                 //Note: deprecated warning on macOS
                 int numBytes = avpicture_get_size(AV_PIX_FMT_RGB24, codecCtx->width, codecCtx->height);
                 //int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, codecCtx->width, codecCtx->height, 1);
+
+                //debug
+                //printf("-> picture size: %i (%ix%i)\n", numBytes, codecCtx->width, codecCtx->height);
 
                 bufferSize = numBytes * sizeof(uint8_t);
                 buffer = (uint8_t *)av_malloc(bufferSize);
