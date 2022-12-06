@@ -777,6 +777,9 @@ void AminoMacVideoPlayer::initDemuxer() {
     videoW = demuxer->width;
     videoH = demuxer->height;
 
+    assert(videoW > 0);
+    assert(videoH > 0);
+
     //initialize stream
     if (!demuxer->initStream()) {
         lastError = demuxer->getLastError();

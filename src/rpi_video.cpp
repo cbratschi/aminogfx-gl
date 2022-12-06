@@ -1893,6 +1893,9 @@ void AminoOmxVideoPlayer::initDemuxer() {
     videoW = demuxer->width;
     videoH = demuxer->height;
 
+    assert(videoW > 0);
+    assert(videoH > 0);
+
     //read first frame
     double timeStart;
     READ_FRAME_RESULT res = demuxer->readDecodedFrame(timeStart);
