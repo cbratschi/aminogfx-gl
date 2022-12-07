@@ -33,7 +33,8 @@ gfx.start(function (err) {
     //video 2 (low res)
     const video2 = new amino.AminoVideo();
 
-    video2.src = 'rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov';
+    //video2.src = 'rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov';
+    video2.src = 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4',
     video2.opts = 'rtsp_transport=tcp';
 
     const iv2 = this.createImageView().position('center').size('conver').src(video2);
