@@ -717,7 +717,7 @@ bool VideoDemuxer::loadFile(std::string filename, std::string options) {
     return true;
 }
 
-#ifdef EGL_GBM
+#if defined(VAAPI) || defined(EGL_GBM)
 
 /**
  * @brief Get the Hw Format object.
@@ -818,26 +818,37 @@ bool VideoDemuxer::initStream() {
 
     if (DEBUG_VIDEOS) {
         printf(" -> decoder: %s (%s)\n", codec->name, codec->long_name);
+    }
 
-        //show hardware configs
-        if (codec->hw_configs) {
-            int pos = 0;
-            bool first = true;
+    //find hardware decoders
+    bool supportsVaapi = false;
 
-            while (true) {
-                const AVCodecHWConfig *config = avcodec_get_hw_config(codec, pos);
+    if (codec->hw_configs) {
+        int pos = 0;
+        bool first = true;
 
-                if (!config) {
-                    break;
-                }
+        while (true) {
+            const AVCodecHWConfig *config = avcodec_get_hw_config(codec, pos);
 
-                if (first) {
+            if (!config) {
+                break;
+            }
+
+            if (first) {
+                if (DEBUG_VIDEOS) {
                     printf("Hardware config:\n");
-                    first = false;
                 }
 
-                //check device context
-                if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) {
+                first = false;
+            }
+
+            //check device context
+            if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) {
+                if (config->device_type == AV_HWDEVICE_TYPE_VAAPI) {
+                    supportsVaapi = true;
+                }
+
+                if (DEBUG_VIDEOS) {
                     //show type
                     switch (config->device_type) {
                         case AV_HWDEVICE_TYPE_VDPAU:
@@ -864,15 +875,26 @@ bool VideoDemuxer::initStream() {
                             break;
                     }
                 }
+            }
 
-                if (config->methods & AV_CODEC_HW_CONFIG_METHOD_INTERNAL) {
+            if (config->methods & AV_CODEC_HW_CONFIG_METHOD_INTERNAL) {
+                if (DEBUG_VIDEOS) {
                     printf("-> internal\n");
                 }
-
-                pos++;
             }
+
+            pos++;
         }
     }
+
+    //use hardware decoders
+    (void)supportsVaapi;
+
+#ifdef VAAPI
+    if (supportsVaapi) {
+        useVaapi = true;
+    }
+#endif
 
     //copy context
     AVCodecContext *codecCtxOrig = codecCtx;
@@ -1071,7 +1093,9 @@ bool VideoDemuxer::initStream() {
 
         codecCtx->thread_count = 3;
     }
+#endif
 
+#ifdef VAAPI
     //init vaapi (see https://gist.github.com/kajott/d1b29c613be30893c855621edd1f212e#file-vaapi_egl_interop_example-c-L231)
     if (useVaapi) {
         std::string drmNode = "/dev/dri/renderD128";

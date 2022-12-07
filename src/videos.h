@@ -9,14 +9,16 @@ extern "C" {
     #include "libavformat/avformat.h"
     #include "libswscale/swscale.h"
 
-#ifdef EGL_GBM
+#ifdef VAAPI
     //VA-PI
     #include <va/va.h>
     #include <va/va_drm.h>
     #include <va/va_drmcommon.h>
 
     #include <libavutil/hwcontext_vaapi.h>
+#endif
 
+#ifdef EGL_GBM
     #include <drm_fourcc.h>
 
     //V4L2
@@ -192,7 +194,7 @@ private:
 
     //vaapi
     bool useVaapi = false;
-#ifdef EGL_GBM
+#ifdef VAAPI
     VADisplay vaDisplay = NULL;
 #endif
 

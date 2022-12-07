@@ -66,6 +66,12 @@ Setup:
 sudo apt-get install libegl1-mesa-dev mesa-common-dev libdrm-dev libgbm-dev libfreetype6-dev libjpeg-dev libswscale-dev libglew-dev libglfw3 libglfw3-dev libavformat-dev libvips-dev
 ```
 
+VA-PI:
+
+```bash
+sudo apt-get install libva-dev
+```
+
 ### Raspberry Pi
 
 * libegl1-mesa-dev

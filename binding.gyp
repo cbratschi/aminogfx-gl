@@ -6,6 +6,10 @@
             # flags
             'use_glfw': 0,
 
+            # Note: fails on Parallels (no hardware accelerated driver)
+            # Note: not supported by Raspberry Pi
+            'use_vaapi': 0,
+
             # Linux
             'linux_codename': '',
             'is_linux': 0, # exlcuding RPi
@@ -132,6 +136,15 @@
                     "<!@(pkg-config --libs glfw3)"
                 ]
             }],
+
+            # VA-PI
+            [
+                'use_vaapi == 1', {
+                    "defines": [
+                        "VAAPI"
+                    ]
+                }
+            ],
 
             # macOS
             [ 'OS == "mac"', {
