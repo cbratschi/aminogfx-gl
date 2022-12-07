@@ -1108,6 +1108,7 @@ bool VideoDemuxer::initStream() {
          *   - [AVHWDeviceContext @ 0xa38d03f0] Failed to initialise VAAPI connection: -1 (unknown libva error).
          */
         if (av_hwdevice_ctx_create(&hwDeviceCtx, AV_HWDEVICE_TYPE_VAAPI, drmNode.c_str(), NULL, 0) < 0) {
+            //cbxx TODO fallback to software context and report
             lastError = "could not initialize vaapi device";
 
             return false;
@@ -1365,6 +1366,7 @@ READ_FRAME_RESULT VideoDemuxer::readDecodedFrame(double &time) {
                 goto done;
             }
 
+            /*
             //vaapi
             if (useVaapi) {
                 //cbxx TODO verify
@@ -1411,6 +1413,7 @@ READ_FRAME_RESULT VideoDemuxer::readDecodedFrame(double &time) {
 
                 goto done;
             }
+            */
 #endif
 
             //use RGB decoder
