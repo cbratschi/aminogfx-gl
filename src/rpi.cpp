@@ -893,6 +893,8 @@ void AminoGfxRPi::getMonitorInfo(v8::Local<v8::Value> &value) {
     }
 
     getConnectionInfo(connector, value);
+
+    drmModeFreeConnector(connector);
 #endif
 #ifdef EGL_DISPMANX
     getDisplayInfo(value);
@@ -961,7 +963,7 @@ void AminoGfxRPi::getConnectionInfo(drmModeConnector *connector, v8::Local<v8::V
         Nan::Set(modesArr, Nan::New<v8::Uint32>(i), modeObj);
     }
 
-    Nan::Set(hdmiObj, Nan::New("modes").ToLocalChecked(), modesArr);
+    Nan::Set(obj, Nan::New("modes").ToLocalChecked(), modesArr);
 
     // 3) properties (see https://github.com/ascent12/drm_info/blob/master/json.c#L376)
     drmModeObjectProperties *props = drmModeObjectGetProperties(driDevice, connector->connector_id, DRM_MODE_OBJECT_CONNECTOR);
@@ -1117,7 +1119,7 @@ void AminoGfxRPi::getConnectionInfo(drmModeConnector *connector, v8::Local<v8::V
                                     Nan::Set(edidObj, Nan::New("edidVer").ToLocalChecked(), Nan::New(edid->edid_version).ToLocalChecked());
 
                                     //add
-                                    Nan::Set(hdmiObj, Nan::New("edid").ToLocalChecked(), edidObj);
+                                    Nan::Set(obj, Nan::New("edid").ToLocalChecked(), edidObj);
 
                                     //cleanup
                                     free(edid);
@@ -1150,10 +1152,7 @@ void AminoGfxRPi::getConnectionInfo(drmModeConnector *connector, v8::Local<v8::V
         drmModeFreeObjectProperties(props);
     }
 
-    Nan::Set(hdmiObj, Nan::New("props").ToLocalChecked(), propsObj);
-
-    //done
-    drmModeFreeConnector(conn);
+    Nan::Set(obj, Nan::New("props").ToLocalChecked(), propsObj);
 }
 
 /**
@@ -1295,6 +1294,8 @@ void AminoGfxRPi::getAllMonitors(v8::Local<v8::Array> &array) {
         getConnectionInfo(connector, obj);
 
         Nan::Set(array, Nan::New<v8::Uint32>(pos++), obj);
+
+        drmModeFreeConnector(connector);
     }
 
     drmModeFreeResources(resources);
