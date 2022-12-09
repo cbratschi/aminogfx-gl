@@ -900,12 +900,13 @@ void AminoGfxRPi::getMonitorInfo(v8::Local<v8::Value> &value) {
 }
 
 #ifdef EGL_GBM
+
 /**
  * @brief Get connection info data (including monitor).
  *
  * @param obj
  */
-void getConnectionInfo(drmModeConnector *connector, v8::Local<v8::Value> &value) {
+void AminoGfxRPi::getConnectionInfo(drmModeConnector *connector, v8::Local<v8::Value> &value) {
     v8::Local<v8::Object> obj = Nan::New<v8::Object>();
 
     value = obj;
@@ -1317,6 +1318,8 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
     //cbxx TODO support
 }
 
+#ifdef EGL_GBM
+
 /**
  * @brief Display a blob on console.
  *
@@ -1367,9 +1370,11 @@ void AminoGfxRPi::showPropertyBlob(uint32_t id, char *name) {
 
     drmModeFreePropertyBlob(blob);
 }
+
 #endif
 
 #ifdef EGL_DISPMANX
+
 /**
  * Switch to HDMI mode.
  *
