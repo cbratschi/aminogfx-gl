@@ -922,7 +922,7 @@ void AminoGfxRPi::getConnectionInfo(drmModeConnector *connector, v8::Local<v8::V
     Nan::Set(obj, Nan::New("id").ToLocalChecked(), Nan::New<v8::Uint32>(connector->connector_id));
     Nan::Set(obj, Nan::New("type").ToLocalChecked(), Nan::New(type).ToLocalChecked());
     Nan::Set(obj, Nan::New("typeId").ToLocalChecked(), Nan::New<v8::Uint32>(connector->connector_type_id));
-c
+
     Nan::Set(obj, Nan::New("mmWidth").ToLocalChecked(), Nan::New<v8::Uint32>(connector->mmWidth));
     Nan::Set(obj, Nan::New("mmHeight").ToLocalChecked(), Nan::New<v8::Uint32>(connector->mmHeight));
 
@@ -943,7 +943,7 @@ c
 
     getModeInfo(&mode_info, modeObj);
 
-    Nan::Set(hdmiObj, Nan::New("mode").ToLocalChecked(), modeObj);
+    Nan::Set(obj, Nan::New("mode").ToLocalChecked(), modeObj);
 
     // 3) modes (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L166)
     v8::Local<v8::Array> modesArr = Nan::New<v8::Array>();
@@ -964,7 +964,7 @@ c
     Nan::Set(hdmiObj, Nan::New("modes").ToLocalChecked(), modesArr);
 
     // 3) properties (see https://github.com/ascent12/drm_info/blob/master/json.c#L376)
-    drmModeObjectProperties *props = drmModeObjectGetProperties(driDevice, conn->connector_id, DRM_MODE_OBJECT_CONNECTOR);
+    drmModeObjectProperties *props = drmModeObjectGetProperties(driDevice, connector->connector_id, DRM_MODE_OBJECT_CONNECTOR);
     v8::Local<v8::Object> propsObj = Nan::New<v8::Object>();
 
     if (props) {
@@ -1316,6 +1316,7 @@ void AminoGfxRPi::getAllMonitors(v8::Local<v8::Array> &array) {
  */
 std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
     //cbxx TODO support
+    return "";
 }
 
 #ifdef EGL_GBM
