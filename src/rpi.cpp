@@ -465,6 +465,7 @@ void AminoGfxRPi::initEGL() {
 
         //list all connectors
         for (int i = 0; i < resources->count_connectors; i++) {
+            //Note: slow call but require full probing here
             drmModeConnector *connector2 = drmModeGetConnector(driDevice, resources->connectors[i]);
 
             if (!connector2) {
@@ -490,6 +491,7 @@ void AminoGfxRPi::initEGL() {
     }
 
     for (int i = 0; i < resources->count_connectors; i++) {
+        //Note: slow call but full probing needed here at beginning
         drmModeConnector *connector2 = drmModeGetConnector(driDevice, resources->connectors[i]);
 
         if (!connector2) {
@@ -852,7 +854,7 @@ bool AminoGfxRPi::getScreenInfo(int &w, int &h, int &refreshRate, bool &fullscre
     fullscreen = true;
 
 #ifdef EGL_GBM
-    drmModeConnector *connector = drmModeGetConnector(driDevice, connector_id);
+    drmModeConnector *connector = drmModeGetConnectorCurrent(driDevice, connector_id);
 
     if (connector) {
         refreshRate = connector->modes[0].vrefresh;
@@ -880,169 +882,85 @@ bool AminoGfxRPi::getScreenInfo(int &w, int &h, int &refreshRate, bool &fullscre
 }
 
 /**
- * Get runtime statistics.
+ * Get current monitor info.
  */
-void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
-    //get default values
-    AminoGfx::getStats(obj);
+void AminoGfxRPi::getMonitorInfo(v8::Local<v8::Value> &value) {
+#ifdef EGL_GBM
+    drmModeConnector *connector = drmModeGetConnectorCurrent(driDevice, connector_id);
 
-#ifdef EGL_DISPMANX
-    //HDMI (see https://github.com/raspberrypi/userland/blob/master/interface/vmcs_host/vc_hdmi.h)
-    //Note: works on RPi 4 too (Buster but removed in Bullseye)
-    TV_DISPLAY_STATE_T *tvState = getDisplayState();
-
-    if (!tvState) {
-        //Note: does not occur on detached cable (see getDisplayState())
-
+    if (!connector) {
         return;
     }
 
-    //cbxx TODO move to getMonitor()
-    v8::Local<v8::Object> hdmiObj = Nan::New<v8::Object>();
-
-    Nan::Set(obj, Nan::New("hdmi").ToLocalChecked(), hdmiObj);
-
-    // HDMI_DISPLAY_STATE_T
-    Nan::Set(hdmiObj, Nan::New("state").ToLocalChecked(), Nan::New(tvState->display.hdmi.state));
-    Nan::Set(hdmiObj, Nan::New("width").ToLocalChecked(), Nan::New(tvState->display.hdmi.width));
-    Nan::Set(hdmiObj, Nan::New("height").ToLocalChecked(), Nan::New(tvState->display.hdmi.height));
-    Nan::Set(hdmiObj, Nan::New("frameRate").ToLocalChecked(), Nan::New(tvState->display.hdmi.frame_rate));
-    Nan::Set(hdmiObj, Nan::New("scanMode").ToLocalChecked(), Nan::New(tvState->display.hdmi.scan_mode));
-    Nan::Set(hdmiObj, Nan::New("group").ToLocalChecked(), Nan::New(tvState->display.hdmi.group));
-    Nan::Set(hdmiObj, Nan::New("mode").ToLocalChecked(), Nan::New(tvState->display.hdmi.mode));
-    Nan::Set(hdmiObj, Nan::New("pixelRep").ToLocalChecked(), Nan::New(tvState->display.hdmi.pixel_rep));
-    Nan::Set(hdmiObj, Nan::New("aspectRatio").ToLocalChecked(), Nan::New(tvState->display.hdmi.aspect_ratio));
-    Nan::Set(hdmiObj, Nan::New("pixelEncoding").ToLocalChecked(), Nan::New(tvState->display.hdmi.pixel_encoding));
-    Nan::Set(hdmiObj, Nan::New("format3d").ToLocalChecked(), Nan::New(tvState->display.hdmi.format_3d));
-
-    //display options (HDMI_DISPLAY_OPTIONS_T)
-    v8::Local<v8::Object> displayObj = Nan::New<v8::Object>();
-
-    Nan::Set(hdmiObj, Nan::New("displayOptions").ToLocalChecked(), displayObj);
-
-    Nan::Set(displayObj, Nan::New("aspect").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.aspect));
-    Nan::Set(displayObj, Nan::New("verticalBarPresent").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.vertical_bar_present));
-    Nan::Set(displayObj, Nan::New("leftBarWidth").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.left_bar_width));
-    Nan::Set(displayObj, Nan::New("rightBarWidth").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.right_bar_width));
-    Nan::Set(displayObj, Nan::New("horizontalBarPresent").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.horizontal_bar_present));
-    Nan::Set(displayObj, Nan::New("topBarHeight").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.top_bar_height));
-    Nan::Set(displayObj, Nan::New("bottomBarHeight").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.bottom_bar_height));
-    Nan::Set(displayObj, Nan::New("overscanFlags").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.overscan_flags));
-
-    //device
-    TV_DEVICE_ID_T id;
-
-    memset(&id, 0, sizeof(id));
-
-    if (vc_tv_get_device_id(&id) == 0 && id.vendor[0] != '\0' && id.monitor_name[0] != '\0') {
-        v8::Local<v8::Object> deviceObj = Nan::New<v8::Object>();
-
-        //add monitor property
-        Nan::Set(hdmiObj, Nan::New("device").ToLocalChecked(), deviceObj);
-
-        //properties
-        Nan::Set(deviceObj, Nan::New("vendor").ToLocalChecked(), Nan::New(id.vendor).ToLocalChecked());
-        Nan::Set(deviceObj, Nan::New("monitorName").ToLocalChecked(), Nan::New(id.monitor_name).ToLocalChecked());
-        Nan::Set(deviceObj, Nan::New("serialNum").ToLocalChecked(), Nan::New(id.serial_num));
-    }
+    getConnectionInfo(connector, value);
 #endif
-
-#ifdef EGL_GBM
-    //cbxx TODO move to getMonitor()
-    getDrmStats(obj);
+#ifdef EGL_DISPMANX
+    getDisplayInfo(value);
 #endif
 }
 
 #ifdef EGL_GBM
 /**
- * @brief Get stata from DRM.
+ * @brief Get connection info data (including monitor).
  *
  * @param obj
  */
-void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
-    //current connector
-    drmModeConnector *conn = drmModeGetConnector(driDevice, connector_id);
+void getConnectionInfo(drmModeConnector *connector, v8::Local<v8::Value> &value) {
+    v8::Local<v8::Object> obj = Nan::New<v8::Object>();
 
-    if (!conn) {
-        return;
-    }
+    value = obj;
 
     //connector data
-    std::string type = getDrmConnectorType(conn);
-    bool connected = conn->connection == DRM_MODE_CONNECTED;
+    std::string type = getDrmConnectorType(connector);
+    bool connected = connector->connection == DRM_MODE_CONNECTED;
 
     //debug
     //printf(" -> %s-%d (%s)\n", type.c_str(), conn->connector_type_id, connected ? "connected":"disconnected");
 
-    //collect HDMI data
-    v8::Local<v8::Object> hdmiObj = Nan::New<v8::Object>();
-
-    Nan::Set(obj, Nan::New("hdmi").ToLocalChecked(), hdmiObj);
-
     // 1) drmModeConnector (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L242)
-    Nan::Set(hdmiObj, Nan::New("id").ToLocalChecked(), Nan::New<v8::Uint32>(conn->connector_id));
-    Nan::Set(hdmiObj, Nan::New("type").ToLocalChecked(), Nan::New(type).ToLocalChecked());
-    Nan::Set(hdmiObj, Nan::New("typeId").ToLocalChecked(), Nan::New<v8::Uint32>(conn->connector_type_id));
-
-    Nan::Set(hdmiObj, Nan::New("mmWidth").ToLocalChecked(), Nan::New<v8::Uint32>(conn->mmWidth));
-    Nan::Set(hdmiObj, Nan::New("mmHeight").ToLocalChecked(), Nan::New<v8::Uint32>(conn->mmHeight));
+    Nan::Set(obj, Nan::New("id").ToLocalChecked(), Nan::New<v8::Uint32>(connector->connector_id));
+    Nan::Set(obj, Nan::New("type").ToLocalChecked(), Nan::New(type).ToLocalChecked());
+    Nan::Set(obj, Nan::New("typeId").ToLocalChecked(), Nan::New<v8::Uint32>(connector->connector_type_id));
+c
+    Nan::Set(obj, Nan::New("mmWidth").ToLocalChecked(), Nan::New<v8::Uint32>(connector->mmWidth));
+    Nan::Set(obj, Nan::New("mmHeight").ToLocalChecked(), Nan::New<v8::Uint32>(connector->mmHeight));
 
     //drmModeConnection (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L227)
-    Nan::Set(hdmiObj, Nan::New("connected").ToLocalChecked(), Nan::New<v8::Boolean>(connected));
+    Nan::Set(obj, Nan::New("connected").ToLocalChecked(), Nan::New<v8::Boolean>(connected));
 
     //drmModeSubPixel (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L233)
-    std::string subpixel = getDrmSubpixelMode(conn->subpixel);
+    std::string subpixel = getDrmSubpixelMode(connector->subpixel);
 
-    Nan::Set(hdmiObj, Nan::New("subpixel").ToLocalChecked(), Nan::New(subpixel).ToLocalChecked());
+    Nan::Set(obj, Nan::New("subpixel").ToLocalChecked(), Nan::New(subpixel).ToLocalChecked());
 
-    // 2) modes (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L166)
-    v8::Local<v8::Array> modeArr = Nan::New<v8::Array>();
+    //xScale, yScale (dummy)
+    Nan::Set(obj, Nan::New("xScale").ToLocalChecked(), Nan::New<v8::Uint32>(1));
+    Nan::Set(obj, Nan::New("yScale").ToLocalChecked(), Nan::New<v8::Uint32>(1));
 
-    for (int i = 0; i < conn->count_modes; i++) {
-        drmModeModeInfo *mode = &conn->modes[i];
+    // 2) current mode
+    v8::Local<v8::Object> modeObj = Nan::New<v8::Object>();
+
+    getModeInfo(&mode_info, modeObj);
+
+    Nan::Set(hdmiObj, Nan::New("mode").ToLocalChecked(), modeObj);
+
+    // 3) modes (see https://gitlab.freedesktop.org/mesa/drm/blob/0fb215ae3199b5be0c9a9474e5941f8d8998c11a/libdrm/xf86drmMode.h#L166)
+    v8::Local<v8::Array> modesArr = Nan::New<v8::Array>();
+
+    for (int i = 0; i < connector->count_modes; i++) {
+        drmModeModeInfo *mode = &connector->modes[i];
+        v8::Local<v8::Object> modeObj = Nan::New<v8::Object>();
 
         //debug
         //printf("  -> %ix%i@%i (%s)\n", mode->hdisplay, mode->vdisplay, mode->vrefresh, mode->name);
 
-        //add
-        v8::Local<v8::Object> modeObj = Nan::New<v8::Object>();
-
-        Nan::Set(modeObj, Nan::New("clock").ToLocalChecked(), Nan::New<v8::Uint32>(mode->clock));
-
-        Nan::Set(modeObj, Nan::New("hdisplay").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hdisplay));
-        Nan::Set(modeObj, Nan::New("hsync_start").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hsync_start));
-        Nan::Set(modeObj, Nan::New("hsync_end").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hsync_end));
-        Nan::Set(modeObj, Nan::New("htotal").ToLocalChecked(), Nan::New<v8::Uint32>(mode->htotal));
-        Nan::Set(modeObj, Nan::New("hskew").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hskew));
-
-        Nan::Set(modeObj, Nan::New("vdisplay").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vdisplay));
-        Nan::Set(modeObj, Nan::New("vsync_start").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vsync_start));
-        Nan::Set(modeObj, Nan::New("vsync_end").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vsync_end));
-        Nan::Set(modeObj, Nan::New("vtotal").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vtotal));
-        Nan::Set(modeObj, Nan::New("vscan").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vscan));
-
-        Nan::Set(modeObj, Nan::New("vrefresh").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vrefresh));
-
-        //flags
-        v8::Local<v8::Array> flagsArr = Nan::New<v8::Array>();
-
-        populateArray(flagsArr, getDrmModeFlags(mode->flags));
-        Nan::Set(modeObj, Nan::New("flags").ToLocalChecked(), flagsArr);
-
-        //type
-        v8::Local<v8::Array> typeArr = Nan::New<v8::Array>();
-
-        populateArray(typeArr, getDrmModeTypes(mode->type));
-        Nan::Set(modeObj, Nan::New("type").ToLocalChecked(), typeArr);
-
-        //name
-        Nan::Set(modeObj, Nan::New("name").ToLocalChecked(), Nan::New(mode->name).ToLocalChecked());
+        getModeInfo(mode, modeObj);
 
         //add to array
-        Nan::Set(modeArr, Nan::New<v8::Uint32>(i), modeObj);
+        Nan::Set(modesArr, Nan::New<v8::Uint32>(i), modeObj);
     }
 
-    Nan::Set(hdmiObj, Nan::New("modes").ToLocalChecked(), modeArr);
+    Nan::Set(hdmiObj, Nan::New("modes").ToLocalChecked(), modesArr);
 
     // 3) properties (see https://github.com/ascent12/drm_info/blob/master/json.c#L376)
     drmModeObjectProperties *props = drmModeObjectGetProperties(driDevice, conn->connector_id, DRM_MODE_OBJECT_CONNECTOR);
@@ -1235,6 +1153,168 @@ void AminoGfxRPi::getDrmStats(v8::Local<v8::Object> &obj) {
 
     //done
     drmModeFreeConnector(conn);
+}
+
+/**
+ * @brief Get DRM mode details.
+ *
+ * @param mode
+ * @param modeObj
+ */
+void AminoGfxRPi::getModeInfo(drmModeModeInfo *mode, v8::Local<v8::Object> &modeObj) {
+    //Note: not available but in GLFW data: redBits, blueBits, greenBits
+
+    //add
+    Nan::Set(modeObj, Nan::New("clock").ToLocalChecked(), Nan::New<v8::Uint32>(mode->clock));
+
+    Nan::Set(modeObj, Nan::New("width").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hdisplay));
+    Nan::Set(modeObj, Nan::New("hsync_start").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hsync_start));
+    Nan::Set(modeObj, Nan::New("hsync_end").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hsync_end));
+    Nan::Set(modeObj, Nan::New("htotal").ToLocalChecked(), Nan::New<v8::Uint32>(mode->htotal));
+    Nan::Set(modeObj, Nan::New("hskew").ToLocalChecked(), Nan::New<v8::Uint32>(mode->hskew));
+
+    Nan::Set(modeObj, Nan::New("height").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vdisplay));
+    Nan::Set(modeObj, Nan::New("vsync_start").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vsync_start));
+    Nan::Set(modeObj, Nan::New("vsync_end").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vsync_end));
+    Nan::Set(modeObj, Nan::New("vtotal").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vtotal));
+    Nan::Set(modeObj, Nan::New("vscan").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vscan));
+
+    //cbxx TODO verify
+    Nan::Set(modeObj, Nan::New("refreshRate").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vrefresh));
+
+    //flags
+    v8::Local<v8::Array> flagsArr = Nan::New<v8::Array>();
+
+    populateArray(flagsArr, getDrmModeFlags(mode->flags));
+    Nan::Set(modeObj, Nan::New("flags").ToLocalChecked(), flagsArr);
+
+    //type
+    v8::Local<v8::Array> typeArr = Nan::New<v8::Array>();
+
+    populateArray(typeArr, getDrmModeTypes(mode->type));
+    Nan::Set(modeObj, Nan::New("type").ToLocalChecked(), typeArr);
+
+    //name
+    Nan::Set(modeObj, Nan::New("name").ToLocalChecked(), Nan::New(mode->name).ToLocalChecked());
+}
+
+#endif
+
+#ifdef EGL_DISPMANX
+
+/**
+ * @brief Get current display infos.
+ *
+ * @param value
+ */
+void AminoGfxRPi::getDisplayInfo(v8::Local<v8::Value> &value) {
+    //HDMI (see https://github.com/raspberrypi/userland/blob/master/interface/vmcs_host/vc_hdmi.h)
+    //Note: works on RPi 4 too (Buster but removed in Bullseye)
+    TV_DISPLAY_STATE_T *tvState = getDisplayState();
+
+    if (!tvState) {
+        //Note: does not occur on detached cable (see getDisplayState())
+
+        return;
+    }
+
+    v8::Local<v8::Object> obj = Nan::New<v8::Object>();
+
+    value = obj;
+
+    // HDMI_DISPLAY_STATE_T
+    Nan::Set(obj, Nan::New("state").ToLocalChecked(), Nan::New(tvState->display.hdmi.state));
+    Nan::Set(obj, Nan::New("width").ToLocalChecked(), Nan::New(tvState->display.hdmi.width));
+    Nan::Set(obj, Nan::New("height").ToLocalChecked(), Nan::New(tvState->display.hdmi.height));
+    Nan::Set(obj, Nan::New("frameRate").ToLocalChecked(), Nan::New(tvState->display.hdmi.frame_rate));
+    Nan::Set(obj, Nan::New("scanMode").ToLocalChecked(), Nan::New(tvState->display.hdmi.scan_mode));
+    Nan::Set(obj, Nan::New("group").ToLocalChecked(), Nan::New(tvState->display.hdmi.group));
+    Nan::Set(obj, Nan::New("mode").ToLocalChecked(), Nan::New(tvState->display.hdmi.mode));
+    Nan::Set(obj, Nan::New("pixelRep").ToLocalChecked(), Nan::New(tvState->display.hdmi.pixel_rep));
+    Nan::Set(obj, Nan::New("aspectRatio").ToLocalChecked(), Nan::New(tvState->display.hdmi.aspect_ratio));
+    Nan::Set(obj, Nan::New("pixelEncoding").ToLocalChecked(), Nan::New(tvState->display.hdmi.pixel_encoding));
+    Nan::Set(obj, Nan::New("format3d").ToLocalChecked(), Nan::New(tvState->display.hdmi.format_3d));
+
+    //display options (HDMI_DISPLAY_OPTIONS_T)
+    v8::Local<v8::Object> displayObj = Nan::New<v8::Object>();
+
+    Nan::Set(obj, Nan::New("displayOptions").ToLocalChecked(), displayObj);
+
+    Nan::Set(displayObj, Nan::New("aspect").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.aspect));
+    Nan::Set(displayObj, Nan::New("verticalBarPresent").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.vertical_bar_present));
+    Nan::Set(displayObj, Nan::New("leftBarWidth").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.left_bar_width));
+    Nan::Set(displayObj, Nan::New("rightBarWidth").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.right_bar_width));
+    Nan::Set(displayObj, Nan::New("horizontalBarPresent").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.horizontal_bar_present));
+    Nan::Set(displayObj, Nan::New("topBarHeight").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.top_bar_height));
+    Nan::Set(displayObj, Nan::New("bottomBarHeight").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.bottom_bar_height));
+    Nan::Set(displayObj, Nan::New("overscanFlags").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.overscan_flags));
+
+    //device
+    TV_DEVICE_ID_T id;
+
+    memset(&id, 0, sizeof(id));
+
+    if (vc_tv_get_device_id(&id) == 0 && id.vendor[0] != '\0' && id.monitor_name[0] != '\0') {
+        v8::Local<v8::Object> deviceObj = Nan::New<v8::Object>();
+
+        //add monitor property
+        Nan::Set(obj, Nan::New("device").ToLocalChecked(), deviceObj);
+
+        //properties
+        Nan::Set(deviceObj, Nan::New("vendor").ToLocalChecked(), Nan::New(id.vendor).ToLocalChecked());
+        Nan::Set(deviceObj, Nan::New("monitorName").ToLocalChecked(), Nan::New(id.monitor_name).ToLocalChecked());
+        Nan::Set(deviceObj, Nan::New("serialNum").ToLocalChecked(), Nan::New(id.serial_num));
+    }
+
+    //cbxx FIXME mode, modes
+}
+
+#endif
+
+/**
+ * @brief Get the all available monitors.
+ *
+ * @param array
+ */
+void AminoGfxRPi::getAllMonitors(v8::Local<v8::Array> &array) {
+#ifdef EGL_GBM
+    drmModeRes *resources = drmModeGetResources(driDevice);
+    int pos = 0;
+
+    for (int i = 0; i < resources->count_connectors; i++) {
+        //Note: slow call but require full probing here
+        drmModeConnector *connector = drmModeGetConnectorCurrent(driDevice, resources->connectors[i]);
+
+        if (!connector) {
+            continue;
+        }
+
+        v8::Local<v8::Value> obj = Nan::Null();
+
+        getConnectionInfo(connector, obj);
+
+        Nan::Set(array, Nan::New<v8::Uint32>(pos++), obj);
+    }
+
+    drmModeFreeResources(resources);
+#endif
+#ifdef EGL_DISPMANX
+    //single monitor
+    v8::Local<v8::Value> obj = Nan::Null();
+
+    getDisplayInfo(value);
+
+    Nan::Set(array, Nan::New<v8::Uint32>(0), obj);
+#endif
+}
+
+/**
+ * @brief Use a monitor and display mode.
+ *
+ * @param obj
+ */
+std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
+    //cbxx TODO support
 }
 
 /**

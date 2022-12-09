@@ -106,13 +106,19 @@ private:
     void destroyAminoGfxRPi();
 
     bool getScreenInfo(int &w, int &h, int &refreshRate, bool &fullscreen) override;
-    void getStats(v8::Local<v8::Object> &obj) override;
+
+    void getMonitorInfo(v8::Local<v8::Value> &value) override;
+    void getAllMonitors(v8::Local<v8::Array> &array) override;
+    std::string setMonitor(v8::Local<v8::Object> &obj) override;
+
 #ifdef EGL_GBM
-    void getDrmStats(v8::Local<v8::Object> &obj);
+    void getConnectionInfo(drmModeConnector *connector, v8::Local<v8::Value> &value);
+    void getModeInfo(drmModeModeInfo *mode, v8::Local<v8::Object> &modeObj);
     void showPropertyBlob(uint32_t id, char *name);
 #endif
 
 #ifdef EGL_DISPMANX
+    void getDisplayInfo(v8::Local<v8::Value> &value);
     void forceHdmiMode(uint32_t code);
     void switchHdmiOff();
 #endif

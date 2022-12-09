@@ -976,7 +976,7 @@ bool VideoDemuxer::initStream() {
         uint32_t crtcId = 0;
 
         for (int i = 0; i < res->count_connectors; i++) {
-            drmModeConnector *con = drmModeGetConnector(drmFD, res->connectors[i]);
+            drmModeConnector *con = drmModeGetConnectorCurrent(drmFD, res->connectors[i]);
             drmModeEncoder *enc = NULL;
             drmModeCrtc *crtc = NULL;
 
@@ -1037,7 +1037,7 @@ bool VideoDemuxer::initStream() {
             return false;
         }
 
-        drmModeConnector *c = drmModeGetConnector(drmFD, conId);
+        drmModeConnector *c = drmModeGetConnectorCurrent(drmFD, conId);
 
         if (!c) {
             lastError = "drmModeGetConnector failed";
