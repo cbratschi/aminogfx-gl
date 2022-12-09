@@ -28,7 +28,7 @@ gfx.start(function (err) {
     }, 1000);
 });
 
-//HDMI states
+//HDMI states (Pi 3)
 const VC_HDMI_UNPLUGGED          = (1 << 0);  // HDMI cable is detached
 const VC_HDMI_ATTACHED           = (1 << 1);  // HDMI cable is attached but not powered on
 const VC_HDMI_DVI                = (1 << 2);  // HDMI is on but in DVI mode (no audio)
@@ -45,13 +45,15 @@ const VC_HDMI_CHANGING_MODE      = (1 << 8);  // HDMI is starting to change mode
  * @param {*} stats
  */
 function showHdmiState(stats) {
+    //cbxx TODO move to gfx.getMonitor()
+    //cbxx TODO support getMonitor()
     const hdmi = stats.hdmi;
 
     if (!hdmi) {
         return;
     }
 
-    //DRM version
+    //DRM version (Pi 4)
     const connected = hdmi.connected;
 
     if (connected !== undefined) {
@@ -62,7 +64,7 @@ function showHdmiState(stats) {
         }
     }
 
-    //legacy
+    //legacy (Pi 3)
     const state = hdmi.state;
 
     if (state !== undefined) {

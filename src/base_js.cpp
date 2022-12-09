@@ -188,7 +188,7 @@ void AminoJSObject::createInstance(Nan::NAN_METHOD_ARGS_TYPE info, AminoJSObject
     //check constructor call
     if (!info.IsConstructCall()) {
         //called as plain function (e.g. in extended class)
-        Nan::ThrowTypeError("please use new AminoObj() instead of function call");
+        Nan::ThrowTypeError("Please use new AminoObj() instead of function call.");
         return;
     }
 

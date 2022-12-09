@@ -8,7 +8,6 @@ const refTime = gfx.getTime();
 //const refTime = gfx.getTime() + 5000; //delay test
 const items = [];
 
-
 gfx.start(function (err) {
     if (err) {
         console.log('Amino error: ' + err.message);
@@ -72,7 +71,7 @@ function addAnim(group, y) {
 
     items.push(iv);
 
-	//animate x position
+    //animate x position
     const anim = iv.x.anim().from(0).to(300).dur(10000).loop(-1).autoreverse(true);
 
     //tests

@@ -169,6 +169,7 @@ void AminoGfxRPi::setup() {
         //vc_tv_show_info(1);
 
         //handle preferred resolution
+        //cbxx TODO support getMonitors()
         if (!createParams.IsEmpty()) {
             v8::Local<v8::Object> obj = Nan::New(createParams);
 
@@ -896,6 +897,7 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
         return;
     }
 
+    //cbxx TODO move to getMonitor()
     v8::Local<v8::Object> hdmiObj = Nan::New<v8::Object>();
 
     Nan::Set(obj, Nan::New("hdmi").ToLocalChecked(), hdmiObj);
@@ -946,6 +948,7 @@ void AminoGfxRPi::getStats(v8::Local<v8::Object> &obj) {
 #endif
 
 #ifdef EGL_GBM
+    //cbxx TODO move to getMonitor()
     getDrmStats(obj);
 #endif
 }

@@ -179,7 +179,7 @@ void AminoFont::preInit(Nan::NAN_METHOD_ARGS_TYPE info) {
     atlas = texture_atlas_new(512, 512, 1); //depth must be 1
 
     if (!atlas) {
-        Nan::ThrowTypeError("could not create atlas");
+        Nan::ThrowError("could not create atlas");
         return;
     }
 
@@ -322,7 +322,7 @@ void AminoFontSize::preInit(Nan::NAN_METHOD_ARGS_TYPE info) {
     fontTexture = font->getFontWithSize(size);
 
     if (!fontTexture) {
-        Nan::ThrowTypeError("could not create font size");
+        Nan::ThrowError("could not create font size");
     }
 
     //font properties

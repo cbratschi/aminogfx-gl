@@ -55,6 +55,10 @@ private:
     //GLFW window
     GLFWwindow *window = NULL;
 
+    //GLFW monitor (fullscreen start parameters)
+    GLFWmonitor *monitor = NULL;
+    const GLFWvidmode *mode = NULL;
+
     static AminoGfxMac* windowToInstance(GLFWwindow *window) {
         std::map<GLFWwindow *, AminoGfxMac *>::iterator it = windowMap->find(window);
 
@@ -94,6 +98,29 @@ private:
             }
 
             glfwInitialized = true;
+        }
+
+        //handle params
+        if (!createParams.IsEmpty()) {
+            v8::Local<v8::Object> obj = Nan::New(createParams);
+
+            //fullscreen
+            Nan::MaybeLocal<v8::Value> fullscreenMaybe = Nan::Get(obj, Nan::New<v8::String>("fullscreen").ToLocalChecked());
+
+            if (!fullscreenMaybe.IsEmpty()) {
+                v8::Local<v8::Value> fullscreenValue = fullscreenMaybe.ToLocalChecked();
+
+                if (fullscreenValue->IsBoolean()) {
+                    bool fullscreen = Nan::To<v8::Boolean>(fullscreenValue).ToLocalChecked()->Value();
+
+                    if (fullscreen) {
+                        //set monitor (default: primary)
+                        monitor = glfwGetPrimaryMonitor();
+
+                        assert(monitor);
+                    }
+                }
+            }
         }
 
         //instance
@@ -142,6 +169,294 @@ private:
     }
 
     /**
+     * Get current monitor info.
+    */
+    void getMonitorInfo(v8::Local<v8::Value> &value) override {
+        //get monitor properties
+        GLFWmonitor *monitor = this->monitor ? this->monitor:glfwGetPrimaryMonitor();
+
+        if (!monitor) {
+            return;
+        }
+
+        getMonitorInfo(monitor, value);
+    }
+
+    /**
+     * @brief Get info about a monitor.
+     *
+     * @param monitor
+     * @param value
+     */
+    void getMonitorInfo(GLFWmonitor *monitor, v8::Local<v8::Value> &value) {
+        v8::Local<v8::Object> obj = Nan::New<v8::Object>();
+
+        value = obj;
+
+        //name
+        Nan::Set(obj, Nan::New("name").ToLocalChecked(), Nan::New(std::string(glfwGetMonitorName(monitor))).ToLocalChecked());
+
+        //current video mode
+        v8::Local<v8::Object> modeObj = Nan::New<v8::Object>();
+        const GLFWvidmode *mode = getVideoMode(monitor);
+
+        assert(mode);
+
+        Nan::Set(modeObj, Nan::New("width").ToLocalChecked(), Nan::New<v8::Integer>(mode->width));
+        Nan::Set(modeObj, Nan::New("height").ToLocalChecked(), Nan::New<v8::Integer>(mode->height));
+        Nan::Set(modeObj, Nan::New("redBits").ToLocalChecked(), Nan::New<v8::Integer>(mode->redBits));
+        Nan::Set(modeObj, Nan::New("blueBits").ToLocalChecked(), Nan::New<v8::Integer>(mode->blueBits));
+        Nan::Set(modeObj, Nan::New("greenBits").ToLocalChecked(), Nan::New<v8::Integer>(mode->greenBits));
+        Nan::Set(modeObj, Nan::New("refreshRate").ToLocalChecked(), Nan::New<v8::Integer>(mode->refreshRate));
+
+        Nan::Set(obj, Nan::New("mode").ToLocalChecked(), modeObj);
+
+        //mmWidth, mmHeight
+        int mmWidth, mmHeight;
+
+        glfwGetMonitorPhysicalSize(monitor, &mmWidth, &mmHeight);
+
+        Nan::Set(obj, Nan::New("mmWidth").ToLocalChecked(), Nan::New<v8::Integer>(mmWidth));
+        Nan::Set(obj, Nan::New("mmHeight").ToLocalChecked(), Nan::New<v8::Integer>(mmHeight));
+
+        //xScale, yScale
+        float xScale, yScale;
+
+        glfwGetMonitorContentScale(monitor, &xScale, &yScale);
+
+        Nan::Set(obj, Nan::New("xScale").ToLocalChecked(), Nan::New<v8::Number>(xScale));
+        Nan::Set(obj, Nan::New("yScale").ToLocalChecked(), Nan::New<v8::Number>(yScale));
+
+        //workArea
+        v8::Local<v8::Object> workAreaObj = Nan::New<v8::Object>();
+        int x, y, w, h;
+
+        glfwGetMonitorWorkarea(monitor, &x, &y, &w, &h);
+
+        Nan::Set(workAreaObj, Nan::New("xPos").ToLocalChecked(), Nan::New<v8::Integer>(x));
+        Nan::Set(workAreaObj, Nan::New("yPos").ToLocalChecked(), Nan::New<v8::Integer>(y));
+        Nan::Set(workAreaObj, Nan::New("width").ToLocalChecked(), Nan::New<v8::Integer>(w));
+        Nan::Set(workAreaObj, Nan::New("height").ToLocalChecked(), Nan::New<v8::Integer>(h));
+
+        Nan::Set(obj, Nan::New("workArea").ToLocalChecked(), workAreaObj);
+
+        //videos modes
+        int count = 0;
+        const GLFWvidmode *modes = glfwGetVideoModes(monitor, &count);
+        v8::Local<v8::Array> modesArr = Nan::New<v8::Array>();
+
+        assert(modes);
+
+        for (int i = 0; i < count; i++) {
+            const GLFWvidmode *mode = &modes[i];
+            v8::Local<v8::Object> modeObj = Nan::New<v8::Object>();
+
+            Nan::Set(modeObj, Nan::New("width").ToLocalChecked(), Nan::New<v8::Integer>(mode->width));
+            Nan::Set(modeObj, Nan::New("height").ToLocalChecked(), Nan::New<v8::Integer>(mode->height));
+            Nan::Set(modeObj, Nan::New("redBits").ToLocalChecked(), Nan::New<v8::Integer>(mode->redBits));
+            Nan::Set(modeObj, Nan::New("blueBits").ToLocalChecked(), Nan::New<v8::Integer>(mode->blueBits));
+            Nan::Set(modeObj, Nan::New("greenBits").ToLocalChecked(), Nan::New<v8::Integer>(mode->greenBits));
+            Nan::Set(modeObj, Nan::New("refreshRate").ToLocalChecked(), Nan::New<v8::Integer>(mode->refreshRate));
+
+            Nan::Set(modesArr, Nan::New<v8::Uint32>(i), modeObj);
+        }
+
+        Nan::Set(obj, Nan::New("modes").ToLocalChecked(), modesArr);
+    }
+
+    /**
+     * @brief Get the current video mode of a monitor.
+     *
+     * @param monitor
+     * @return const GLFWvidmode*
+     */
+    const GLFWvidmode* getVideoMode(GLFWmonitor *monitor) {
+        const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+
+        assert(mode);
+
+#ifdef MAC
+        //GLFW macOS bug: returns invalid screen size (see https://github.com/glfw/glfw/issues/2028)
+        //check size exists
+        bool found = false;
+        int count = 0;
+        const GLFWvidmode *modes = glfwGetVideoModes(monitor, &count);
+
+        for (int i = 0; i < count; i++) {
+            const GLFWvidmode *mode2 = &modes[i];
+
+            if (mode2->width == mode->width &&
+                mode2->height == mode->height &&
+                mode2->refreshRate == mode->refreshRate &&
+                mode2->redBits == mode->redBits &&
+                mode2->greenBits == mode->greenBits &&
+                mode2->blueBits == mode->blueBits) {
+                    found = true;
+                    break;
+                }
+        }
+
+        if (!found) {
+            //use highest resolution
+            mode = &modes[count - 1];
+        }
+#endif
+
+        return mode;
+    }
+
+    /**
+     * @brief Get the all available monitors.
+     *
+     * @param array
+     */
+    void getAllMonitors(v8::Local<v8::Array> &array) override {
+        int count = 0;
+        GLFWmonitor **monitors = glfwGetMonitors(&count);
+
+        for (int i = 0; i < count; i++) {
+            //see https://www.glfw.org/docs/3.3/group__monitor.html
+            GLFWmonitor *monitor = monitors[i];
+            v8::Local<v8::Value> obj = Nan::Null();
+
+            getMonitorInfo(monitor, obj);
+
+            Nan::Set(array, Nan::New<v8::Uint32>(i), obj);
+        }
+    }
+
+    /**
+     * @brief Use a monitor and display mode.
+     *
+     * @param obj
+     */
+    std::string setMonitor(v8::Local<v8::Object> &obj) override {
+        //check fullscreen
+        if (!this->monitor) {
+            return "not in fullscreen mode";
+        }
+
+        //monitor
+        Nan::MaybeLocal<v8::Value> monitorMaybe = Nan::Get(obj, Nan::New<v8::String>("monitor").ToLocalChecked());
+        GLFWmonitor *monitor = NULL;
+
+        if (!monitorMaybe.IsEmpty()) {
+            v8::Local<v8::Value> monitorValue = monitorMaybe.ToLocalChecked();
+
+            if (monitorValue->IsObject()) {
+                v8::Local<v8::Object> monitorObj = Nan::To<v8::Object>(monitorValue).ToLocalChecked();
+
+                //get monitor name
+                Nan::MaybeLocal<v8::Value> nameMaybe = Nan::Get(monitorObj, Nan::New<v8::String>("name").ToLocalChecked());
+
+                if (!nameMaybe.IsEmpty()) {
+                    v8::Local<v8::Value> nameValue = nameMaybe.ToLocalChecked();
+
+                    if (nameValue->IsString()) {
+                        std::string name = AminoJSObject::toString(nameValue);
+
+                        monitor = getMonitorByName(name);
+
+                        if (!monitor) {
+                            return "monitor not found";
+                        }
+                    } else {
+                        return "name not string";
+                    }
+                } else {
+                    return "name missing";
+                }
+            } else if (!monitorValue->IsUndefined()) {
+                return "monitor is not an object";
+            }
+        }
+
+        if (!monitor) {
+            //use current
+            monitor = this->monitor;
+        } else if (monitor != this->monitor) {
+            //switch monitor and reset mode
+            this->monitor = monitor;
+            this->mode = NULL;
+        }
+
+        //mode
+        Nan::MaybeLocal<v8::Value> modeMaybe = Nan::Get(obj, Nan::New<v8::String>("mode").ToLocalChecked());
+        const GLFWvidmode *mode = NULL;
+
+        if (!modeMaybe.IsEmpty()) {
+            v8::Local<v8::Value> modeValue = modeMaybe.ToLocalChecked();
+
+            if (modeValue->IsObject()) {
+                v8::Local<v8::Object> modeObj = Nan::To<v8::Object>(modeValue).ToLocalChecked();
+
+                //get integer values
+                int width       = Nan::To<v8::Int32>(Nan::Get(modeObj, Nan::New<v8::String>("width").ToLocalChecked()).ToLocalChecked()).ToLocalChecked()->Value();
+                int height      = Nan::To<v8::Int32>(Nan::Get(modeObj, Nan::New<v8::String>("height").ToLocalChecked()).ToLocalChecked()).ToLocalChecked()->Value();
+                int redBits     = Nan::To<v8::Int32>(Nan::Get(modeObj, Nan::New<v8::String>("redBits").ToLocalChecked()).ToLocalChecked()).ToLocalChecked()->Value();
+                int blueBits    = Nan::To<v8::Int32>(Nan::Get(modeObj, Nan::New<v8::String>("blueBits").ToLocalChecked()).ToLocalChecked()).ToLocalChecked()->Value();
+                int greenBits   = Nan::To<v8::Int32>(Nan::Get(modeObj, Nan::New<v8::String>("greenBits").ToLocalChecked()).ToLocalChecked()).ToLocalChecked()->Value();
+                int refreshRate = Nan::To<v8::Int32>(Nan::Get(modeObj, Nan::New<v8::String>("refreshRate").ToLocalChecked()).ToLocalChecked()).ToLocalChecked()->Value();
+
+                //find mode
+                int count = 0;
+                const GLFWvidmode *modes = glfwGetVideoModes(monitor, &count);
+
+                assert(modes);
+                assert(count);
+
+                for (int i = 0; i < count; i++) {
+                    const GLFWvidmode *mode2 = &modes[i];
+
+                    if (mode2->width == width &&
+                        mode2->height == height &&
+                        mode2->redBits == redBits &&
+                        mode2->blueBits == blueBits &&
+                        mode2->greenBits == greenBits &&
+                        mode2->refreshRate == refreshRate) {
+                            mode = mode2;
+                            break;
+                        }
+                }
+            } else if (!modeValue->IsUndefined()) {
+                return "mode is not an object";
+            }
+        }
+
+        if (!mode) {
+            //use current mode
+            mode = getVideoMode(monitor);
+        }
+
+        this->mode = mode;
+
+        return "";
+    }
+
+    /**
+     * @brief Find a monitor by name.
+     *
+     * @param name
+     * @return GLFWmonitor*
+     */
+    GLFWmonitor* getMonitorByName(std::string name) {
+        int count = 0;
+        GLFWmonitor **monitors = glfwGetMonitors(&count);
+
+        for (int i = 0; i < count; i++) {
+            //see https://www.glfw.org/docs/3.3/group__monitor.html
+            GLFWmonitor *monitor = monitors[i];
+            std::string name2 = std::string(glfwGetMonitorName(monitor));
+
+            if (name == name2) {
+                return monitor;
+            }
+        }
+
+        return NULL;
+    }
+
+    /**
      * Get default monitor resolution.
      */
     bool getScreenInfo(int &w, int &h, int &refreshRate, bool &fullscreen) override {
@@ -149,18 +464,19 @@ private:
         //printf("getScreenInfo\n");
 
         //get monitor properties
-        GLFWmonitor *primary = glfwGetPrimaryMonitor();
+        GLFWmonitor *usedMonitor = monitor ? monitor:glfwGetPrimaryMonitor();
 
-        assert(primary);
+        assert(usedMonitor);
 
-        const GLFWvidmode *vidmode = glfwGetVideoMode(primary);
+        //get video mode
+        const GLFWvidmode *vidmode = getVideoMode(usedMonitor);
 
         assert(vidmode);
 
         w = vidmode->width;
         h = vidmode->height;
         refreshRate = vidmode->refreshRate;
-        fullscreen = false;
+        fullscreen = monitor != NULL;
 
         return true;
     }
@@ -198,11 +514,26 @@ private:
          * Thread safety: http://www.glfw.org/docs/latest/intro.html#thread_safety
          */
 
+        //fullscreen support
+        int windowW = propW->value;
+        int windowH = propH->value;
+
+        if (monitor && mode) {
+            //use specific mode (otherwise the width/height are used to get closest mode)
+            glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+            glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+            glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+            glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+            windowW = mode->width;
+            windowH = mode->height;
+        }
+
         //create window
         glfwWindowHint(GLFW_DEPTH_BITS, 32); //default
         glfwWindowHint(GLFW_SAMPLES, 4); //increase quality
 
-        window = glfwCreateWindow(propW->value, propH->value, propTitle->value.c_str(), NULL, NULL);
+        window = glfwCreateWindow(windowW, windowH, propTitle->value.c_str(), monitor, NULL);
 
         if (!window) {
             //exit on error
@@ -216,16 +547,18 @@ private:
         windowMap->insert(std::pair<GLFWwindow *, AminoGfxMac *>(window, this));
 
         //check window size
-        int windowW;
-        int windowH;
-
         glfwGetWindowSize(window, &windowW, &windowH);
 
         if (DEBUG_GLFW) {
             printf("window size: requested=%ix%i, got=%ix%i\n", (int)propW->value, (int)propH->value, windowW, windowH);
         }
 
-        updateSize(windowW, windowH);
+        if (monitor) {
+            //set to new monitor value (Note: calls updateSize() internally)
+            updateScreenProperty();
+        } else {
+            updateSize(windowW, windowH);
+        }
 
         //check window pos
         if (propX->value != -1 && propY->value != -1) {

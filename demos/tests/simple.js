@@ -299,6 +299,7 @@ function testWindow(title) {
 }
 
 if (!gfx.screen.fullscreen) {
+    //open two windows
     testWindow('Window 1').x(0).y(0);
     testWindow('Window 2').x(200).y(0);
 }

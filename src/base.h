@@ -173,6 +173,7 @@ protected:
     void destroy() override;
     void destroyAminoGfx();
 
+    void updateScreenProperty();
     virtual bool getScreenInfo(int &w, int &h, int &refreshRate, bool &fullscreen) { return false; };
     void updateSize(int w, int h); //call after size event
     void updatePosition(int x, int y); //call after position event
@@ -186,6 +187,10 @@ protected:
 
     void setRoot(AminoGroup *group);
 
+    virtual void getMonitorInfo(v8::Local<v8::Value> &value) = 0;
+    virtual void getAllMonitors(v8::Local<v8::Array> &array) = 0;
+    virtual std::string setMonitor(v8::Local<v8::Object> &obj) = 0;
+
     void getStats(v8::Local<v8::Object> &obj) override;
 
 private:
@@ -198,6 +203,9 @@ private:
     static NAN_METHOD(SetRoot);
     static NAN_METHOD(ClearAnimations);
     static NAN_METHOD(UpdatePerspective);
+    static NAN_METHOD(GetMonitor);
+    static NAN_METHOD(GetMonitors);
+    static NAN_METHOD(SetMonitor);
     static NAN_METHOD(GetStats);
     static NAN_METHOD(GetTime);
 
@@ -843,7 +851,7 @@ public:
      */
     void handleStart(v8::Local<v8::Object> &data) {
         if (started) {
-            Nan::ThrowTypeError("already started");
+            Nan::ThrowError("already started");
             return;
         }
 

@@ -133,6 +133,9 @@ void AminoGfx::Init(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AminoJSObject
 
     //settings
     Nan::SetPrototypeMethod(tpl, "updatePerspective", UpdatePerspective);
+    Nan::SetPrototypeMethod(tpl, "getMonitor", GetMonitor);
+    Nan::SetPrototypeMethod(tpl, "getMonitors", GetMonitors);
+    Nan::SetPrototypeMethod(tpl, "setMonitor", SetMonitor);
 
     // stats
     Nan::SetPrototypeMethod(tpl, "_getStats", GetStats);
@@ -179,6 +182,15 @@ void AminoGfx::setup() {
 
     propShowFPS = createBooleanProperty("showFPS");
 
+    //initial properties
+    updateScreenProperty();
+}
+
+/**
+ * @brief Update the screen property value.
+ *
+ */
+void AminoGfx::updateScreenProperty() {
     //screen size
     int w, h, refreshRate;
     bool fullscreen;
@@ -224,7 +236,7 @@ NAN_METHOD(AminoGfx::Start) {
 
     //validate state
     if (obj->startCallback || obj->started) {
-        Nan::ThrowTypeError("already started");
+        Nan::ThrowError("already started");
         return;
     }
 
@@ -943,6 +955,61 @@ NAN_METHOD(AminoGfx::UpdatePerspective) {
 }
 
 /**
+ * Get the current monitor.
+ */
+NAN_METHOD(AminoGfx::GetMonitor) {
+    AminoGfx *gfx = Nan::ObjectWrap::Unwrap<AminoGfx>(info.This());
+
+    assert(gfx);
+
+    //get monitor info
+    v8::Local<v8::Value> obj = Nan::Null();
+
+    gfx->getMonitorInfo(obj);
+
+    info.GetReturnValue().Set(obj);
+}
+
+/**
+ * Get all available monitors.
+ */
+NAN_METHOD(AminoGfx::GetMonitors) {
+    AminoGfx *gfx = Nan::ObjectWrap::Unwrap<AminoGfx>(info.This());
+
+    assert(gfx);
+
+    //get monitors
+    v8::Local<v8::Array> array = Nan::New<v8::Array>();
+
+    gfx->getAllMonitors(array);
+
+    info.GetReturnValue().Set(array);
+}
+
+/**
+ * Set monitor and display mode.
+ */
+NAN_METHOD(AminoGfx::SetMonitor) {
+    AminoGfx *gfx = Nan::ObjectWrap::Unwrap<AminoGfx>(info.This());
+
+    assert(gfx);
+
+    //check if already started
+    if (gfx->started) {
+        Nan::ThrowError("set monitor before calling start()");
+        return;
+    }
+
+    //set monitor and mode
+    v8::Local<v8::Object> obj = Nan::To<v8::Object>(info[0]).ToLocalChecked();
+    std::string error = gfx->setMonitor(obj);
+
+    if (error.length()) {
+        Nan::ThrowError(error.c_str());
+    }
+}
+
+/**
  * Get runtime statistics.
  */
 NAN_METHOD(AminoGfx::GetStats) {
@@ -950,6 +1017,7 @@ NAN_METHOD(AminoGfx::GetStats) {
 
     assert(gfx);
 
+    //populate
     v8::Local<v8::Object> obj = Nan::New<v8::Object>();
 
     gfx->getStats(obj);

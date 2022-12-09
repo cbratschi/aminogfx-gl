@@ -847,7 +847,7 @@ bool VideoDemuxer::initStream() {
                 if (config->device_type == AV_HWDEVICE_TYPE_VAAPI) {
                     supportsVaapi = true;
                 }
-
+//cbxx check on RPi -> no output
                 if (DEBUG_VIDEOS) {
                     //show type
                     switch (config->device_type) {
@@ -917,7 +917,7 @@ bool VideoDemuxer::initStream() {
     }
 
 #ifdef EGL_GBM
-    //init V2L2 (see https://github.com/jc-kynesim/hello_drmprime/blob/master/hello_drmprime.c)
+    //init V4L2 (see https://github.com/jc-kynesim/hello_drmprime/blob/master/hello_drmprime.c)
     if (useV4L2) {
         const char * hwdev = "drm";
         enum AVHWDeviceType deviceType = av_hwdevice_find_type_by_name(hwdev);
