@@ -1403,6 +1403,9 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
     }
 
 #ifdef EGL_GBM
+    //debug cbxx
+    printf(" -> use connector %i and mode %s\n", connector_id, modeName.c_str());
+
     if (modeName.length() == 0 && connector_id == this->connector_id) {
         //same connector and mode
         return "";
@@ -1454,6 +1457,7 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
 
     useDrmConnectorMode(connector);
 
+    //cbxx FIXME refreshRate not being used
     drmModeFreeConnector(connector);
 #endif
 
