@@ -619,8 +619,22 @@ void AminoGfxRPi::initEGL() {
     }
 
     if (!prefH) {
-        //use first mode
-        mode_info = connector->modes[0];
+        //use preferred mode
+        bool found = false;
+
+        for (int i = 0; i < connector->count_modes; i++) {
+            drmModeModeInfo *mode = &connector->modes[i];
+
+            if (mode->type & DRM_MODE_TYPE_PREFERRED) {
+                found = true;
+                mode_info = *mode;
+            }
+        }
+
+        if (!found) {
+            //use first
+            mode_info = connector->modes[0];
+        }
     }
 
     //use mode
@@ -1429,7 +1443,23 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
 
     if (modeName.length() == 0) {
         //use default mode
-        mode_info = connector->modes[0];
+
+        //get preferred mode
+        bool found = false;
+
+        for (int i = 0; i < connector->count_modes; i++) {
+            drmModeModeInfo *mode = &connector->modes[i];
+
+            if (mode->type & DRM_MODE_TYPE_PREFERRED) {
+                found = true;
+                mode_info = *mode;
+            }
+        }
+
+        if (!found) {
+            //use first
+            mode_info = connector->modes[0];
+        }
     } else {
         //find mode by name
         bool found = false;
