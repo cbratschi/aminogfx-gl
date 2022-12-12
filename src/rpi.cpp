@@ -623,6 +623,28 @@ void AminoGfxRPi::initEGL() {
         mode_info = connector->modes[0];
     }
 
+    //use mode
+    useDrmConnectorMode(connector);
+
+    drmModeFreeConnector(connector);
+    drmModeFreeResources(resources);
+#endif
+
+    assert(screenW > 0);
+    assert(screenH > 0);
+
+    if (DEBUG_GLES) {
+        printf("RPI: display size = %d x %d\n", screenW, screenH);
+    }
+}
+
+#ifdef EGL_GBM
+
+/**
+ * @brief Use the current connector and mode.
+ *
+ */
+void AminoGfxRPi::useDrmConnectorMode(drmModeConnector *connector) {
     //show mode
     if (DEBUG_GLES || DEBUG_HDMI) {
         printf(" -> using: %ix%i@%i (%s)\n", mode_info.hdisplay, mode_info.vdisplay, mode_info.vrefresh, mode_info.name);
@@ -630,6 +652,9 @@ void AminoGfxRPi::initEGL() {
 
     screenW = mode_info.hdisplay;
     screenH = mode_info.vdisplay;
+
+    assert(screenW > 0);
+    assert(screenH > 0);
 
     //find an encoder
     assert(connector->encoder_id);
@@ -647,17 +672,9 @@ void AminoGfxRPi::initEGL() {
     }
 
     drmModeFreeEncoder(encoder);
-    drmModeFreeConnector(connector);
-    drmModeFreeResources(resources);
-#endif
-
-    assert(screenW > 0);
-    assert(screenH > 0);
-
-    if (DEBUG_GLES) {
-        printf("RPI: display size = %d x %d\n", screenW, screenH);
-    }
 }
+
+#endif
 
 /**
  * Get the current display state.
@@ -1179,7 +1196,6 @@ void AminoGfxRPi::getModeInfo(drmModeModeInfo *mode, v8::Local<v8::Object> &mode
     Nan::Set(modeObj, Nan::New("vtotal").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vtotal));
     Nan::Set(modeObj, Nan::New("vscan").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vscan));
 
-    //cbxx TODO verify
     Nan::Set(modeObj, Nan::New("refreshRate").ToLocalChecked(), Nan::New<v8::Uint32>(mode->vrefresh));
 
     //flags
@@ -1316,7 +1332,129 @@ void AminoGfxRPi::getAllMonitors(v8::Local<v8::Array> &array) {
  * @param obj
  */
 std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
-    //cbxx TODO support
+    //monitor
+    Nan::MaybeLocal<v8::Value> monitorMaybe = Nan::Get(obj, Nan::New<v8::String>("monitor").ToLocalChecked());
+#ifdef EGL_GBM
+    int connector_id = this->connector_id;
+#endif
+
+    if (!monitorMaybe.IsEmpty()) {
+        v8::Local<v8::Value> monitorValue = monitorMaybe.ToLocalChecked();
+
+        if (monitorValue->IsObject()) {
+            v8::Local<v8::Object> monitorObj = Nan::To<v8::Object>(monitorValue).ToLocalChecked();
+
+#ifdef EGL_GBM
+            //get connector ID
+            Nan::MaybeLocal<v8::Value> idMaybe = Nan::Get(monitorObj, Nan::New<v8::String>("id").ToLocalChecked());
+
+            if (!idMaybe.IsEmpty()) {
+                v8::Local<v8::Value> idValue = idMaybe.ToLocalChecked();
+
+                if (nameValue->IsInt32()) {
+                    connector_id = Nan::To<v8::Integer>(idValue).ToLocalChecked()->Value();
+
+                    if (!connector_id) {
+                        return "id not found";
+                    }
+                } else {
+                    return "id not an integer";
+                }
+            } else {
+                return "id missing";
+            }
+#endif
+        } else if (!monitorValue->IsUndefined()) {
+            return "monitor is not an object";
+        }
+    }
+
+    //mode
+    Nan::MaybeLocal<v8::Value> modeMaybe = Nan::Get(obj, Nan::New<v8::String>("mode").ToLocalChecked());
+#ifdef EGL_GBM
+    std::string modeName;
+#endif
+
+    if (!modeMaybe.IsEmpty()) {
+        v8::Local<v8::Value> modeValue = modeMaybe.ToLocalChecked();
+
+        if (modeValue->IsObject()) {
+            v8::Local<v8::Object> modeObj = Nan::To<v8::Object>(modeValue).ToLocalChecked();
+
+#ifdef EGL_GBM
+            //get name
+            Nan::MaybeLocal<v8::Value> nameMaybe = Nan::Get(modeObj, Nan::New<v8::String>("name").ToLocalChecked());
+
+            if (!nameMaybe.IsEmpty()) {
+                v8::Local<v8::Value> nameValue = nameMaybe.ToLocalChecked();
+
+                if (nameValue->IsString()) {
+                    modeName = AminoJSObject::toString(nameValue);
+                } else {
+                    return "name not string";
+                }
+            } else {
+                return "name missing";
+            }
+#endif
+        }
+
+#ifdef EGL_GBM
+        if (modeName.length() == 0 && connector_id == this->connector_id) {
+            //same connector and mode
+            return "";
+        }
+
+        //get connector
+        drmModeConnector *connector = drmModeGetConnectorCurrent(driDevice, connector_id);
+
+        if (!connector) {
+            return "monitor not found";
+        }
+
+        //find mode
+        if (connector->count_modes == 0) {
+            drmModeFreeConnector(connector);
+
+            return "no modes available";
+        }
+
+        drmModeModeInfo mode_info;
+
+        if (modeName.length() == 0) {
+            //use default mode
+            mode_info = connector->modes[0];
+        } else {
+            //find mode by name
+            bool found = false;
+
+            for (int i = 0; i < connector->count_modes; i++) {
+                drmModeModeInfo *mode = &connector->modes[i];
+
+                if (strcmp(mode->name, modeName.c_str()) == 0) {
+                    found = true;
+                    mode_info = *mode;
+                    break;
+                }
+            }
+
+            if (!found) {
+                drmModeFreeConnector(connector);
+
+                return "mode not found";
+            }
+        }
+
+        //use new mode
+        this->connector_id = connector_id;
+        this->mode_info = mode_info;
+
+        useDrmConnectorMode(connector);
+
+        drmModeFreeConnector(connector);
+#endif
+
+    //cbxx TODO support Pi 3
     return "";
 }
 
@@ -2121,7 +2259,6 @@ void AminoGfxRPi::renderingDone() {
         }
     } else {
         //double buffering case without vsync (two framebuffers)
-
         int res2 = drmModeSetCrtc(driDevice, crtc->crtc_id, fb, 0, 0, &connector_id, 1, &mode_info);
 
         assert(res2 == 0);

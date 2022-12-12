@@ -170,7 +170,7 @@ private:
 
     /**
      * Get current monitor info.
-    */
+     */
     void getMonitorInfo(v8::Local<v8::Value> &value) override {
         //get monitor properties
         GLFWmonitor *monitor = this->monitor ? this->monitor:glfwGetPrimaryMonitor();

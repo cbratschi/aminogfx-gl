@@ -96,6 +96,10 @@ private:
     void setupTouch(v8::Local<v8::Object> &touch);
     void initEGL();
 
+#ifdef EGL_GBM
+    void useDrmConnectorMode(drmModeConnector *connector);
+#endif
+
     static TV_DISPLAY_STATE_T* getDisplayState();
 
 #ifdef EGL_DISPMANX

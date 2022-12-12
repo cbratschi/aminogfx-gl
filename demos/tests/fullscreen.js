@@ -48,6 +48,7 @@ if (monitors.length > 1) {
     const mode = monitor.modes.find(mode => mode.width === 1920 && mode.height === 1080 && mode.refreshRate === 60);
 
     if (mode) {
+        //report
         console.log('-> using 1080p@60 display mode');
     }
 
@@ -55,6 +56,21 @@ if (monitors.length > 1) {
         monitor,
         mode
     });
+} else {
+    //find other resolution
+    //cbxx TODO verify
+    const currentMode = monitor.mode;
+    const mode = monitor.modes.find(mode => mode.width !== currentMode.width || mode.height !== currentMode.height || mode.refreshRate !== currentMode.refreshRate);
+
+    if (mode) {
+        //report
+        console.log('-> switching to different mode');
+
+        //Note: only switch mode (keeps current monitor)
+        gfx.setMonitor({
+            mode
+        });
+    }
 }
 
 // 4) start render process
