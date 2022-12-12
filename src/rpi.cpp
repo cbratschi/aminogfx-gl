@@ -1335,7 +1335,7 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
     //monitor
     Nan::MaybeLocal<v8::Value> monitorMaybe = Nan::Get(obj, Nan::New<v8::String>("monitor").ToLocalChecked());
 #ifdef EGL_GBM
-    int connector_id = this->connector_id;
+    uint32_t connector_id = this->connector_id;
 #endif
 
     if (!monitorMaybe.IsEmpty()) {
@@ -1351,8 +1351,8 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
             if (!idMaybe.IsEmpty()) {
                 v8::Local<v8::Value> idValue = idMaybe.ToLocalChecked();
 
-                if (nameValue->IsInt32()) {
-                    connector_id = Nan::To<v8::Integer>(idValue).ToLocalChecked()->Value();
+                if (idValue->IsUint32()) {
+                    connector_id = Nan::To<v8::Uint32>(idValue).ToLocalChecked()->Value();
 
                     if (!connector_id) {
                         return "id not found";
