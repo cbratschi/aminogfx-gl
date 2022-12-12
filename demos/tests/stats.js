@@ -23,8 +23,8 @@ gfx.start(function (err) {
 
         console.log('stats: ' + JSON.stringify(stats));
 
-        //HDMI
-        showHdmiState(stats);
+        //monitor
+        showMonitorState(gfx.getMonitor());
     }, 1000);
 });
 
@@ -44,17 +44,9 @@ const VC_HDMI_CHANGING_MODE      = (1 << 8);  // HDMI is starting to change mode
  *
  * @param {*} stats
  */
-function showHdmiState(stats) {
-    //cbxx TODO move to gfx.getMonitor()
-    //cbxx TODO support getMonitor()
-    const hdmi = stats.hdmi;
-
-    if (!hdmi) {
-        return;
-    }
-
+function showMonitorState(monitor) {
     //DRM version (Pi 4)
-    const connected = hdmi.connected;
+    const connected = monitor.connected;
 
     if (connected !== undefined) {
         if (connected) {
@@ -65,7 +57,7 @@ function showHdmiState(stats) {
     }
 
     //legacy (Pi 3)
-    const state = hdmi.state;
+    const state = monitor.state;
 
     if (state !== undefined) {
         if (state & VC_HDMI_UNPLUGGED) {
@@ -84,7 +76,7 @@ function showHdmiState(stats) {
     }
 
     //EDID
-    const edid = hdmi.edid;
+    const edid = monitor.edid;
 
     if (edid) {
         console.dir(edid);
