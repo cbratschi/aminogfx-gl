@@ -1397,61 +1397,64 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
                 return "name missing";
             }
 #endif
+        } else if (!modeValue->IsUndefined()) {
+            return "mode is not an object";
         }
+    }
 
 #ifdef EGL_GBM
-        if (modeName.length() == 0 && connector_id == this->connector_id) {
-            //same connector and mode
-            return "";
+    if (modeName.length() == 0 && connector_id == this->connector_id) {
+        //same connector and mode
+        return "";
+    }
+
+    //get connector
+    drmModeConnector *connector = drmModeGetConnectorCurrent(driDevice, connector_id);
+
+    if (!connector) {
+        return "monitor not found";
+    }
+
+    //find mode
+    if (connector->count_modes == 0) {
+        drmModeFreeConnector(connector);
+
+        return "no modes available";
+    }
+
+    drmModeModeInfo mode_info;
+
+    if (modeName.length() == 0) {
+        //use default mode
+        mode_info = connector->modes[0];
+    } else {
+        //find mode by name
+        bool found = false;
+
+        for (int i = 0; i < connector->count_modes; i++) {
+            drmModeModeInfo *mode = &connector->modes[i];
+
+            if (strcmp(mode->name, modeName.c_str()) == 0) {
+                found = true;
+                mode_info = *mode;
+                break;
+            }
         }
 
-        //get connector
-        drmModeConnector *connector = drmModeGetConnectorCurrent(driDevice, connector_id);
-
-        if (!connector) {
-            return "monitor not found";
-        }
-
-        //find mode
-        if (connector->count_modes == 0) {
+        if (!found) {
             drmModeFreeConnector(connector);
 
-            return "no modes available";
+            return "mode not found";
         }
+    }
 
-        drmModeModeInfo mode_info;
+    //use new mode
+    this->connector_id = connector_id;
+    this->mode_info = mode_info;
 
-        if (modeName.length() == 0) {
-            //use default mode
-            mode_info = connector->modes[0];
-        } else {
-            //find mode by name
-            bool found = false;
+    useDrmConnectorMode(connector);
 
-            for (int i = 0; i < connector->count_modes; i++) {
-                drmModeModeInfo *mode = &connector->modes[i];
-
-                if (strcmp(mode->name, modeName.c_str()) == 0) {
-                    found = true;
-                    mode_info = *mode;
-                    break;
-                }
-            }
-
-            if (!found) {
-                drmModeFreeConnector(connector);
-
-                return "mode not found";
-            }
-        }
-
-        //use new mode
-        this->connector_id = connector_id;
-        this->mode_info = mode_info;
-
-        useDrmConnectorMode(connector);
-
-        drmModeFreeConnector(connector);
+    drmModeFreeConnector(connector);
 #endif
 
     //cbxx TODO support Pi 3
