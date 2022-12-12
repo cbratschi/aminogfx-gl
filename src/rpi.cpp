@@ -1417,8 +1417,8 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
     }
 
 #ifdef EGL_GBM
-    //debug cbxx
-    printf(" -> use connector %i and mode %s\n", connector_id, modeName.c_str());
+    //debug
+    //printf(" -> use connector %i and mode %s\n", connector_id, modeName.c_str());
 
     if (modeName.length() == 0 && connector_id == this->connector_id) {
         //same connector and mode
@@ -1482,12 +1482,12 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
     }
 
     //use new mode
+    //FIXME refreshRate not being used (can only change resolution)
     this->connector_id = connector_id;
     this->mode_info = mode_info;
 
     useDrmConnectorMode(connector);
 
-    //cbxx FIXME refreshRate not being used
     drmModeFreeConnector(connector);
 #endif
 
@@ -2259,7 +2259,6 @@ void AminoGfxRPi::renderingDone() {
         ev.page_flip_handler = handlePageFlipEvent;
 
         while (pageFlipPending) {
-            //cbxx TODO check
             //TODO needed? Not handling any input here.
             FD_ZERO(&fds);
             FD_SET(0, &fds);

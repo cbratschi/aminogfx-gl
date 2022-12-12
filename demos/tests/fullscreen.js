@@ -58,7 +58,7 @@ if (monitors.length > 1) {
     });
 } else {
     //find other resolution
-    //cbxx TODO verify
+    //FIXME refreshRate change not working on Pi 4
     const currentMode = monitor.mode;
     const mode = monitor.modes.find(mode => mode.width !== currentMode.width || mode.height !== currentMode.height || mode.refreshRate !== currentMode.refreshRate);
 
