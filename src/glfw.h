@@ -1,26 +1,26 @@
-#ifndef _AMINO_MAC_H
-#define _AMINO_MAC_H
+#ifndef _AMINO_GLFW_H
+#define _AMINO_GLFW_H
 
 #include "base.h"
 #include "renderer.h"
 
 /**
- * AminoGfxMac factory.
+ * AminoGfxGlfw factory.
  */
-class AminoGfxMacFactory : public AminoJSObjectFactory {
+class AminoGfxGlfwFactory : public AminoJSObjectFactory {
 public:
-    AminoGfxMacFactory(Nan::FunctionCallback callback);
+    AminoGfxGlfwFactory(Nan::FunctionCallback callback);
 
     AminoJSObject* create() override;
 };
 
 /**
- * Mac video player.
+ * GLFW video player.
  */
-class AminoMacVideoPlayer : public AminoVideoPlayer {
+class AminoGlfwVideoPlayer : public AminoVideoPlayer {
 public:
-    AminoMacVideoPlayer(AminoTexture *texture, AminoVideo *video);
-    ~AminoMacVideoPlayer();
+    AminoGlfwVideoPlayer(AminoTexture *texture, AminoVideo *video);
+    ~AminoGlfwVideoPlayer();
 
     bool initStream() override;
     void init() override;

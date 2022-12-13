@@ -134,6 +134,15 @@
 
                 "libraries": [
                     "<!@(pkg-config --libs glfw3)"
+                ],
+
+                "sources": [
+                    "src/glfw.cpp"
+                ],
+
+                "defines": [
+                    "GLFW_NO_GLU",
+                    "GLFW_INCLUDE_GL3"
                 ]
             }],
 
@@ -154,14 +163,8 @@
                     '-framework IOKit'
                 ],
 
-                "sources": [
-                    "src/mac.cpp"
-                ],
-
                 "defines": [
                     "MAC",
-                    "GLFW_NO_GLU",
-                    "GLFW_INCLUDE_GL3"
 
                     # VAO not working
                     #"FREETYPE_GL_USE_VAO"
@@ -190,15 +193,10 @@
                 "sources": [
                     # EDID
                     "src/edid/edid.c",
-
-                    #GLFW
-                    "src/mac.cpp"
                 ],
 
                 "defines": [
                     'LINUX',
-                    'GLFW_NO_GLU',
-                    'GLFW_INCLUDE_GL3',
                     'GL_GLEXT_PROTOTYPES'
                 ],
 

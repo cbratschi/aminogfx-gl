@@ -1,5 +1,4 @@
-//cbxx TODO rename to glfw.cpp (supports Linux and macOS)
-#include "mac.h"
+#include "glfw.h"
 
 #include <execinfo.h>
 #include <unistd.h>
@@ -11,29 +10,29 @@
 #define DEBUG_VIDEO_TIMING false
 
 /**
- * Mac AminoGfx implementation.
+ * GLFW AminoGfx implementation.
  *
  */
-class AminoGfxMac : public AminoGfx {
+class AminoGfxGlfw : public AminoGfx {
 public:
-    AminoGfxMac(): AminoGfx(getFactory()->name) {
+    AminoGfxGlfw(): AminoGfx(getFactory()->name) {
         //empty
     }
 
-    ~AminoGfxMac() {
+    ~AminoGfxGlfw() {
         if (!destroyed) {
-            destroyAminoGfxMac();
+            destroyAminoGfxGlfw();
         }
     }
 
     /**
      * Get factory instance.
      */
-    static AminoGfxMacFactory* getFactory() {
-        static AminoGfxMacFactory *instance = NULL;
+    static AminoGfxGlfwFactory* getFactory() {
+        static AminoGfxGlfwFactory *instance = NULL;
 
         if (!instance) {
-            instance = new AminoGfxMacFactory(New);
+            instance = new AminoGfxGlfwFactory(New);
         }
 
         return instance;
@@ -43,14 +42,14 @@ public:
      * Add class template to module exports.
      */
     static NAN_MODULE_INIT(Init) {
-        AminoGfxMacFactory *factory = getFactory();
+        AminoGfxGlfwFactory *factory = getFactory();
 
         AminoGfx::Init(target, factory);
     }
 
 private:
     static bool glfwInitialized;
-    static std::map<GLFWwindow *, AminoGfxMac *> *windowMap;
+    static std::map<GLFWwindow *, AminoGfxGlfw *> *windowMap;
 
     //GLFW window
     GLFWwindow *window = NULL;
@@ -60,12 +59,15 @@ private:
     GLFWvidmode mode = {
         .width = 0,
         .height = 0,
+        .redBits = 0,
+        .greenBits = 0,
+        .blueBits = 0,
         .refreshRate = 0
     };
     std::string lastMonitor = "";
 
-    static AminoGfxMac* windowToInstance(GLFWwindow *window) {
-        std::map<GLFWwindow *, AminoGfxMac *>::iterator it = windowMap->find(window);
+    static AminoGfxGlfw* windowToInstance(GLFWwindow *window) {
+        std::map<GLFWwindow *, AminoGfxGlfw *>::iterator it = windowMap->find(window);
 
         if (it != windowMap->end()) {
             return it->second;
@@ -86,7 +88,7 @@ private:
      */
     void setup() override {
         if (DEBUG_GLFW) {
-            printf("AminoGfxMac.setup()\n");
+            printf("AminoGfxGlfw.setup()\n");
         }
 
         //init GLFW
@@ -150,7 +152,7 @@ private:
         }
 
         //instance
-        destroyAminoGfxMac();
+        destroyAminoGfxGlfw();
 
         //destroy basic instance
         AminoGfx::destroy();
@@ -159,7 +161,7 @@ private:
     /**
      * Destroy GLFW instance.
      */
-    void destroyAminoGfxMac() {
+    void destroyAminoGfxGlfw() {
         //GLFW
         if (window) {
             glfwDestroyWindow(window);
@@ -550,7 +552,7 @@ private:
         }
 
         //store
-        windowMap->insert(std::pair<GLFWwindow *, AminoGfxMac *>(window, this));
+        windowMap->insert(std::pair<GLFWwindow *, AminoGfxGlfw *>(window, this));
 
         //check window size
         glfwGetWindowSize(window, &windowW, &windowH);
@@ -667,7 +669,7 @@ private:
             std::string name = glfwGetMonitorName(monitor);
 
             for (auto const &item : *windowMap) {
-                AminoGfxMac *gfx = item.second;
+                AminoGfxGlfw *gfx = item.second;
 
                 if (name == gfx->lastMonitor) {
                     //re-use last monitor
@@ -692,7 +694,7 @@ private:
     static void handleKeyEvents(GLFWwindow *window, int key, int scancode, int action, int mods) {
         //TODO Unicode character support: http://www.glfw.org/docs/latest/group__input.html#gabf24451c7ceb1952bc02b17a0d5c3e5f
 
-        AminoGfxMac *obj = windowToInstance(window);
+        AminoGfxGlfw *obj = windowToInstance(window);
 
         assert(obj);
 
@@ -726,7 +728,7 @@ private:
      * Note: called on main thread.
      */
     static void handleMouseMoveEvents(GLFWwindow *window, double x, double y) {
-        AminoGfxMac *obj = windowToInstance(window);
+        AminoGfxGlfw *obj = windowToInstance(window);
 
         assert(obj);
 
@@ -752,7 +754,7 @@ private:
      * Note: called on main thread.
      */
     static void handleMouseClickEvents(GLFWwindow *window, int button, int action, int mods) {
-        AminoGfxMac *obj = windowToInstance(window);
+        AminoGfxGlfw *obj = windowToInstance(window);
 
         assert(obj);
 
@@ -780,7 +782,7 @@ private:
      * Note: called on main thread.
      */
     static void handleMouseWheelEvents(GLFWwindow *window, double xoff, double yoff) {
-        AminoGfxMac *obj = windowToInstance(window);
+        AminoGfxGlfw *obj = windowToInstance(window);
 
         assert(obj);
 
@@ -805,7 +807,7 @@ private:
             printf("handleWindowSizeChanged() %ix%i\n", newWidth, newHeight);
         }
 
-        AminoGfxMac *obj = windowToInstance(window);
+        AminoGfxGlfw *obj = windowToInstance(window);
 
         assert(obj);
 
@@ -864,7 +866,7 @@ private:
             printf("handleWindowPosChanged() %ix%i\n", newX, newY);
         }
 
-        AminoGfxMac *obj = windowToInstance(window);
+        AminoGfxGlfw *obj = windowToInstance(window);
 
         assert(obj);
 
@@ -911,7 +913,7 @@ private:
      * Note: window stays open.
      */
     static void handleWindowCloseEvent(GLFWwindow *window) {
-        AminoGfxMac *obj = windowToInstance(window);
+        AminoGfxGlfw *obj = windowToInstance(window);
 
         assert(obj);
 
@@ -1030,7 +1032,7 @@ private:
         }
 
         //run on main thread
-        enqueueJSCallbackUpdate(static_cast<jsUpdateCallback>(&AminoGfxMac::atlasTextureHasChangedHandler), NULL, atlas);
+        enqueueJSCallbackUpdate(static_cast<jsUpdateCallback>(&AminoGfxGlfw::atlasTextureHasChangedHandler), NULL, atlas);
     }
 
     /**
@@ -1053,37 +1055,37 @@ private:
      * Create video player.
      */
     AminoVideoPlayer *createVideoPlayer(AminoTexture *texture, AminoVideo *video) override {
-        return new AminoMacVideoPlayer(texture, video);
+        return new AminoGlfwVideoPlayer(texture, video);
     }
 };
 
 //static initializers
-bool AminoGfxMac::glfwInitialized = false;
-std::map<GLFWwindow *, AminoGfxMac *> *AminoGfxMac::windowMap = new std::map<GLFWwindow *, AminoGfxMac *>();
+bool AminoGfxGlfw::glfwInitialized = false;
+std::map<GLFWwindow *, AminoGfxGlfw *> *AminoGfxGlfw::windowMap = new std::map<GLFWwindow *, AminoGfxGlfw *>();
 
 //
-// AminoGfxMacFactory
+// AminoGfxGlfwFactory
 //
 
 /**
  * Create AminoGfx factory.
  */
-AminoGfxMacFactory::AminoGfxMacFactory(Nan::FunctionCallback callback): AminoJSObjectFactory("AminoGfx", callback) {
+AminoGfxGlfwFactory::AminoGfxGlfwFactory(Nan::FunctionCallback callback): AminoJSObjectFactory("AminoGfx", callback) {
     //empty
 }
 
 /**
  * Create AminoGfx instance.
  */
-AminoJSObject* AminoGfxMacFactory::create() {
-    return new AminoGfxMac();
+AminoJSObject* AminoGfxGlfwFactory::create() {
+    return new AminoGfxGlfw();
 }
 
 //
-// AminoMacVideoPlayer
+// AminoGlfwVideoPlayer
 //
 
-AminoMacVideoPlayer::AminoMacVideoPlayer(AminoTexture *texture, AminoVideo *video): AminoVideoPlayer(texture, video) {
+AminoGlfwVideoPlayer::AminoGlfwVideoPlayer(AminoTexture *texture, AminoVideo *video): AminoVideoPlayer(texture, video) {
     //semaphore
     int res = uv_sem_init(&pauseSem, 0);
 
@@ -1093,7 +1095,7 @@ AminoMacVideoPlayer::AminoMacVideoPlayer(AminoTexture *texture, AminoVideo *vide
     uv_mutex_init(&frameLock);
 }
 
-AminoMacVideoPlayer::~AminoMacVideoPlayer() {
+AminoGlfwVideoPlayer::~AminoGlfwVideoPlayer() {
     closeDemuxer();
 
     //semaphore
@@ -1106,7 +1108,7 @@ AminoMacVideoPlayer::~AminoMacVideoPlayer() {
 /**
  * Initialize the stream (on main thread).
  */
-bool AminoMacVideoPlayer::initStream() {
+bool AminoGlfwVideoPlayer::initStream() {
     //get file name
     filename = video->getPlaybackSource();
     options = video->getPlaybackOptions();
@@ -1117,7 +1119,7 @@ bool AminoMacVideoPlayer::initStream() {
 /**
  * Initialize the video player (on the rendering thread).
  */
-void AminoMacVideoPlayer::init() {
+void AminoGlfwVideoPlayer::init() {
     //initialize demuxer
     assert(filename.length());
 
@@ -1144,8 +1146,8 @@ void AminoMacVideoPlayer::init() {
 /**
  * Demuxer thread.
  */
-void AminoMacVideoPlayer::demuxerThread(void *arg) {
-    AminoMacVideoPlayer *player = static_cast<AminoMacVideoPlayer *>(arg);
+void AminoGlfwVideoPlayer::demuxerThread(void *arg) {
+    AminoGlfwVideoPlayer *player = static_cast<AminoGlfwVideoPlayer *>(arg);
 
     assert(player);
 
@@ -1161,7 +1163,7 @@ void AminoMacVideoPlayer::demuxerThread(void *arg) {
 /**
  * Init demuxer.
  */
-void AminoMacVideoPlayer::initDemuxer() {
+void AminoGlfwVideoPlayer::initDemuxer() {
     assert(demuxer);
 
     //load file
@@ -1311,7 +1313,7 @@ void AminoMacVideoPlayer::initDemuxer() {
 /**
  * Free the demuxer instance (on main thread).
  */
-void AminoMacVideoPlayer::closeDemuxer() {
+void AminoGlfwVideoPlayer::closeDemuxer() {
     //stop playback
     stopPlayback();
 
@@ -1336,7 +1338,7 @@ void AminoMacVideoPlayer::closeDemuxer() {
 /**
  * Init video texture on OpenGL thread.
  */
-void AminoMacVideoPlayer::initVideoTexture() {
+void AminoGlfwVideoPlayer::initVideoTexture() {
     if (DEBUG_VIDEOS) {
         printf("video: init video texture\n");
     }
@@ -1353,7 +1355,7 @@ void AminoMacVideoPlayer::initVideoTexture() {
 /**
  * Init texture.
  */
-bool AminoMacVideoPlayer::initTexture() {
+bool AminoGlfwVideoPlayer::initTexture() {
     glBindTexture(GL_TEXTURE_2D, texture->getTexture());
 
     //size (has to be equal to video dimension!)
@@ -1381,7 +1383,7 @@ bool AminoMacVideoPlayer::initTexture() {
 /**
  * Update the texture (on rendering thread).
  */
-void AminoMacVideoPlayer::updateVideoTexture(GLContext *ctx) {
+void AminoGlfwVideoPlayer::updateVideoTexture(GLContext *ctx) {
     uv_mutex_lock(&frameLock);
 
     if (!demuxer) {
@@ -1423,7 +1425,7 @@ void AminoMacVideoPlayer::updateVideoTexture(GLContext *ctx) {
 /**
  * Get current media time.
  */
-double AminoMacVideoPlayer::getMediaTime() {
+double AminoGlfwVideoPlayer::getMediaTime() {
     if (playing || paused) {
         return mediaTime;
     }
@@ -1434,7 +1436,7 @@ double AminoMacVideoPlayer::getMediaTime() {
 /**
  * Get video duration (-1 if unknown).
  */
-double AminoMacVideoPlayer::getDuration() {
+double AminoGlfwVideoPlayer::getDuration() {
     if (demuxer) {
         return demuxer->durationSecs;
     }
@@ -1445,7 +1447,7 @@ double AminoMacVideoPlayer::getDuration() {
 /**
  * Get the framerate (0 if unknown).
  */
-double AminoMacVideoPlayer::getFramerate() {
+double AminoGlfwVideoPlayer::getFramerate() {
     if (demuxer) {
         return demuxer->fps;
     }
@@ -1456,7 +1458,7 @@ double AminoMacVideoPlayer::getFramerate() {
 /**
  * Stop playback.
  */
-void AminoMacVideoPlayer::stopPlayback() {
+void AminoGlfwVideoPlayer::stopPlayback() {
     if (!playing && !paused) {
         return;
     }
@@ -1473,7 +1475,7 @@ void AminoMacVideoPlayer::stopPlayback() {
 /**
  * Pause playback.
  */
-bool AminoMacVideoPlayer::pausePlayback() {
+bool AminoGlfwVideoPlayer::pausePlayback() {
     if (!playing) {
         return true;
     }
@@ -1487,7 +1489,7 @@ bool AminoMacVideoPlayer::pausePlayback() {
 /**
  * Resume (stopped) playback.
  */
-bool AminoMacVideoPlayer::resumePlayback() {
+bool AminoGlfwVideoPlayer::resumePlayback() {
     if (!paused) {
         return true;
     }
@@ -1556,7 +1558,7 @@ NAN_MODULE_INIT(InitAll) {
     signal(SIGSEGV, crashHandler);
 
     //main class
-    AminoGfxMac::Init(target);
+    AminoGfxGlfw::Init(target);
 
     //amino classes
     AminoGfx::InitClasses(target);
