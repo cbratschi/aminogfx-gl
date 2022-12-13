@@ -57,7 +57,12 @@ private:
 
     //GLFW monitor (fullscreen start parameters)
     GLFWmonitor *monitor = NULL;
-    const GLFWvidmode *mode = NULL;
+    GLFWvidmode mode = {
+        .width = 0,
+        .height = 0,
+        .refreshRate = 0
+    };
+    std::string lastMonitor = "";
 
     static AminoGfxMac* windowToInstance(GLFWwindow *window) {
         std::map<GLFWwindow *, AminoGfxMac *>::iterator it = windowMap->find(window);
@@ -97,6 +102,9 @@ private:
                 exit(EXIT_FAILURE);
             }
 
+            //monitor handler
+            glfwSetMonitorCallback(handleMonitorEvents);
+
             glfwInitialized = true;
         }
 
@@ -118,6 +126,9 @@ private:
                         monitor = glfwGetPrimaryMonitor();
 
                         assert(monitor);
+
+                        //use current mode
+                        mode = *getVideoMode(monitor);
                     }
                 }
             }
@@ -198,16 +209,13 @@ private:
 
         //current video mode
         v8::Local<v8::Object> modeObj = Nan::New<v8::Object>();
-        const GLFWvidmode *mode = getVideoMode(monitor);
 
-        assert(mode);
-
-        Nan::Set(modeObj, Nan::New("width").ToLocalChecked(), Nan::New<v8::Integer>(mode->width));
-        Nan::Set(modeObj, Nan::New("height").ToLocalChecked(), Nan::New<v8::Integer>(mode->height));
-        Nan::Set(modeObj, Nan::New("redBits").ToLocalChecked(), Nan::New<v8::Integer>(mode->redBits));
-        Nan::Set(modeObj, Nan::New("blueBits").ToLocalChecked(), Nan::New<v8::Integer>(mode->blueBits));
-        Nan::Set(modeObj, Nan::New("greenBits").ToLocalChecked(), Nan::New<v8::Integer>(mode->greenBits));
-        Nan::Set(modeObj, Nan::New("refreshRate").ToLocalChecked(), Nan::New<v8::Integer>(mode->refreshRate));
+        Nan::Set(modeObj, Nan::New("width").ToLocalChecked(), Nan::New<v8::Integer>(mode.width));
+        Nan::Set(modeObj, Nan::New("height").ToLocalChecked(), Nan::New<v8::Integer>(mode.height));
+        Nan::Set(modeObj, Nan::New("redBits").ToLocalChecked(), Nan::New<v8::Integer>(mode.redBits));
+        Nan::Set(modeObj, Nan::New("blueBits").ToLocalChecked(), Nan::New<v8::Integer>(mode.blueBits));
+        Nan::Set(modeObj, Nan::New("greenBits").ToLocalChecked(), Nan::New<v8::Integer>(mode.greenBits));
+        Nan::Set(modeObj, Nan::New("refreshRate").ToLocalChecked(), Nan::New<v8::Integer>(mode.refreshRate));
 
         Nan::Set(obj, Nan::New("mode").ToLocalChecked(), modeObj);
 
@@ -374,10 +382,6 @@ private:
         if (!monitor) {
             //use current
             monitor = this->monitor;
-        } else if (monitor != this->monitor) {
-            //switch monitor and reset mode
-            this->monitor = monitor;
-            this->mode = NULL;
         }
 
         //mode
@@ -423,12 +427,14 @@ private:
             }
         }
 
+        //apply
         if (!mode) {
             //use current mode
             mode = getVideoMode(monitor);
         }
 
-        this->mode = mode;
+        this->monitor = monitor;
+        this->mode = *mode;
 
         return "";
     }
@@ -518,15 +524,15 @@ private:
         int windowW = propW->value;
         int windowH = propH->value;
 
-        if (monitor && mode) {
+        if (monitor && mode.width && mode.height && mode.refreshRate) {
             //use specific mode (otherwise the width/height are used to get closest mode)
-            glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-            glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-            glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-            glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+            glfwWindowHint(GLFW_RED_BITS, mode.redBits);
+            glfwWindowHint(GLFW_GREEN_BITS, mode.greenBits);
+            glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits);
+            glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate);
 
-            windowW = mode->width;
-            windowH = mode->height;
+            windowW = mode.width;
+            windowH = mode.height;
         }
 
         //create window
@@ -617,6 +623,65 @@ private:
      */
     static void handleErrors(int error, const char *description) {
         printf("GLFW error: %i %s\n", error, description);
+    }
+
+    /**
+     * @brief Handle monitor events.
+     *
+     * @param monitor
+     * @param event
+     */
+    static void handleMonitorEvents(GLFWmonitor* monitor, int event) {
+        //handle disconnected
+        if (event == GLFW_DISCONNECTED) {
+            //running now in windowed mode
+            //monitor and mode pointers get invalid after this call returns
+
+            if (DEBUG_GLFW) {
+                printf("-> monitor disconnected: %s\n", glfwGetMonitorName(monitor));
+            }
+
+            //find affected renderers
+            for (auto const &item : *windowMap) {
+                if (monitor == item.second->monitor) {
+                    //reset (Note: keeping mode)
+                    item.second->monitor = NULL;
+                    item.second->lastMonitor = glfwGetMonitorName(monitor);
+
+                    if (DEBUG_GLFW) {
+                        printf("-> removed monitor from renderer\n");
+                    }
+                }
+            }
+
+            return;
+        }
+
+        //handle connected
+        if (event == GLFW_CONNECTED) {
+            if (DEBUG_GLFW) {
+                printf("-> monitor connected: %s\n", glfwGetMonitorName(monitor));
+            }
+
+            //find renderer
+            std::string name = glfwGetMonitorName(monitor);
+
+            for (auto const &item : *windowMap) {
+                AminoGfxMac *gfx = item.second;
+
+                if (name == gfx->lastMonitor) {
+                    //re-use last monitor
+                    gfx->monitor = monitor;
+                    glfwSetWindowMonitor(gfx->window, gfx->monitor, 0, 0, gfx->mode.width, gfx->mode.height, gfx->mode.refreshRate);
+
+                    if (DEBUG_GLFW) {
+                        printf("-> using monitor again\n");
+                    }
+                }
+            }
+
+            return;
+        }
     }
 
     /**
