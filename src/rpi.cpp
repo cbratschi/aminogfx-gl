@@ -1252,20 +1252,36 @@ void AminoGfxRPi::getDisplayInfo(v8::Local<v8::Value> &value) {
 
     value = obj;
 
-    // HDMI_DISPLAY_STATE_T
+    // 1) state
     Nan::Set(obj, Nan::New("state").ToLocalChecked(), Nan::New(tvState->display.hdmi.state));
-    Nan::Set(obj, Nan::New("width").ToLocalChecked(), Nan::New(tvState->display.hdmi.width));
-    Nan::Set(obj, Nan::New("height").ToLocalChecked(), Nan::New(tvState->display.hdmi.height));
-    Nan::Set(obj, Nan::New("frameRate").ToLocalChecked(), Nan::New(tvState->display.hdmi.frame_rate));
-    Nan::Set(obj, Nan::New("scanMode").ToLocalChecked(), Nan::New(tvState->display.hdmi.scan_mode));
-    Nan::Set(obj, Nan::New("group").ToLocalChecked(), Nan::New(tvState->display.hdmi.group));
-    Nan::Set(obj, Nan::New("mode").ToLocalChecked(), Nan::New(tvState->display.hdmi.mode));
-    Nan::Set(obj, Nan::New("pixelRep").ToLocalChecked(), Nan::New(tvState->display.hdmi.pixel_rep));
-    Nan::Set(obj, Nan::New("aspectRatio").ToLocalChecked(), Nan::New(tvState->display.hdmi.aspect_ratio));
-    Nan::Set(obj, Nan::New("pixelEncoding").ToLocalChecked(), Nan::New(tvState->display.hdmi.pixel_encoding));
-    Nan::Set(obj, Nan::New("format3d").ToLocalChecked(), Nan::New(tvState->display.hdmi.format_3d));
 
-    //display options (HDMI_DISPLAY_OPTIONS_T)
+    // 2) mode
+    v8::Local<v8::Object> modeObj = Nan::New<v8::Object>();
+
+    Nan::Set(obj, Nan::New("mode").ToLocalChecked(), modeObj);
+
+    //see https://github.com/raspberrypi/userland/blob/3fd8527eefd8790b4e8393458efc5f94eb21a615/interface/vmcs_host/vc_tvservice_defs.h#L341
+    // HDMI_DISPLAY_STATE_T (see https://github.com/raspberrypi/userland/blob/3fd8527eefd8790b4e8393458efc5f94eb21a615/interface/vmcs_host/vc_hdmi.h#L100)
+    Nan::Set(modeObj, Nan::New("width").ToLocalChecked(), Nan::New(tvState->display.hdmi.width));
+    Nan::Set(modeObj, Nan::New("height").ToLocalChecked(), Nan::New(tvState->display.hdmi.height));
+    Nan::Set(modeObj, Nan::New("frameRate").ToLocalChecked(), Nan::New(tvState->display.hdmi.frame_rate));
+    Nan::Set(modeObj, Nan::New("scanMode").ToLocalChecked(), Nan::New(tvState->display.hdmi.scan_mode));
+    Nan::Set(modeObj, Nan::New("group").ToLocalChecked(), Nan::New(tvState->display.hdmi.group));
+    Nan::Set(modeObj, Nan::New("mode").ToLocalChecked(), Nan::New(tvState->display.hdmi.mode));
+    Nan::Set(modeObj, Nan::New("pixelRep").ToLocalChecked(), Nan::New(tvState->display.hdmi.pixel_rep));
+    Nan::Set(modeObj, Nan::New("aspectRatio").ToLocalChecked(), Nan::New(tvState->display.hdmi.aspect_ratio));
+    Nan::Set(modeObj, Nan::New("pixelEncoding").ToLocalChecked(), Nan::New(tvState->display.hdmi.pixel_encoding));
+    Nan::Set(modeObj, Nan::New("format3d").ToLocalChecked(), Nan::New(tvState->display.hdmi.format_3d));
+
+    // 3) modes
+    v8::Local<v8::Array> modesArr = Nan::New<v8::Array>();
+
+    Nan::Set(modesArr, Nan::New<v8::Uint32>(0), modeObj);
+    Nan::Set(obj, Nan::New("modes").ToLocalChecked(), modesArr);
+
+    // 4) displayOptions
+
+    //display options (HDMI_DISPLAY_OPTIONS_T see https://github.com/raspberrypi/userland/blob/3fd8527eefd8790b4e8393458efc5f94eb21a615/interface/vmcs_host/vc_hdmi.h#L82)
     v8::Local<v8::Object> displayObj = Nan::New<v8::Object>();
 
     Nan::Set(obj, Nan::New("displayOptions").ToLocalChecked(), displayObj);
@@ -1279,7 +1295,7 @@ void AminoGfxRPi::getDisplayInfo(v8::Local<v8::Value> &value) {
     Nan::Set(displayObj, Nan::New("bottomBarHeight").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.bottom_bar_height));
     Nan::Set(displayObj, Nan::New("overscanFlags").ToLocalChecked(), Nan::New(tvState->display.hdmi.display_options.overscan_flags));
 
-    //device
+    // 5) device (monitor)
     TV_DEVICE_ID_T id;
 
     memset(&id, 0, sizeof(id));
@@ -1287,16 +1303,12 @@ void AminoGfxRPi::getDisplayInfo(v8::Local<v8::Value> &value) {
     if (vc_tv_get_device_id(&id) == 0 && id.vendor[0] != '\0' && id.monitor_name[0] != '\0') {
         v8::Local<v8::Object> deviceObj = Nan::New<v8::Object>();
 
-        //add monitor property
-        Nan::Set(obj, Nan::New("device").ToLocalChecked(), deviceObj);
-
+        //add monitor properties
         //properties
-        Nan::Set(deviceObj, Nan::New("vendor").ToLocalChecked(), Nan::New(id.vendor).ToLocalChecked());
-        Nan::Set(deviceObj, Nan::New("monitorName").ToLocalChecked(), Nan::New(id.monitor_name).ToLocalChecked());
-        Nan::Set(deviceObj, Nan::New("serialNum").ToLocalChecked(), Nan::New(id.serial_num));
+        Nan::Set(obj, Nan::New("vendor").ToLocalChecked(), Nan::New(id.vendor).ToLocalChecked());
+        Nan::Set(obj, Nan::New("name").ToLocalChecked(), Nan::New(id.monitor_name).ToLocalChecked());
+        Nan::Set(obj, Nan::New("serialNum").ToLocalChecked(), Nan::New(id.serial_num));
     }
-
-    //cbxx FIXME mode, modes
 }
 
 #endif
@@ -1491,7 +1503,7 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
     drmModeFreeConnector(connector);
 #endif
 
-    //cbxx TODO support Pi 3
+    //Note: not supported on Raspberry Pi 3
     return "";
 }
 
