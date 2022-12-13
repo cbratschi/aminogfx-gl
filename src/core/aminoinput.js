@@ -186,7 +186,7 @@ exports.createEventHandler = function (gfx) {
 
 const handlers = {
     //mouse
-    'mouse.position': function (obj, evt) {
+    'mouse.position': (obj, evt) => {
         const s = obj.statusObjects.pointer;
 
         s.prevPt = s.pt;
@@ -198,7 +198,8 @@ const handlers = {
             obj.sendDragEvent(evt);
         }
     },
-    'mouse.button': function (obj, evt) {
+
+    'mouse.button': (obj, evt) => {
         if (evt.button === 0) {
             //left mouse button
             if (DEBUG) {
@@ -215,7 +216,6 @@ const handlers = {
                     console.log('-> pressed');
                 }
 
-                //cbxx TODO focus
                 obj.setupPointerFocus(pts.pt);
                 obj.sendPressEvent(evt);
                 return;
@@ -233,12 +233,14 @@ const handlers = {
             }
         }
     },
-    'mousewheel.v': function (obj, evt) {
+
+    'mousewheel.v': (obj, evt) => {
         const pts = obj.statusObjects.pointer;
 
         obj.setupScrollFocus(pts.pt);
         obj.sendScrollEvent(evt);
     },
+
     //touch
     touch: (obj, evt) => {
         //debug
@@ -247,23 +249,27 @@ const handlers = {
 
         obj.handleTouchEvent(evt);
     },
+
     //keyboard
-    'key.press': function (obj, evt) {
+    'key.press': (obj, evt) => {
         obj.statusObjects.keyboard.state[evt.keycode] = true;
 
         const evt2 = IE.fromAminoKeyboardEvent(evt, obj.statusObjects.keyboard.state);
 
         obj.sendKeyboardPressEvent(evt2);
     },
-    'key.release': function (obj, evt) {
+
+    'key.release': (obj, evt) => {
         obj.statusObjects.keyboard.state[evt.keycode] = false;
         obj.sendKeyboardReleaseEvent(IE.fromAminoKeyboardEvent(evt, obj.statusObjects.keyboard.state));
     },
+
     //window
-    'window.size': function (obj, evt) {
+    'window.size': (obj, evt) => {
         obj.fireEventAtTarget(null, evt);
     },
-    'window.close': function (obj, evt) {
+
+    'window.close': (obj, evt) => {
         obj.fireEventAtTarget(null, evt);
     }
 };
