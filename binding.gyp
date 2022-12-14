@@ -38,7 +38,11 @@
                         }, {
                             # Raspberry Pi
                             'is_rpi': 1,
-                            'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | grep -c \"Pi 4\")'
+
+                            # check Pi 4
+                            # cbxx FIXME gyp: Call to 'cat /sys/firmware/devicetree/base/model | grep -c "Pi 4"' returned exit status 1 while in binding.gyp. while trying to load binding.gyp
+                            # cbxx TODO verify on Pi 4
+                            'is_rpi_4': '<!([ -r /sys/firmware/devicetree/base/model ] && cat /sys/firmware/devicetree/base/model | grep -c \"Pi 4\")'
                         }],
                     ]
                 }],
