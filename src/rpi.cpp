@@ -1301,10 +1301,7 @@ void AminoGfxRPi::getDisplayInfo(v8::Local<v8::Value> &value) {
     memset(&id, 0, sizeof(id));
 
     if (vc_tv_get_device_id(&id) == 0 && id.vendor[0] != '\0' && id.monitor_name[0] != '\0') {
-        v8::Local<v8::Object> deviceObj = Nan::New<v8::Object>();
-
         //add monitor properties
-        //properties
         Nan::Set(obj, Nan::New("vendor").ToLocalChecked(), Nan::New(id.vendor).ToLocalChecked());
         Nan::Set(obj, Nan::New("name").ToLocalChecked(), Nan::New(id.monitor_name).ToLocalChecked());
         Nan::Set(obj, Nan::New("serialNum").ToLocalChecked(), Nan::New(id.serial_num));
@@ -1344,11 +1341,11 @@ void AminoGfxRPi::getAllMonitors(v8::Local<v8::Array> &array) {
 #endif
 #ifdef EGL_DISPMANX
     //single monitor
-    v8::Local<v8::Value> obj = Nan::Null();
+    v8::Local<v8::Value> value = Nan::Null();
 
     getDisplayInfo(value);
 
-    Nan::Set(array, Nan::New<v8::Uint32>(0), obj);
+    Nan::Set(array, Nan::New<v8::Uint32>(0), value);
 #endif
 }
 
