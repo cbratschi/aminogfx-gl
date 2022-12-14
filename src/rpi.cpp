@@ -1387,6 +1387,11 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
                 return "id missing";
             }
 #endif
+
+#ifdef EGL_DISPMANX
+        //Note: not used on Pi 3
+        (void)monitorObj;
+#endif
         } else if (!monitorValue->IsUndefined()) {
             return "monitor is not an object";
         }
@@ -1419,6 +1424,11 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
             } else {
                 return "name missing";
             }
+#endif
+
+#ifdef EGL_DISPMANX
+        //Note: not used on Pi 3
+        (void)modeObj;
 #endif
         } else if (!modeValue->IsUndefined()) {
             return "mode is not an object";
@@ -1498,12 +1508,6 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
     useDrmConnectorMode(connector);
 
     drmModeFreeConnector(connector);
-#endif
-
-#ifdef EGL_DISPMANX
-    //Note: not supported on Raspberry Pi 3
-    (void)monitorObj;
-    (void)modeObj;
 #endif
 
     return "";
