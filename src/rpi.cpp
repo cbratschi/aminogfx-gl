@@ -1500,7 +1500,12 @@ std::string AminoGfxRPi::setMonitor(v8::Local<v8::Object> &obj) {
     drmModeFreeConnector(connector);
 #endif
 
+#ifdef EGL_DISPMANX
     //Note: not supported on Raspberry Pi 3
+    (void)monitorObj;
+    (void)modeObj;
+#endif
+
     return "";
 }
 
