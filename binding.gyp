@@ -44,7 +44,8 @@
                             # cbxx TODO verify on Pi 4
                             #'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | grep -c \"Pi 4\")'
                             #'is_rpi_4': '<!([ -r /sys/firmware/devicetree/base/model ] \&\& cat /sys/firmware/devicetree/base/model | grep -c \"Pi 4\")'
-                            'is_rpi_4': '<!(if (test -e /sys/firmware/devicetree/base/model); then cat /sys/firmware/devicetree/base/model | grep -c \"Pi 4\"; fi)'
+                            #'is_rpi_4': '<!(if (test -e /sys/firmware/devicetree/base/model); then cat /sys/firmware/devicetree/base/model | grep -c \"Pi 4\"; fi)'
+                            'is_rpi_4': '<!(cat /sys/firmware/devicetree/base/model | { grep -c "Pi 4" || true; })'
                         }],
                     ]
                 }],
