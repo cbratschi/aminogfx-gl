@@ -141,10 +141,7 @@
                 ],
 
                 'libraries': [
-                    '<!@(pkg-config --libs glfw3)',
-                    # cbxx FIXME cool pi build fails
-                    #'-lGLESv2',
-                    #'-lGLES2'
+                    '<!@(pkg-config --libs glfw3)'
                 ],
 
                 'sources': [
