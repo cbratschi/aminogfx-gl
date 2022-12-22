@@ -138,14 +138,14 @@
 
                 'include_dirs': [
                     # Note: space at beginning needed
-                    ' <!@(pkg-config --cflags glfw3)'
+                    ' <!@(pkg-config --cflags glfw3 gl)'
                 ],
 
                 'libraries': [
-                    '<!@(pkg-config --libs glfw3)',
+                    '<!@(pkg-config --libs glfw3 gl)',
                     # cbxx TODO verify -> fails on M1 Ubuntu
                     #'-lGLESv2',
-                    '-lGLES2'
+                    #'-lGLES2'
                 ],
 
                 'sources': [
