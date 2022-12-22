@@ -137,16 +137,19 @@
                 'libraries': [
                     '<!@(pkg-config --libs glfw3)',
                     # cbxx TODO verify
-                    '-lGLESv2'
+                    '-lGLESv2',
+                    '-lGLES',
                 ],
 
                 "sources": [
                     "src/glfw.cpp"
                 ],
 
-                "defines": [
-                    "GLFW_NO_GLU",
-                    "GLFW_INCLUDE_GL3"
+                'defines': [
+                    'GLFW_NO_GLU',
+                    'GLFW_INCLUDE_GL3',
+                    #cbxx TODO verify
+                    'GLFW_INCLUDE_ES2'
                 ]
             }],
 
