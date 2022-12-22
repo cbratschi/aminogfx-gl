@@ -134,8 +134,10 @@
                     " <!@(pkg-config --cflags glfw3)"
                 ],
 
-                "libraries": [
-                    "<!@(pkg-config --libs glfw3)"
+                'libraries': [
+                    '<!@(pkg-config --libs glfw3)',
+                    # cbxx TODO verify
+                    '-lGLESv2'
                 ],
 
                 "sources": [
