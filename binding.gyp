@@ -129,27 +129,32 @@
         'conditions': [
             # GLFW library
             [ 'use_glfw == 1', {
-                "include_dirs": [
+                'defines': [
+                    # see https://www.glfw.org/docs/latest/build_guide.html#build_macros
+                    #cbxx TODO verify
+                    'GLFW_INCLUDE_ES2',
+                    'GLFW_INCLUDE_GLEXT'
+                ],
+
+                'include_dirs': [
                     # Note: space at beginning needed
-                    " <!@(pkg-config --cflags glfw3)"
+                    ' <!@(pkg-config --cflags glfw3)'
                 ],
 
                 'libraries': [
                     '<!@(pkg-config --libs glfw3)',
                     # cbxx TODO verify
-                    '-lGLESv2',
-                    '-lGLES',
+                    #'-lGLESv2',
+                    #'-lGLES',
                 ],
 
-                "sources": [
-                    "src/glfw.cpp"
+                'sources': [
+                    'src/glfw.cpp'
                 ],
 
                 'defines': [
-                    'GLFW_NO_GLU',
-                    'GLFW_INCLUDE_GL3',
-                    #cbxx TODO verify
-                    'GLFW_INCLUDE_ES2'
+                    #'GLFW_NO_GLU',
+                    #'GLFW_INCLUDE_GL3',
                 ]
             }],
 
