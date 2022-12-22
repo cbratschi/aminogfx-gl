@@ -34,6 +34,9 @@ static double __attribute__((unused)) getTime(void) {
 #ifdef LINUX
 
 //Linux
+//cbxx FIXME cool pi
+#include "GLES/gl.h"
+
 #include "GLES2/gl2.h"
 #include "GLES2/gl2ext.h"
 #include <GLFW/glfw3.h>
