@@ -216,7 +216,7 @@ void AminoJSObject::createInstance(Nan::NAN_METHOD_ARGS_TYPE info, AminoJSObject
 
             //call
             int argc = 0;
-            v8::Local<v8::Value> argv[0];
+            v8::Local<v8::Value> argv[] = {};
 
             Nan::Call(initFunc, info.This(), argc, argv);
         }
@@ -236,7 +236,7 @@ void AminoJSObject::createInstance(Nan::NAN_METHOD_ARGS_TYPE info, AminoJSObject
 
             //call
             int argc = 0;
-            v8::Local<v8::Value> argv[0];
+            v8::Local<v8::Value> argv[] = {};
 
             Nan::Call(initDoneFunc, info.This(), argc, argv);
         }
