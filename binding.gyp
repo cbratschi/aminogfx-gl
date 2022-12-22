@@ -143,9 +143,9 @@
 
                 'libraries': [
                     '<!@(pkg-config --libs glfw3)',
-                    # cbxx TODO verify
+                    # cbxx TODO verify -> fails on M1 Ubuntu
                     #'-lGLESv2',
-                    #'-lGLES',
+                    '-lGLES2'
                 ],
 
                 'sources': [
