@@ -1203,10 +1203,6 @@ void AminoGlfwVideoPlayer::initDemuxer() {
         printf("-> read first frame of video\n");
     }
 
-//cbxx last cool pi 4 output
-//cbxx FIXME swscaler: no accelerated colorspace conversion found from yuv420 to rgb24
-//cbxx FIXME assertion !persistent().IsEmpty() failed -> nan_object_wrap.h #93 => AminoTexture
-
     //read first frame
     double timeStart;
     READ_FRAME_RESULT res = demuxer->readDecodedFrame(timeStart);
@@ -1227,6 +1223,10 @@ void AminoGlfwVideoPlayer::initDemuxer() {
     if (DEBUG_VIDEOS) {
         printf("-> initializing video texture\n");
     }
+
+//cbxx last cool pi 4 output
+//cbxx FIXME swscaler: no accelerated colorspace conversion found from yuv420 to rgb24
+//cbxx FIXME assertion !persistent().IsEmpty() failed -> nan_object_wrap.h #93 => AminoTexture
 
     //switch to renderer thread
     texture->initVideoTexture();

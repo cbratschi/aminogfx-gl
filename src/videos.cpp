@@ -173,6 +173,7 @@ AminoVideoPlayer::AminoVideoPlayer(AminoTexture *texture, AminoVideo *video): te
     video->getPlaybackLoop(loop);
 
     //keep instance
+    texture->retain();
     video->retain();
 }
 
@@ -212,6 +213,11 @@ void AminoVideoPlayer::destroy() {
  * Destroy the video player.
  */
 void AminoVideoPlayer::destroyAminoVideoPlayer() {
+    if (texture) {
+        texture->release();
+        texture = NULL;
+    }
+
     if (video) {
         video->release();
         video = NULL;
