@@ -34,7 +34,7 @@ static double __attribute__((unused)) getTime(void) {
 #ifdef LINUX
 
 //Linux
-//cbxx FIXME cool pi
+//Note: needed by Cool Pi 4
 #include "GLES/gl.h"
 #include "GL/gl.h"
 

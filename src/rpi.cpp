@@ -169,7 +169,6 @@ void AminoGfxRPi::setup() {
         //vc_tv_show_info(1);
 
         //handle preferred resolution
-        //cbxx TODO support getMonitors()
         if (!createParams.IsEmpty()) {
             v8::Local<v8::Object> obj = Nan::New(createParams);
 
