@@ -4,8 +4,9 @@
 
 #include <sstream>
 
-#define DEBUG_VIDEO_FRAMES false
-#define DEBUG_VIDEO_STREAM false
+//cbxx FIXME
+#define DEBUG_VIDEO_FRAMES true
+#define DEBUG_VIDEO_STREAM true
 
 //
 // AminoVideo
@@ -1279,6 +1280,8 @@ READ_FRAME_RESULT VideoDemuxer::readDecodedFrame(double &time) {
 
         //init RGB
         if (!useVaapi && !useV4L2) {
+            //use software decoding
+
             //allocate an AVFrame structure
             frameRGB = av_frame_alloc();
 
