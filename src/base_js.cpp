@@ -135,6 +135,9 @@ void AminoJSObject::destroyAminoJSObject() {
  * Retain JS reference.
  */
 void AminoJSObject::retain() {
+    //debug cbxx
+    printf("retain() %s\n", name.c_str());
+
     Ref();
 
     if (DEBUG_REFERENCES) {
