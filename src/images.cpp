@@ -1259,6 +1259,10 @@ void AminoTexture::createVideoTexture(AsyncValueUpdate *update, int state) {
         }
 
         uv_mutex_unlock(&videoLock);
+
+        if (DEBUG_VIDEOS) {
+            printf("-> createVideoTexture() done\n");
+        }
     } else if (state == AsyncValueUpdate::STATE_DELETE) {
         //on main thread
 

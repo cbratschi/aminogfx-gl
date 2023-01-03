@@ -1120,6 +1120,10 @@ bool AminoGlfwVideoPlayer::initStream() {
  * Initialize the video player (on the rendering thread).
  */
 void AminoGlfwVideoPlayer::init() {
+    if (DEBUG_VIDEOS) {
+        printf("GLFW Video Player: init()\n");
+    }
+
     //initialize demuxer
     assert(filename.length());
 
@@ -1164,6 +1168,10 @@ void AminoGlfwVideoPlayer::demuxerThread(void *arg) {
  * Init demuxer.
  */
 void AminoGlfwVideoPlayer::initDemuxer() {
+    if (DEBUG_VIDEOS) {
+        printf("GLFW Video Player: initDemuxer()\n");
+    }
+
     assert(demuxer);
 
     //load file
