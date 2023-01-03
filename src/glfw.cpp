@@ -1188,11 +1188,19 @@ void AminoGlfwVideoPlayer::initDemuxer() {
     assert(videoW > 0);
     assert(videoH > 0);
 
+    if (DEBUG_VIDEOS) {
+        printf("-> initializing video stream\n");
+    }
+
     //initialize stream
     if (!demuxer->initStream()) {
         lastError = demuxer->getLastError();
         handleInitDone(false);
         return;
+    }
+
+    if (DEBUG_VIDEOS) {
+        printf("-> read first frame of video\n");
     }
 
     //read first frame
