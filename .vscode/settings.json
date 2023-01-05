@@ -81,5 +81,8 @@
         "__functional_base_03": "cpp",
         "list": "cpp"
     },
-    "C_Cpp.intelliSenseEngine": "Default"
+    "C_Cpp.intelliSenseEngine": "default",
+    "githubPullRequests.ignoredPullRequestBranches": [
+        "master"
+    ]
 }
