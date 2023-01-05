@@ -848,8 +848,10 @@ bool VideoDemuxer::initStream() {
                 first = false;
             }
 
-            //check device context
+            //check device context (see https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ggaf715e26dfffd1f8de1c18449e2770cffa5a73dc7ff24a0b8ed69e2673d026ca11)
             if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) {
+                //hardware device context supported
+
                 if (config->device_type == AV_HWDEVICE_TYPE_VAAPI) {
                     supportsVaapi = true;
                 }
@@ -883,9 +885,21 @@ bool VideoDemuxer::initStream() {
                 }
             }
 
+            if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_FRAMES_CTX) {
+                if (DEBUG_VIDEOS) {
+                    printf("-> hardware frames\n");
+                }
+            }
+
             if (config->methods & AV_CODEC_HW_CONFIG_METHOD_INTERNAL) {
                 if (DEBUG_VIDEOS) {
                     printf("-> internal\n");
+                }
+            }
+
+            if (config->methods & AV_CODEC_HW_CONFIG_METHOD_AD_HOC) {
+                if (DEBUG_VIDEOS) {
+                    printf("-> ad hoc\n");
                 }
             }
 
