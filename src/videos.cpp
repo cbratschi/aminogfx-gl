@@ -849,13 +849,15 @@ bool VideoDemuxer::initStream() {
             }
 
             //check device context (see https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ggaf715e26dfffd1f8de1c18449e2770cffa5a73dc7ff24a0b8ed69e2673d026ca11)
+            //Note: no output on Raspberry Pi 3 and Cool Pi 4B
+
             if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) {
                 //hardware device context supported
 
                 if (config->device_type == AV_HWDEVICE_TYPE_VAAPI) {
                     supportsVaapi = true;
                 }
-//cbxx check on RPi -> no output
+
                 if (DEBUG_VIDEOS) {
                     //show type
                     switch (config->device_type) {
