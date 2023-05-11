@@ -4,7 +4,11 @@
 #include <unistd.h>
 #include <pthread.h>
 
-//cbxx FIXME crashes on M1 (e.g. move or resize window; see https://github.com/glfw/glfw/issues/1997)
+#ifdef MAC
+//for locking
+#include <OpenGL/OpenGL.h>
+#endif
+
 #define DEBUG_GLFW false
 #define DEBUG_RENDER false
 #define DEBUG_VIDEO_TIMING false
@@ -947,6 +951,21 @@ private:
 
         return true;
     }
+
+#ifdef MAC
+    void render() override {
+        //lock rendering context
+        CGLContextObj cglContext = CGLGetCurrentContext();
+
+        CGLLockContext(cglContext);
+
+        //render
+        AminoGfx::render();
+
+        //unlock again
+        CGLUnlockContext (cglContext);
+    }
+#endif
 
     void renderingDone() override {
         //debug
