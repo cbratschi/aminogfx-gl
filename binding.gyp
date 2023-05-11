@@ -122,7 +122,7 @@
         ],
 
         "cxxflags": [
-            "-std=c++14"
+            "-std=c++17"
         ],
 
         # platform specific part
@@ -175,7 +175,7 @@
 
                 "xcode_settings": {
                     "OTHER_CPLUSPLUSFLAGS": [
-                        "-std=c++14",
+                        "-std=c++17",
                         "-stdlib=libc++"
                     ],
 
