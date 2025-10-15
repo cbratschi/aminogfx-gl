@@ -169,6 +169,9 @@
                 "defines": [
                     "MAC",
 
+                    # disable OpenGL deprecation warnings
+                    "GL_SILENCE_DEPRECATION"
+
                     # VAO not working
                     #"FREETYPE_GL_USE_VAO"
                 ],
@@ -176,14 +179,15 @@
                 "xcode_settings": {
                     "OTHER_CPLUSPLUSFLAGS": [
                         "-std=c++20",
-                        "-stdlib=libc++"
+                        "-stdlib=libc++",
+                        "-Wno-vla"
                     ],
 
                     "OTHER_LDFLAGS": [
                         "-stdlib=libc++"
                     ],
 
-                    "MACOSX_DEPLOYMENT_TARGET": "10.7"
+                    "MACOSX_DEPLOYMENT_TARGET": "15.6"
                 }
             }],
 
